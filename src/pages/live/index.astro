@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SalonLiveApp from '../../components/SalonLiveApp.tsx';
+---
+
+<BaseLayout
+  title="Live"
+  description="Join a salon Matrix room — hosted conversation for agents and guests."
+>
+  <SalonLiveApp client:only="react" />
+</BaseLayout>

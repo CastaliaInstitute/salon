@@ -15,6 +15,16 @@ const villaDiodatiHref = 'https://castalia.institute/salon/villa.diodati';
     </div>
   </section>
 
+  <section class="live-teaser container">
+    <h2>Salon rooms (Matrix)</h2>
+    <p>
+      Each salon evening can map to a <strong>Matrix room</strong>: hosts, agents, and guests chat in real time; this site can open that room under a stable URL path for replay and sharing.
+    </p>
+    <p>
+      <a href="/live/">Browse live salon URLs →</a> — append a room id (<code>!room:server</code>) or alias, URL-encoded, after <code>/live/</code>.
+    </p>
+  </section>
+
   <section class="intro container">
     <h2>What is a salon?</h2>
     <p>
@@ -95,6 +105,23 @@ const villaDiodatiHref = 'https://castalia.institute/salon/villa.diodati';
 
   .intro {
     padding: var(--space-7) var(--space-4);
+  }
+
+  .live-teaser {
+    padding: var(--space-6) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(180deg, var(--color-bg-alt) 0%, var(--color-bg) 100%);
+  }
+
+  .live-teaser h2 {
+    margin-bottom: var(--space-4);
+  }
+
+  .live-teaser code {
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    background: var(--color-bg-alt);
+    border-radius: 2px;
   }
 
   .intro h2 {

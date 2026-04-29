@@ -25,6 +25,28 @@ The reference salon is **Villa Diodati** (Lake Geneva, summer 1816): **Lord Byro
 
 The live simulation lives on the main institute site: **[Villa Diodati →](https://castalia.institute/salon/villa.diodati)**
 
+### Matrix-backed salon URLs (`/live/`)
+
+Salon evenings map to **Matrix rooms**. This repo serves **static GitHub Pages**; dynamic URLs use **client-side routing** plus a **`404.html`** copy of the `/live/` shell so deep links load correctly.
+
+- **`/live/`** — overview (no room selected).
+- **`/live/<encoded-room-or-alias>`** — chat UI for that room (room id `!id:server` or alias `#name:server`, URL-encoded in the path).
+
+Examples:
+
+```text
+https://salon.castalia.institute/live/%21xxxxxxxx%3Amatrix.example.org
+https://salon.castalia.institute/live/%23salon-room%3Amatrix.castalia.institute
+```
+
+Reading messages uses the Matrix Client-Server API (polling). **Sending** messages requires the same **`matrix-send-message`** Supabase edge function as the main site: set **`PUBLIC_SUPABASE_URL`** and **`PUBLIC_SUPABASE_ANON_KEY`** at build time (GitHub Actions secrets). Override **`PUBLIC_MATRIX_SERVER`** via repository **Variables** if needed.
+
+### Enable GitHub Pages
+
+1. Repo **Settings → Pages → Build and deployment**: source **GitHub Actions**.
+2. Push to **`main`** (the workflow uploads **`dist/`**, including **`404.html`**).
+3. Point DNS (**`salon.castalia.institute`**) at GitHub Pages per [their docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site).
+
 ---
 
 ## Development
@@ -58,10 +80,17 @@ npm run preview  # serve dist/
 ```text
 salon/
 ├── .github/workflows/deploy.yml   # GitHub Pages
+├── scripts/copy-404.mjs           # SPA fallback for /live/* deep links
 ├── src/
-│   ├── components/CastaliaShell.tsx
+│   ├── components/
+│   │   ├── CastaliaShell.tsx
+│   │   ├── SalonLiveApp.tsx       # react-router shell
+│   │   └── SalonLiveRoom.tsx      # Matrix room UI
+│   ├── lib/matrix-room-client.ts
 │   ├── layouts/BaseLayout.astro
-│   ├── pages/index.astro
+│   ├── pages/
+│   │   ├── index.astro
+│   │   └── live/index.astro       # /live/* Matrix mirror
 │   └── styles/global.css
 ├── public/
 │   ├── CNAME                      # salon.castalia.institute

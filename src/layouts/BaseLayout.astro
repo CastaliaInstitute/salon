@@ -13,7 +13,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const baseWithSlash = `${base}/`;
 const path = Astro.url.pathname;
 const pageTitle = `${title} | Salon`;
-const contract = pageContractForSitePath(path, { site: 'salon', title: pageTitle });
+const contract = pageContractForSitePath(path, {
+  site: 'salon',
+  title: pageTitle,
+  isPublic: (p) => {
+    const n = normalizeSitePath(p);
+    return n === '/' || n.startsWith('/live');
+  },
+});
 const meta = pageMetaFromContract(contract, path);
 const isHomePage = normalizeSitePath(path) === '/';
 ---
