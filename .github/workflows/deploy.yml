@@ -21,11 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # package.json uses file:../CastaliaInstitute/castalia-platform (same layout as local ~/GitHub)
+      # package.json uses file:../CastaliaInstitute/castalia-platform (same layout as local ~/GitHub).
+      # castalia-platform is private — authenticate with GITHUB_TOKEN (org must allow workflows to access private repos).
       - name: Clone castalia-platform (shared shell dependency)
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p ../CastaliaInstitute
-          git clone --depth 1 https://github.com/CastaliaInstitute/castalia-platform.git ../CastaliaInstitute/castalia-platform
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/CastaliaInstitute/castalia-platform.git" ../CastaliaInstitute/castalia-platform
 
       - name: Setup Node
         uses: actions/setup-node@v4

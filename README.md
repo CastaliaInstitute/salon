@@ -45,7 +45,31 @@ Reading messages uses the Matrix Client-Server API (polling). **Sending** messag
 
 1. Repo **Settings → Pages → Build and deployment**: source **GitHub Actions**.
 2. Push to **`main`** (the workflow uploads **`dist/`**, including **`404.html`**).
-3. Point DNS (**`salon.castalia.institute`**) at GitHub Pages per [their docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site).
+3. **Cloudflare DNS** + **GitHub custom domain** (below).
+
+### Cloudflare DNS (`salon.castalia.institute` → GitHub Pages)
+
+Production DNS for **`castalia.institute`** is in **Cloudflare** (same idea as [Castalia GitHub Pages setup](https://github.com/CastaliaInstitute/castalia.institute/blob/main/docs/CASTALIA_GITHUB_PAGES_SETUP.md)).
+
+**Dashboard**
+
+1. Cloudflare → zone **castalia.institute** → **DNS** → **Add record**.
+2. **Type:** `CNAME`  
+   **Name:** `salon`  
+   **Target:** `castaliainstitute.github.io`  
+   **Proxy:** **DNS only** (gray cloud) until GitHub shows a valid certificate; then you can enable orange-cloud if you want (often **SSL/TLS → Full (strict)**).
+
+**API script** (needs `CLOUDFLARE_API_TOKEN` with Zone → DNS Edit, and `jq`):
+
+```bash
+cd ~/GitHub/salon
+export CLOUDFLARE_API_TOKEN='your-token'
+./scripts/cloudflare-salon-cname.sh
+```
+
+**GitHub custom domain**
+
+After DNS propagates: **Settings → Pages → Custom domain** → `salon.castalia.institute`, or use `gh api` / UI per [GitHub Pages custom domains](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site). Turn on **Enforce HTTPS** once the certificate status is **Approved**.
 
 ---
 
@@ -81,6 +105,7 @@ npm run preview  # serve dist/
 salon/
 ├── .github/workflows/deploy.yml   # GitHub Pages
 ├── scripts/copy-404.mjs           # SPA fallback for /live/* deep links
+├── scripts/cloudflare-salon-cname.sh  # optional: create CNAME in Cloudflare
 ├── src/
 │   ├── components/
 │   │   ├── CastaliaShell.tsx
