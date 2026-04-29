@@ -1,0 +1,217 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const villaDiodatiHref = 'https://castalia.institute/salon/villa.diodati';
+---
+
+<BaseLayout title="Home">
+  <section class="hero">
+    <div class="container">
+      <h1>Salon</h1>
+      <p class="hero-tagline">
+        An evening among invited guests—hosted conversation that can be replayed as an archive.
+      </p>
+      <p class="hero-quote">"The room remembers what the night said."</p>
+    </div>
+  </section>
+
+  <section class="intro container">
+    <h2>What is a salon?</h2>
+    <p>
+      A <strong>salon</strong> is an event: a <strong>host</strong> gathers a small circle for discussion—often for one evening—with a tone part social, part intellectual.
+      Unlike a formal lecture or panel, the emphasis stays on dialogue in a shared setting. Recordings and transcripts let that evening extend beyond the night itself.
+    </p>
+    <p>
+      Symposia gather many voices across tradition and time; salons stay intimate—who was in the room, and who held the floor—matters.
+    </p>
+  </section>
+
+  <section class="salon-list container">
+    <h2>Featured salon</h2>
+
+    <a href={villaDiodatiHref} class="salon-card villa-theme">
+      <div class="salon-card-mark" aria-hidden="true">🏛️</div>
+      <div class="salon-card-content">
+        <h3>Villa Diodati</h3>
+        <p class="salon-card-subtitle">Lake Geneva, summer 1816 — the canonical salon</p>
+        <p class="salon-card-desc">
+          Lord Byron hosts Percy Shelley, Mary Shelley, Claire Clairmont, and John Polidori—the circle where <em>Frankenstein</em> was conceived.
+        </p>
+        <div class="salon-card-roles">
+          <span><strong>Host:</strong> Byron</span>
+          <span><strong>Guests:</strong> Shelley, Mary, Polidori</span>
+        </div>
+        <p class="salon-card-cta">Open the simulation →</p>
+      </div>
+    </a>
+  </section>
+
+  <section class="principles container">
+    <h2>Our posture</h2>
+    <div class="principles-grid">
+      <div class="principle">
+        <h3>Host and circle</h3>
+        <p>Every salon names who gathers whom—the geography of the evening is part of the work.</p>
+      </div>
+      <div class="principle">
+        <h3>Replay as artifact</h3>
+        <p>Sessions can be revisited: transcript, recording, or structured simulation.</p>
+      </div>
+      <div class="principle">
+        <h3>Voice over verdict</h3>
+        <p>We honor registers of speech and disagreement without collapsing into a single “answer.”</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    background: linear-gradient(135deg, #1e1a16 0%, #2d2520 100%);
+    color: #faf8f5;
+    padding: var(--space-8) 0;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 4rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    margin-bottom: var(--space-3);
+  }
+
+  .hero-tagline {
+    font-size: 1.2rem;
+    opacity: 0.92;
+    max-width: 520px;
+    margin: 0 auto var(--space-4);
+  }
+
+  .hero-quote {
+    font-style: italic;
+    opacity: 0.72;
+    font-size: 1rem;
+  }
+
+  .intro {
+    padding: var(--space-7) var(--space-4);
+  }
+
+  .intro h2 {
+    margin-bottom: var(--space-4);
+  }
+
+  .salon-list {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .salon-list h2 {
+    margin-bottom: var(--space-5);
+  }
+
+  .salon-card {
+    display: flex;
+    gap: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .salon-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .salon-card-mark {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .salon-card-content h3 {
+    margin-bottom: var(--space-1);
+    color: var(--color-text);
+  }
+
+  .salon-card-subtitle {
+    font-style: italic;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3) !important;
+  }
+
+  .salon-card-desc {
+    margin-bottom: var(--space-3) !important;
+  }
+
+  .salon-card-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .salon-card-roles span {
+    background: var(--color-bg-alt);
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.85rem;
+    border-radius: 2px;
+  }
+
+  .salon-card-cta {
+    margin-bottom: 0 !important;
+    font-size: 0.95rem;
+    color: var(--color-accent);
+  }
+
+  .villa-theme {
+    border-left: 4px solid #8b6914;
+  }
+
+  .principles {
+    padding: var(--space-6) var(--space-4) var(--space-8);
+  }
+
+  .principles h2 {
+    margin-bottom: var(--space-5);
+  }
+
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .principle {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-4);
+  }
+
+  .principle h3 {
+    font-size: 1.1rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .principle p {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .salon-card {
+      flex-direction: column;
+    }
+
+    .salon-card-mark {
+      font-size: 2rem;
+    }
+  }
+</style>
