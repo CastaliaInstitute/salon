@@ -43,9 +43,10 @@ Reading messages uses the Matrix Client-Server API (polling). **Sending** messag
 
 ### Enable GitHub Pages
 
-1. Repo **Settings → Pages → Build and deployment**: source **GitHub Actions**.
-2. Push to **`main`** (the workflow uploads **`dist/`**, including **`404.html`**).
-3. **Cloudflare DNS** + **GitHub custom domain** (below).
+1. Repo **Settings → Secrets and variables → Actions**: add **`CASTALIA_PLATFORM_READ_TOKEN`** — a fine-grained or classic PAT with **Contents: Read** on **`CastaliaInstitute/castalia-platform`** (the default `GITHUB_TOKEN` cannot clone other private repos).
+2. **Settings → Pages → Build and deployment**: source **GitHub Actions**.
+3. Push to **`main`** (the workflow uploads **`dist/`**, including **`404.html`**).
+4. **Cloudflare DNS** + **GitHub custom domain** (below).
 
 ### Cloudflare DNS (`salon.castalia.institute` → GitHub Pages)
 
@@ -75,7 +76,7 @@ After DNS propagates: **Settings → Pages → Custom domain** → `salon.castal
 
 ## Development
 
-Satellite site built with [Astro](https://astro.build), [Tailwind](https://tailwindcss.com), and [`@castalia/platform`](https://github.com/CastaliaInstitute/castalia-platform) for the shared Castalia shell—same pattern as [Symposia](https://github.com/InquiryInstitute/symposia).
+Satellite site built with [Astro](https://astro.build), [Tailwind](https://tailwindcss.com), and [`@castalia/platform`](https://github.com/CastaliaInstitute/castalia-platform) for the shared Castalia shell—same pattern as [Symposia](https://github.com/InquiryInstitute/symposia). CI checks out that private repo using **`CASTALIA_PLATFORM_READ_TOKEN`** (see above).
 
 **Local clone layout** (so `file:../CastaliaInstitute/castalia-platform` resolves):
 
