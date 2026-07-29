@@ -77,7 +77,9 @@ const villaDiodatiHref = 'https://castalia.institute/salon/villa.diodati';
 
 <style>
   .hero {
-    background: linear-gradient(135deg, #1e1a16 0%, #2d2520 100%);
+    background:
+      linear-gradient(90deg, rgba(30, 26, 22, .94) 0%, rgba(45, 37, 32, .78) 52%, rgba(45, 37, 32, .28) 100%),
+      url('/assets/salon-observatory.png') center / cover;
     color: #faf8f5;
     padding: var(--space-8) 0;
     text-align: center;
@@ -101,6 +103,17 @@ const villaDiodatiHref = 'https://castalia.institute/salon/villa.diodati';
     font-style: italic;
     opacity: 0.72;
     font-size: 1rem;
+  }
+
+  .hero::after {
+    content: 'Editorial observatory study · Castalia Institute, generated 2026';
+    display: block;
+    max-width: var(--container-width);
+    margin: var(--space-4) auto 0;
+    padding: 0 var(--space-4);
+    color: rgba(250, 248, 245, .62);
+    font-size: .72rem;
+    letter-spacing: .04em;
   }
 
   .intro {
