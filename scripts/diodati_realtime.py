@@ -25,6 +25,13 @@ TURN_INTERVAL_SECONDS = int(os.environ.get("DIODATI_TURN_INTERVAL_SECONDS", "720
 OPENING_PAUSE_SECONDS = float(os.environ.get("DIODATI_OPENING_PAUSE_SECONDS", "18"))
 ROUND_PAUSE_SECONDS = float(os.environ.get("DIODATI_ROUND_PAUSE_SECONDS", "8"))
 MAX_RESPONSE_WORDS = int(os.environ.get("DIODATI_MAX_RESPONSE_WORDS", "70"))
+DRAFT_MAX_WORDS = int(os.environ.get("DIODATI_DRAFT_MAX_WORDS", "450"))
+SATURDAY_DRAFT_OFFSET_SECONDS = int(
+    os.environ.get("DIODATI_SATURDAY_DRAFT_OFFSET_SECONDS", str(24 * 60 * 60))
+)
+SUNDAY_DRAFT_OFFSET_SECONDS = int(
+    os.environ.get("DIODATI_SUNDAY_DRAFT_OFFSET_SECONDS", str(48 * 60 * 60))
+)
 EVENT_WEEKDAY = int(os.environ.get("DIODATI_EVENT_WEEKDAY", "4"))
 EVENT_START_HOUR = int(os.environ.get("DIODATI_EVENT_START_HOUR", "18"))
 EVENT_START_MINUTE = int(os.environ.get("DIODATI_EVENT_START_MINUTE", "0"))
@@ -391,16 +398,18 @@ def scheduled_cycle_start(now=None):
     return None
 
 
-def send_message(token, message, cycle_id=None):
-    txn_id = f"diodati-{int(time.time() * 1000)}"
+def send_message(token, message, cycle_id=None, *, metadata=None, transaction_id=None):
+    txn_id = transaction_id or f"diodati-{int(time.time() * 1000)}"
     encoded_room = urllib.parse.quote(ROOM_ID, safe="")
+    encoded_transaction = urllib.parse.quote(txn_id, safe="")
     request_json(
-        f"{MATRIX_SERVER}/_matrix/client/v3/rooms/{encoded_room}/send/m.room.message/{txn_id}",
+        f"{MATRIX_SERVER}/_matrix/client/v3/rooms/{encoded_room}/send/m.room.message/{encoded_transaction}",
         method="PUT",
         headers=matrix_headers(token),
         payload={
             "msgtype": "m.text",
             "body": message,
+            **(metadata or {}),
             **({"org.castalia.salon_cycle": cycle_id} if cycle_id else {}),
             **({"org.castalia.simulated_at": simulated_time(cycle_id)} if cycle_id else {}),
             **({"org.castalia.time_basis": "Geneva apparent solar time"} if cycle_id else {}),
@@ -408,14 +417,22 @@ def send_message(token, message, cycle_id=None):
     )
 
 
-def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=None):
+def ask_faculty(
+    faculty_id,
+    visitor_prompt,
+    prior_responses,
+    *,
+    response_style=None,
+    max_words=None,
+):
     visitor_prompt = redact_future_leaks(visitor_prompt)
     context = "\n\n".join(
         f"{speaker}: {response}" for speaker, response in prior_responses[-3:]
     )
+    max_words = MAX_RESPONSE_WORDS if max_words is None else int(max_words)
     response_style = response_style or (
         "Keep this conversational and vivid: one thought in one to three sentences, "
-        f"never more than {MAX_RESPONSE_WORDS} words."
+        f"never more than {max_words} words."
     )
     prompt = (
         "You are speaking in the Villa Diodati salon at Lake Geneva during the storm-bound summer of 1816. "
@@ -448,8 +465,8 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=N
         attempt_prompt = prompt
         if attempt:
             attempt_prompt += (
-                "\n\nYour previous draft broke the historical boundary or was too long for live conversation. "
-                f"Rewrite it completely in no more than {MAX_RESPONSE_WORDS} words and one to three sentences. "
+                "\n\nYour previous response broke the historical boundary or exceeded the requested length. "
+                f"Rewrite it completely in no more than {max_words} words. "
                 "Do not mention the correction or any future knowledge."
             )
         result = request_json(
@@ -477,7 +494,7 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=N
             raise RuntimeError(f"ask-faculty returned no response for {faculty_id}")
         response = response.strip()
         violations = find_anachronisms(response)
-        too_long = len(response.split()) > MAX_RESPONSE_WORDS
+        too_long = len(response.split()) > max_words
         if not violations and not too_long:
             return response
         rejection_reasons = [*violations, *(["overlong response"] if too_long else [])]
@@ -600,6 +617,8 @@ def recent_salon_context(observer_token, cycle_id, limit=10):
         content = event.get("content", {})
         if content.get("msgtype") != "m.text":
             continue
+        if content.get("org.castalia.diodati_draft"):
+            continue
         event_cycle = content.get("org.castalia.salon_cycle")
         if event_cycle and event_cycle != cycle_id:
             continue
@@ -621,6 +640,118 @@ AUTONOMOUS_CUES = (
     "Offer one vivid seed for a ghost story, no more than a premise, and ask another member of the company to test it.",
     "Recall an earlier claim from this cycle and complicate it. Do not summarize the whole evening or address an audience.",
 )
+
+DRAFT_STAGES = (
+    {
+        "id": "saturday",
+        "revision": 1,
+        "offset_seconds": SATURDAY_DRAFT_OFFSET_SECONDS,
+        "label": "Saturday leaves",
+    },
+    {
+        "id": "sunday",
+        "revision": 2,
+        "offset_seconds": SUNDAY_DRAFT_OFFSET_SECONDS,
+        "label": "Sunday revision",
+    },
+)
+
+
+def draft_prompt(faculty_id, stage_id, saturday_text=None):
+    display_name = dict(CAST)[faculty_id]
+    if stage_id == "saturday":
+        return (
+            "Byron issued his challenge last night. Write the first surviving leaves of your own "
+            "supernatural tale now, as a member of this company in June 1816. Create a distinct premise, "
+            "scene, and source of dread suited to your character, but leave the manuscript productively "
+            "unfinished. Do not imitate, predict, name, or foreshadow any work written after this evening."
+        )
+    return (
+        f"Revise and continue the manuscript you wrote yesterday. Preserve its premise but sharpen its "
+        f"human conflict, supernatural uncertainty, and final image. This is {display_name}'s second draft, "
+        "not commentary upon it. Do not mention revision, the challenge, an audience, or any future work.\n\n"
+        f"SATURDAY MANUSCRIPT:\n{saturday_text}"
+    )
+
+
+def generate_character_draft(faculty_id, stage_id, saturday_text=None):
+    prior = [("Your Saturday manuscript", saturday_text)] if saturday_text else []
+    return ask_faculty(
+        faculty_id,
+        draft_prompt(faculty_id, stage_id, saturday_text),
+        prior,
+        response_style=(
+            f"Write only the manuscript prose, without a title, preface, explanation, or modern framing. "
+            f"Use coherent paragraphs and no more than {DRAFT_MAX_WORDS} words. The piece may be longer "
+            "than salon dialogue because it will appear as a separate clickable draft."
+        ),
+        max_words=DRAFT_MAX_WORDS,
+    )
+
+
+def publish_due_drafts(bots, cycle, cycle_path, now=None):
+    """Generate each due weekend manuscript through ask-faculty and publish it once."""
+    if not cycle.get("opening_complete") or not cycle.get("id"):
+        return cycle
+    now = int(time.time()) if now is None else int(now)
+    elapsed = max(0, now - int(cycle["started_at"]))
+    published = set(cycle.setdefault("published_drafts", []))
+    draft_texts = cycle.setdefault("draft_texts", {})
+
+    for stage in DRAFT_STAGES:
+        if elapsed < stage["offset_seconds"]:
+            continue
+        stage_texts = draft_texts.setdefault(stage["id"], {})
+        for faculty_id, display_name in CAST:
+            draft_key = f"{stage['id']}:{faculty_id}"
+            if draft_key in published:
+                continue
+            saturday_text = draft_texts.get("saturday", {}).get(faculty_id)
+            if stage["id"] == "sunday" and not saturday_text:
+                continue
+            try:
+                manuscript = stage_texts.get(faculty_id)
+                if not manuscript:
+                    manuscript = generate_character_draft(
+                        faculty_id,
+                        stage["id"],
+                        saturday_text=saturday_text,
+                    )
+                    # Persist before sending. A crash can then retry the exact
+                    # manuscript with the same Matrix transaction id rather
+                    # than generating divergent text.
+                    stage_texts[faculty_id] = manuscript
+                    save_json(cycle_path, cycle)
+                metadata = {
+                    "org.castalia.diodati_draft": {
+                        "stage": stage["id"],
+                        "revision": stage["revision"],
+                        "label": stage["label"],
+                        "title": f"{display_name}'s {stage['label'].lower()}",
+                        "faculty_id": faculty_id,
+                        "generated_by": "ask-faculty",
+                    }
+                }
+                send_message(
+                    bots[faculty_id]["access_token"],
+                    manuscript,
+                    cycle["id"],
+                    metadata=metadata,
+                    transaction_id=(
+                        f"diodati-draft-{cycle['started_at']}-{stage['id']}-{faculty_id}"
+                    ),
+                )
+                published.add(draft_key)
+                cycle["published_drafts"] = sorted(published)
+                save_json(cycle_path, cycle)
+                print(f"Published {stage['label']} for {display_name}", flush=True)
+            except Exception as error:
+                print(
+                    f"{display_name} {stage['label']} failed: {error}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+    return cycle
 
 
 def run_autonomous_turn(bots, cycle):
@@ -731,6 +862,7 @@ def sync(bots):
 
     while True:
         cycle = ensure_cycle(bots, cycle_path)
+        publish_due_drafts(bots, cycle, cycle_path)
         if cycle.get("opening_complete") and int(time.time()) >= int(cycle.get("next_turn_at", 0)):
             run_autonomous_turn(bots, cycle)
             save_json(cycle_path, cycle)

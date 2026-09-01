@@ -201,6 +201,7 @@ export function SalonLiveRoom({
   const [authEmail, setAuthEmail] = useState('')
   const [authStatus, setAuthStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
   const [authError, setAuthError] = useState<string | null>(null)
+  const [selectedDraft, setSelectedDraft] = useState<MatrixMessage | null>(null)
   const [wallClock, setWallClock] = useState(() => Date.now())
   const clientRef = useRef<MatrixRoomClient | null>(null)
   const transcriptRef = useRef<HTMLDivElement | null>(null)
@@ -213,6 +214,19 @@ export function SalonLiveRoom({
     const timer = window.setInterval(() => setWallClock(Date.now()), 30_000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!salonWindow.open) setSelectedDraft(null)
+  }, [salonWindow.open])
+
+  useEffect(() => {
+    if (!selectedDraft) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedDraft(null)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [selectedDraft])
 
   useEffect(() => {
     let cancelled = false
@@ -315,11 +329,19 @@ export function SalonLiveRoom({
       try {
         setStatus('connecting')
         await client.connect()
-        const initial = await client.getRecentMessages(80)
+        const initial = await client.getRecentMessages(500)
         if (!cancelled) {
           // Joining a live salon begins at its present turn. History remains in
-          // Matrix for audit, but is never machine-replayed into the browser.
-          setMessages(initial.filter((message) => !isLegacyTravellerExchange(message)).slice(-1))
+          // Matrix for audit. Weekend manuscript artifacts remain available,
+          // while ordinary conversation is never machine-replayed.
+          const safe = initial.filter((message) => !isLegacyTravellerExchange(message))
+          const latestCycleId = safe.findLast((message) => message.cycleId)?.cycleId
+          const currentCycle = latestCycleId
+            ? safe.filter((message) => message.cycleId === latestCycleId)
+            : safe
+          const drafts = currentCycle.filter((message) => message.draft)
+          const presentTurn = currentCycle.filter((message) => !message.draft).slice(-1)
+          setMessages([...drafts, ...presentTurn].sort((left, right) => left.timestamp - right.timestamp))
           setStatus('connected')
         }
       } catch (e) {
@@ -471,7 +493,24 @@ export function SalonLiveRoom({
                         {formatSimulatedTime(m)} · Geneva solar time
                       </time>
                     </div>
-                    <div className="whitespace-pre-wrap text-slate-900">{m.content}</div>
+                    {m.draft ? (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDraft(m)}
+                        className="group w-full rounded-lg border border-amber-700/30 bg-amber-50/70 p-3 text-left shadow-sm transition hover:border-amber-600/60 hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        aria-label={`Open ${m.draft.title}`}
+                      >
+                        <span className="mb-1 block text-xs uppercase tracking-[0.18em] text-amber-800">
+                          {m.draft.label} · Draft {m.draft.revision}
+                        </span>
+                        <span className="block font-serif text-lg text-slate-900">{m.draft.title}</span>
+                        <span className="mt-1 block text-sm text-slate-600 group-hover:text-slate-900">
+                          Open the manuscript →
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="whitespace-pre-wrap text-slate-900">{m.content}</div>
+                    )}
                   </div>
                 </div>
               )
@@ -532,6 +571,51 @@ export function SalonLiveRoom({
         </div>
         {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}
       </footer>
+
+      {selectedDraft?.draft && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSelectedDraft(null)
+          }}
+        >
+          <article
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="diodati-draft-title"
+            className="max-h-[85dvh] w-full max-w-2xl overflow-y-auto rounded-xl border border-amber-800/40 bg-[#fffaf0] p-6 text-slate-900 shadow-2xl sm:p-8"
+          >
+            <div className="mb-6 flex items-start justify-between gap-4 border-b border-amber-900/15 pb-4">
+              <div>
+                <p className="mb-1 text-xs uppercase tracking-[0.2em] text-amber-800">
+                  {selectedDraft.draft.label} · Draft {selectedDraft.draft.revision}
+                </p>
+                <h2 id="diodati-draft-title" className="font-serif text-2xl">
+                  {selectedDraft.draft.title}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {speakerIdentity(selectedDraft).name} · {formatSimulatedTime(selectedDraft)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedDraft(null)}
+                className="text-2xl leading-none text-slate-500 hover:text-slate-950"
+                aria-label="Close manuscript"
+              >
+                ×
+              </button>
+            </div>
+            <div className="whitespace-pre-wrap font-serif text-[1.05rem] leading-8 text-slate-800">
+              {selectedDraft.content}
+            </div>
+            <p className="mt-8 border-t border-amber-900/15 pt-3 text-xs uppercase tracking-widest text-slate-500">
+              Written in character through Castalia ask-faculty
+            </p>
+          </article>
+        </div>
+      )}
 
       {authOpen && !canParticipate && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center" role="presentation">

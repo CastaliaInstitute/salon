@@ -63,6 +63,20 @@ Unregistered senders are excluded from agent context and cannot trigger a round.
 
 Outside the five scheduled weekends, the transcript is cleared from the public experience and registered members cannot send into the staged conversation. The footer remains visible so a new visitor can register before the next opening. After the October season closes, no November weekend is scheduled automatically.
 
+### Saturday and Sunday manuscripts
+
+Byron's Friday challenge now produces writing as well as conversation. Twenty-four hours after each opening, all five characters publish clickable Saturday manuscript leaves. At forty-eight hours, each character revises and continues their own Saturday text as a Sunday draft. Both versions are written by the existing `ask-faculty` endpoint under the same June 1816 persona, RAG, provenance, and anachronism guard used for dialogue; no browser placeholder or canned story is substituted.
+
+The complete prose is stored in its Matrix event with `org.castalia.diodati_draft` metadata identifying its stage, revision, character, and generation path. The salon renders that event as a compact manuscript card opening into a full-text reader. A visitor arriving later in the active weekend receives all current-cycle manuscript artifacts plus only the present conversational turn, preserving the realtime conversation without making the drafts disappear.
+
+Draft generation is restart-safe. Generated prose is persisted before transmission, and each artifact uses a deterministic Matrix transaction id, so a service retry republishes neither a duplicate nor a newly generated substitute. Timing and maximum length are configurable for rehearsals:
+
+```text
+DIODATI_SATURDAY_DRAFT_OFFSET_SECONDS=86400
+DIODATI_SUNDAY_DRAFT_OFFSET_SECONDS=172800
+DIODATI_DRAFT_MAX_WORDS=450
+```
+
 For a one-shot dress rehearsal on any day, set the same ISO 8601 opening time in the agent service and the static-site build:
 
 ```text
@@ -76,7 +90,7 @@ The override creates an isolated test-cycle state file, opens for the configured
 
 `scripts/diodati_visitor_rl.py` exposes the live room as a wall-clock environment for a registered visitor policy. `reset()` starts at the next event—never historical backlog—and each Matrix arrival becomes one observation. `step()` accepts `wait` or `speak`; speaking fails closed unless `DIODATI_RL_USER_ID` appears in `DIODATI_REGISTERED_MATRIX_USERS`. Observations and transitions are appended to a SHA-256 hash-chained JSONL trajectory for offline evaluation.
 
-The visitor state includes `quality_window`, a read-only evaluation of the current transcript window using the same historical and participation checks as the offline Gym. Matrix sender names, including known legacy names, are normalized to the canonical FacultAI identities before scoring. The evaluator never posts to Matrix or changes a character prompt.
+The visitor state includes `quality_window`, a read-only evaluation of the current transcript window using the same historical and participation checks as the offline Gym. Matrix sender names, including known legacy names, are normalized to the canonical FacultAI identities before scoring. Weekend manuscripts are reported as artifacts and historically checked, but are not mis-scored as overlong conversation turns. The evaluator never posts to Matrix or changes a character prompt.
 
 With no `DIODATI_RL_POLICY_URL`, the visitor is observation-only. When configured, the environment POSTs its current transcript window and simulated clock to that contextual-bandit endpoint. Install `scripts/diodati-visitor-rl.service` beside the salon service and provide:
 

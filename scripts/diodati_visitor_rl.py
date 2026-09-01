@@ -125,6 +125,7 @@ class DiodatiRealtimeVisitorEnv:
                 "content": content.get("body", ""),
                 "cycle_id": content.get("org.castalia.salon_cycle"),
                 "simulated_at": content.get("org.castalia.simulated_at"),
+                "draft": content.get("org.castalia.diodati_draft"),
                 "wall_received_at": time.time(),
             }
             self.last_simulated_at = observation["simulated_at"] or self.last_simulated_at

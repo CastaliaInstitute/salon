@@ -633,6 +633,7 @@ class DiodatiSalonGym:
 def evaluate_transcript(events):
     """Evaluate a live/offline transcript without mutating it or calling a model."""
     counts = Counter()
+    draft_stages = Counter()
     violations = []
     word_counts = []
     repetitions = []
@@ -642,6 +643,11 @@ def evaluate_transcript(events):
         localpart = raw_speaker.lstrip("@").split(":", 1)[0].lower()
         speaker = SPEAKER_ALIASES.get(localpart, localpart)
         content = str(event.get("content", ""))
+        draft = event.get("draft")
+        if isinstance(draft, dict):
+            draft_stages[str(draft.get("stage", "unknown"))] += 1
+            violations.extend(find_anachronisms(content))
+            continue
         if speaker in CAST_IDS:
             counts[speaker] += 1
         violations.extend(find_anachronisms(content))
@@ -660,6 +666,10 @@ def evaluate_transcript(events):
     return {
         "events": len(events),
         "history": {"clean": not violations, "violations": sorted(set(violations))},
+        "artifacts": {
+            "drafts": sum(draft_stages.values()),
+            "draft_stages": dict(sorted(draft_stages.items())),
+        },
         "participation": {"score": round(participation, 6), "counts": dict(counts)},
         "conversation": {
             "mean_words": round(sum(word_counts) / len(word_counts), 6) if word_counts else 0.0,

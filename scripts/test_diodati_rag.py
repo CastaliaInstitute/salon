@@ -3,9 +3,11 @@
 """Regression tests for Villa Diodati's curated pre-cutoff RAG corpus."""
 
 import copy
+import json
 import os
 import pathlib
 import unittest
+import tempfile
 from unittest import mock
 
 
@@ -16,6 +18,8 @@ import diodati_realtime  # noqa: E402
 from diodati_realtime import (  # noqa: E402
     LOCAL_RAG_PATH,
     load_rag_corpus,
+    generate_character_draft,
+    publish_due_drafts,
     retrieve_rag_context,
     run_opening,
     validate_rag_corpus,
@@ -138,6 +142,105 @@ class DiodatiRagTests(unittest.TestCase):
         unsafe["characters"]["a.maryshelley"][0]["text"] += " Frankenstein"
         with self.assertRaisesRegex(ValueError, "Anachronistic"):
             validate_rag_corpus(unsafe)
+
+    def test_character_draft_is_written_through_ask_faculty(self):
+        with mock.patch.object(
+            diodati_realtime,
+            "ask_faculty",
+            return_value="The candle failed, though no wind had entered the room.",
+        ) as ask_mock:
+            manuscript = generate_character_draft("a.maryshelley", "saturday")
+
+        self.assertIn("candle", manuscript)
+        self.assertEqual(ask_mock.call_args.args[0], "a.maryshelley")
+        self.assertEqual(ask_mock.call_args.kwargs["max_words"], diodati_realtime.DRAFT_MAX_WORDS)
+        self.assertIn("manuscript prose", ask_mock.call_args.kwargs["response_style"])
+
+    def test_saturday_and_sunday_publish_clickable_matrix_artifacts_once(self):
+        bots = {
+            faculty_id: {"access_token": faculty_id}
+            for faculty_id, _ in diodati_realtime.CAST
+        }
+        cycle = {
+            "id": "diodati-100",
+            "started_at": 100,
+            "opening_complete": True,
+        }
+        sent = []
+
+        with tempfile.TemporaryDirectory() as directory:
+            cycle_path = pathlib.Path(directory) / "cycle.json"
+            with (
+                mock.patch.object(
+                    diodati_realtime,
+                    "DRAFT_STAGES",
+                    (
+                        {"id": "saturday", "revision": 1, "offset_seconds": 10, "label": "Saturday leaves"},
+                        {"id": "sunday", "revision": 2, "offset_seconds": 20, "label": "Sunday revision"},
+                    ),
+                ),
+                mock.patch.object(
+                    diodati_realtime,
+                    "generate_character_draft",
+                    side_effect=lambda faculty_id, stage_id, saturday_text=None: (
+                        f"{stage_id} manuscript by {faculty_id}; earlier={bool(saturday_text)}"
+                    ),
+                ) as generate_mock,
+                mock.patch.object(
+                    diodati_realtime,
+                    "send_message",
+                    side_effect=lambda token, body, cycle_id=None, **kwargs: sent.append(
+                        (token, body, cycle_id, kwargs)
+                    ),
+                ),
+            ):
+                publish_due_drafts(bots, cycle, cycle_path, now=111)
+                publish_due_drafts(bots, cycle, cycle_path, now=111)
+                self.assertEqual(len(sent), 5)
+                self.assertTrue(all(item[3]["metadata"]["org.castalia.diodati_draft"]["stage"] == "saturday" for item in sent))
+
+                publish_due_drafts(bots, cycle, cycle_path, now=121)
+
+            self.assertEqual(len(sent), 10)
+            self.assertEqual(generate_mock.call_count, 10)
+            sunday_calls = generate_mock.call_args_list[5:]
+            self.assertTrue(all(call.kwargs["saturday_text"] for call in sunday_calls))
+            self.assertEqual(len(set(item[3]["transaction_id"] for item in sent)), 10)
+            stored = json.loads(cycle_path.read_text(encoding="utf-8"))
+            self.assertEqual(len(stored["published_drafts"]), 10)
+            self.assertEqual(set(stored["draft_texts"]), {"saturday", "sunday"})
+
+    def test_failed_matrix_send_reuses_the_persisted_endpoint_draft(self):
+        cycle = {"id": "diodati-100", "started_at": 100, "opening_complete": True}
+        bots = {"a.byron": {"access_token": "token"}}
+        with tempfile.TemporaryDirectory() as directory:
+            cycle_path = pathlib.Path(directory) / "cycle.json"
+            with (
+                mock.patch.object(diodati_realtime, "CAST", [("a.byron", "Lord Byron")]),
+                mock.patch.object(
+                    diodati_realtime,
+                    "DRAFT_STAGES",
+                    ({"id": "saturday", "revision": 1, "offset_seconds": 10, "label": "Saturday leaves"},),
+                ),
+                mock.patch.object(
+                    diodati_realtime,
+                    "generate_character_draft",
+                    return_value="The one and only generated manuscript.",
+                ) as generate_mock,
+                mock.patch.object(
+                    diodati_realtime,
+                    "send_message",
+                    side_effect=[RuntimeError("Matrix unavailable"), None],
+                ) as send_mock,
+            ):
+                publish_due_drafts(bots, cycle, cycle_path, now=111)
+                publish_due_drafts(bots, cycle, cycle_path, now=112)
+
+            self.assertEqual(generate_mock.call_count, 1)
+            self.assertEqual(send_mock.call_count, 2)
+            self.assertEqual(send_mock.call_args_list[0].args[1], send_mock.call_args_list[1].args[1])
+            stored = json.loads(cycle_path.read_text(encoding="utf-8"))
+            self.assertEqual(stored["published_drafts"], ["saturday:a.byron"])
 
 
 if __name__ == "__main__":

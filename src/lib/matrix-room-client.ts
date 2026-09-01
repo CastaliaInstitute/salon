@@ -10,7 +10,17 @@ export interface MatrixMessage {
   timestamp: number;
   cycleId?: string;
   simulatedAt?: string;
+  draft?: DiodatiDraft;
   event?: unknown;
+}
+
+export interface DiodatiDraft {
+  stage: 'saturday' | 'sunday';
+  revision: number;
+  label: string;
+  title: string;
+  faculty_id: string;
+  generated_by: 'ask-faculty';
 }
 
 function matrixServer(): string {
@@ -107,6 +117,7 @@ export class MatrixRoomClient {
           timestamp: event.origin_server_ts || Date.now(),
           cycleId: event.content['org.castalia.salon_cycle'],
           simulatedAt: event.content['org.castalia.simulated_at'],
+          draft: event.content['org.castalia.diodati_draft'],
           event,
         };
 
@@ -190,6 +201,7 @@ export class MatrixRoomClient {
               body?: string;
               'org.castalia.salon_cycle'?: string;
               'org.castalia.simulated_at'?: string;
+              'org.castalia.diodati_draft'?: DiodatiDraft;
             };
             origin_server_ts?: number;
           }) => ({
@@ -199,6 +211,7 @@ export class MatrixRoomClient {
             timestamp: event.origin_server_ts || Date.now(),
             cycleId: event.content?.['org.castalia.salon_cycle'],
             simulatedAt: event.content?.['org.castalia.simulated_at'],
+            draft: event.content?.['org.castalia.diodati_draft'],
             event,
           })
         )

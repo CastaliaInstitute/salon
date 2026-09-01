@@ -59,6 +59,24 @@ class DiodatiVisitorRlTests(unittest.TestCase):
             self.assertEqual(evaluation["participation"]["counts"]["a.maryshelley"], 1)
             self.assertTrue(evaluation["history"]["clean"])
 
+    def test_manuscript_is_an_artifact_not_an_overlong_conversation_turn(self):
+        with tempfile.TemporaryDirectory() as directory:
+            trajectory = HashChainedTrajectory(pathlib.Path(directory) / "trajectory.jsonl")
+            environment = DiodatiRealtimeVisitorEnv("!room:test", "@visitor:test", "token", trajectory)
+            environment.transcript = [
+                {
+                    "speaker": "@a.byron:matrix.castalia.institute",
+                    "content": "A candle burned. " * 100,
+                    "draft": {"stage": "saturday", "revision": 1},
+                }
+            ]
+
+            evaluation = environment.evaluate()
+
+            self.assertEqual(evaluation["artifacts"]["drafts"], 1)
+            self.assertEqual(evaluation["artifacts"]["draft_stages"], {"saturday": 1})
+            self.assertEqual(evaluation["conversation"]["max_words"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
