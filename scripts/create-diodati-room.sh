@@ -35,7 +35,7 @@ login() {
 
 encoded_alias="$(jq -nr --arg value "$ROOM_ALIAS" '$value|@uri')"
 room_id="$(curl -fsS "${MATRIX_BASE_URL}/_matrix/client/v3/directory/room/${encoded_alias}" 2>/dev/null | jq -r '.room_id // empty' || true)"
-byron_token="$(login 'g.byron')"
+byron_token="$(login 'a.byron')"
 
 if [[ -z "$room_id" ]]; then
   create_payload="$(jq -nc --arg alias 'villa-diodati' --arg domain "$MATRIX_DOMAIN" '{
@@ -45,10 +45,10 @@ if [[ -z "$room_id" ]]; then
     name: "Villa Diodati",
     topic: "A storm-bound salon at Lake Geneva with Lord Byron, Mary Godwin, Claire Clairmont, Percy Shelley, and John Polidori.",
     invite: [
-      ("@m.shelley:" + $domain),
-      ("@c.clairmont:" + $domain),
+      ("@a.maryshelley:" + $domain),
+      ("@a.clairmont:" + $domain),
       ("@a.shelley:" + $domain),
-      ("@j.polidori:" + $domain)
+      ("@a.polidori:" + $domain)
     ],
     initial_state: [
       {type:"m.room.history_visibility", state_key:"", content:{history_visibility:"world_readable"}},
@@ -63,14 +63,14 @@ if [[ -z "$room_id" ]]; then
 fi
 
 declare -A display_names=(
-  [g.byron]='Lord Byron'
-  [m.shelley]='Mary Godwin'
-  [c.clairmont]='Claire Clairmont'
+  [a.byron]='Lord Byron'
+  [a.maryshelley]='Mary Godwin'
+  [a.clairmont]='Claire Clairmont'
   [a.shelley]='Percy Bysshe Shelley'
-  [j.polidori]='John William Polidori'
+  [a.polidori]='John William Polidori'
 )
 
-for localpart in g.byron m.shelley c.clairmont a.shelley j.polidori; do
+for localpart in a.byron a.maryshelley a.clairmont a.shelley a.polidori; do
   token="$(login "$localpart")"
   user_id="@${localpart}:${MATRIX_DOMAIN}"
   encoded_user="$(jq -nr --arg value "$user_id" '$value|@uri')"
@@ -80,7 +80,7 @@ for localpart in g.byron m.shelley c.clairmont a.shelley j.polidori; do
       -H "Authorization: Bearer ${token}" \
       -H 'Content-Type: application/json' --data-binary @- >/dev/null
 
-  if [[ "$localpart" != 'g.byron' ]]; then
+  if [[ "$localpart" != 'a.byron' ]]; then
     curl -fsS -X POST "${MATRIX_BASE_URL}/_matrix/client/v3/join/${encoded_alias}" \
       -H "Authorization: Bearer ${token}" \
       -H 'Content-Type: application/json' --data '{}' >/dev/null

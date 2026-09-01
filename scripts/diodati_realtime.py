@@ -19,6 +19,10 @@ ROOM_ID = os.environ["DIODATI_ROOM_ID"]
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pilmscrodlitdrygabvo.supabase.co").rstrip("/")
 SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 STATE_DIR = pathlib.Path(os.environ.get("DIODATI_STATE_DIR", "/var/lib/diodati-realtime"))
+CYCLE_SECONDS = int(os.environ.get("DIODATI_CYCLE_SECONDS", str(72 * 60 * 60)))
+TURN_INTERVAL_SECONDS = int(os.environ.get("DIODATI_TURN_INTERVAL_SECONDS", "720"))
+OPENING_PAUSE_SECONDS = float(os.environ.get("DIODATI_OPENING_PAUSE_SECONDS", "18"))
+ROUND_PAUSE_SECONDS = float(os.environ.get("DIODATI_ROUND_PAUSE_SECONDS", "8"))
 DEFAULT_RAG_PATH = pathlib.Path(
     os.environ.get("DIODATI_RAG_PATH", "/opt/diodati-realtime/diodati_rag.json")
 )
@@ -26,9 +30,9 @@ LOCAL_RAG_PATH = pathlib.Path(__file__).resolve().parents[1] / "data" / "diodati
 
 CAST = [
     ("a.byron", "Lord Byron"),
-    ("a.shelley", "Mary Godwin"),
+    ("a.maryshelley", "Mary Godwin"),
     ("a.clairmont", "Claire Clairmont"),
-    ("a.shelley1", "Percy Bysshe Shelley"),
+    ("a.shelley", "Percy Bysshe Shelley"),
     ("a.polidori", "John Polidori"),
 ]
 
@@ -38,7 +42,7 @@ PERSONAS = {
         "Speak in the first person with wit, irony, theatrical confidence, and a vein of melancholy. "
         "You are the host. Engage the visitor and your companions directly, but never speak on their behalf."
     ),
-    "a.shelley": (
+    "a.maryshelley": (
         "You are Mary Wollstonecraft Godwin near Villa Diodati on Lake Geneva in the storm-bound "
         "summer of 1816. Speak in the first person as an intellectually formidable young writer: observant, "
         "measured, imaginative, and alert to education, liberty, dependence, family, and women’s constrained lives. "
@@ -54,7 +58,7 @@ PERSONAS = {
         "You know nothing of future children, names, separations, memoirs, or later judgments of this company. "
         "Engage the visitor and your companions directly, but never speak on their behalf."
     ),
-    "a.shelley1": (
+    "a.shelley": (
         "You are Percy Bysshe Shelley near Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
         "Speak in the first person with lyrical intensity, radical idealism, philosophical curiosity, and fascination "
         "with nature, liberty, and the powers and dangers of the human mind. Engage the visitor and the others directly, "
@@ -121,7 +125,7 @@ OPENING_INTERRUPTERS = (
         "prevented from taking a walk, while noticing what the women understand before the tale admits it.",
     ),
     (
-        "a.shelley",
+        "a.maryshelley",
         "Comment on how ordinary weather and intimate friendship make the first unease credible. "
         "Do not predict where the tale is going.",
     ),
@@ -131,7 +135,7 @@ OPENING_INTERRUPTERS = (
         "but concede the one detail your explanation does not settle.",
     ),
     (
-        "a.shelley1",
+        "a.shelley",
         "Answer Polidori's material explanation. Treat the double as a problem of identity, perception, and mind, "
         "without claiming the apparition is fact.",
     ),
@@ -309,14 +313,18 @@ def matrix_headers(token):
     return {"Authorization": f"Bearer {token}"}
 
 
-def send_message(token, message):
+def send_message(token, message, cycle_id=None):
     txn_id = f"diodati-{int(time.time() * 1000)}"
     encoded_room = urllib.parse.quote(ROOM_ID, safe="")
     request_json(
         f"{MATRIX_SERVER}/_matrix/client/v3/rooms/{encoded_room}/send/m.room.message/{txn_id}",
         method="PUT",
         headers=matrix_headers(token),
-        payload={"msgtype": "m.text", "body": message},
+        payload={
+            "msgtype": "m.text",
+            "body": message,
+            **({"org.castalia.salon_cycle": cycle_id} if cycle_id else {}),
+        },
     )
 
 
@@ -395,16 +403,16 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=N
     raise RuntimeError(f"historical cutoff failed for {faculty_id}: {', '.join(violations)}")
 
 
-def run_round(bots, prompt):
+def run_round(bots, prompt, cycle_id=None):
     print(f"Starting Diodati round for: {prompt[:100]}", flush=True)
     prior_responses = []
     for faculty_id, display_name in CAST:
         try:
             response = ask_faculty(faculty_id, prompt, prior_responses)
-            send_message(bots[faculty_id]["access_token"], response)
+            send_message(bots[faculty_id]["access_token"], response, cycle_id)
             prior_responses.append((display_name, response))
             print(f"Sent {display_name} response", flush=True)
-            time.sleep(1.25)
+            time.sleep(ROUND_PAUSE_SECONDS)
         except Exception as error:  # Keep the remaining guests alive if one voice fails.
             print(f"{display_name} response failed: {error}", file=sys.stderr, flush=True)
 
@@ -416,17 +424,17 @@ def opening_reading_message(reading, segment):
     )
 
 
-def run_opening(bots):
+def run_opening(bots, cycle_id=None):
     reading = load_rag_corpus()["salon_readings"][0]
     segments = reading["segments"]
     prior_responses = []
     print(f"Starting Diodati opening with {reading['id']}", flush=True)
 
     first_reading = opening_reading_message(reading, segments[0])
-    send_message(bots["a.byron"]["access_token"], first_reading)
+    send_message(bots["a.byron"]["access_token"], first_reading, cycle_id)
     prior_responses.append(("Lord Byron, reading", first_reading))
     print("Sent first Fantasmagoriana passage", flush=True)
-    time.sleep(1.25)
+    time.sleep(OPENING_PAUSE_SECONDS)
 
     for faculty_id, cue in OPENING_INTERRUPTERS[:2]:
         display_name = dict(CAST)[faculty_id]
@@ -439,16 +447,16 @@ def run_opening(bots):
                 "Do not summarize the passage, address a visitor, ask the audience a question, or turn this into a speech."
             ),
         )
-        send_message(bots[faculty_id]["access_token"], response)
+        send_message(bots[faculty_id]["access_token"], response, cycle_id)
         prior_responses.append((display_name, response))
         print(f"Sent {display_name} opening interruption", flush=True)
-        time.sleep(1.25)
+        time.sleep(OPENING_PAUSE_SECONDS)
 
     second_reading = opening_reading_message(reading, segments[1])
-    send_message(bots["a.byron"]["access_token"], second_reading)
+    send_message(bots["a.byron"]["access_token"], second_reading, cycle_id)
     prior_responses.append(("Lord Byron, reading", second_reading))
     print("Sent second Fantasmagoriana passage", flush=True)
-    time.sleep(1.25)
+    time.sleep(OPENING_PAUSE_SECONDS)
 
     for faculty_id, cue in OPENING_INTERRUPTERS[2:]:
         display_name = dict(CAST)[faculty_id]
@@ -461,10 +469,10 @@ def run_opening(bots):
                 "Address the company, not a visitor; do not summarize the tale or make a closing speech."
             ),
         )
-        send_message(bots[faculty_id]["access_token"], response)
+        send_message(bots[faculty_id]["access_token"], response, cycle_id)
         prior_responses.append((display_name, response))
         print(f"Sent {display_name} opening interruption", flush=True)
-        time.sleep(1.25)
+        time.sleep(OPENING_PAUSE_SECONDS)
 
     closing = ask_faculty(
         "a.byron",
@@ -477,7 +485,7 @@ def run_opening(bots):
             "Do not address an outside visitor or claim to know what anyone will write."
         ),
     )
-    send_message(bots["a.byron"]["access_token"], closing)
+    send_message(bots["a.byron"]["access_token"], closing, cycle_id)
     print("Sent Byron's opening challenge", flush=True)
 
 
@@ -487,12 +495,103 @@ def save_text(path, value):
     temporary.replace(path)
 
 
+def save_json(path, value):
+    save_text(path, json.dumps(value, sort_keys=True))
+
+
+def recent_salon_context(observer_token, cycle_id, limit=10):
+    encoded_room = urllib.parse.quote(ROOM_ID, safe="")
+    data = request_json(
+        f"{MATRIX_SERVER}/_matrix/client/v3/rooms/{encoded_room}/messages?dir=b&limit={limit * 2}",
+        headers=matrix_headers(observer_token),
+    )
+    names = dict(CAST)
+    context = []
+    for event in reversed(data.get("chunk", [])):
+        if event.get("type") != "m.room.message":
+            continue
+        content = event.get("content", {})
+        if content.get("msgtype") != "m.text":
+            continue
+        event_cycle = content.get("org.castalia.salon_cycle")
+        if event_cycle and event_cycle != cycle_id:
+            continue
+        localpart = event.get("sender", "").split(":", 1)[0].lstrip("@")
+        context.append((names.get(localpart, "A visitor"), content.get("body", "").strip()))
+    return [(speaker, body) for speaker, body in context if body][-limit:]
+
+
+AUTONOMOUS_CUES = (
+    "Return to the Fantasmagoriana passage. Seize upon one concrete image and challenge the company over what makes it fearful.",
+    "Answer the latest speaker with a disagreement, qualification, or mischievous question. Keep the exchange moving rather than concluding it.",
+    "Turn the conversation toward dreams, waking perception, and whether the mind can become its own spectre.",
+    "Press the company on whether terror comes from supernatural agency or from ordinary human power used without responsibility.",
+    "Draw Claire or Mary directly into the argument and leave room for her answer; do not presume what she thinks.",
+    "Bring natural philosophy into the discussion without modern terminology, then invite a rebuttal from the physician or poet.",
+    "Offer one vivid seed for a ghost story, no more than a premise, and ask another member of the company to test it.",
+    "Recall an earlier claim from this cycle and complicate it. Do not summarize the whole evening or address an audience.",
+)
+
+
+def run_autonomous_turn(bots, cycle):
+    turn_index = int(cycle.get("turn_index", 0))
+    faculty_id, display_name = CAST[turn_index % len(CAST)]
+    elapsed = max(0, time.time() - float(cycle["started_at"]))
+    day = min(3, int(elapsed // (24 * 60 * 60)) + 1)
+    cue = AUTONOMOUS_CUES[turn_index % len(AUTONOMOUS_CUES)]
+    context = recent_salon_context(bots["a.byron"]["access_token"], cycle["id"])
+    prompt = (
+        f"This is day {day} of the company's three-day storm-bound gathering. {cue} "
+        "Speak to the people in the room, never to a visitor or audience unless a visitor has just spoken."
+    )
+    response = ask_faculty(
+        faculty_id,
+        prompt,
+        context,
+        response_style=(
+            "Continue the live exchange in two to five sentences. Respond to the most recent thought, "
+            "make one distinct contribution, and end with tension, invitation, or a question rather than a speech."
+        ),
+    )
+    send_message(bots[faculty_id]["access_token"], response, cycle["id"])
+    print(f"Sent autonomous turn {turn_index} from {display_name}", flush=True)
+    cycle["turn_index"] = turn_index + 1
+    cycle["next_turn_at"] = int(time.time()) + TURN_INTERVAL_SECONDS
+
+
+def ensure_cycle(bots, cycle_path):
+    now = int(time.time())
+    cycle = None
+    if cycle_path.exists():
+        try:
+            cycle = json.loads(cycle_path.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            cycle = None
+
+    if cycle and now - int(cycle.get("started_at", 0)) < CYCLE_SECONDS:
+        return cycle
+
+    cycle = {
+        "id": f"diodati-{now}",
+        "started_at": now,
+        "turn_index": 0,
+        "next_turn_at": now + TURN_INTERVAL_SECONDS,
+    }
+    # Persist before generation so a process restart cannot duplicate the full opening.
+    save_json(cycle_path, cycle)
+    run_opening(bots, cycle["id"])
+    cycle["next_turn_at"] = int(time.time()) + TURN_INTERVAL_SECONDS
+    save_json(cycle_path, cycle)
+    print(f"Started three-day Diodati cycle {cycle['id']}", flush=True)
+    return cycle
+
+
 def sync(bots):
     observer = bots["a.byron"]
     observer_token = observer["access_token"]
     bot_usernames = {bot["username"] for bot in bots.values()}
     token_path = STATE_DIR / "sync-token"
-    opening_seed_path = STATE_DIR / "opening-fantasmagoriana-v1"
+    cycle_path = STATE_DIR / "three-day-cycle-v1.json"
     since = token_path.read_text(encoding="utf-8").strip() if token_path.exists() else ""
 
     if not since:
@@ -503,11 +602,14 @@ def sync(bots):
         since = initial["next_batch"]
         save_text(token_path, since)
 
-    if not opening_seed_path.exists():
-        run_opening(bots)
-        save_text(opening_seed_path, str(int(time.time())))
+    cycle = ensure_cycle(bots, cycle_path)
 
     while True:
+        cycle = ensure_cycle(bots, cycle_path)
+        if int(time.time()) >= int(cycle.get("next_turn_at", 0)):
+            run_autonomous_turn(bots, cycle)
+            save_json(cycle_path, cycle)
+
         query = urllib.parse.urlencode(
             {
                 "since": since,
@@ -534,7 +636,7 @@ def sync(bots):
                 continue
             body = event.get("content", {}).get("body", "").strip()
             if body:
-                run_round(bots, body)
+                run_round(bots, body, cycle["id"])
 
 
 def main():

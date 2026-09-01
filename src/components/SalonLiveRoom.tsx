@@ -4,6 +4,44 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { MatrixRoomClient, resolveRoomAlias, type MatrixMessage } from '../lib/matrix-room-client'
 
+const THREE_DAYS_MS = 72 * 60 * 60 * 1000
+const MEMBERSHIP_URL = 'https://castalia.institute/membership'
+const FACULTY_PROFILE_ROOT = 'https://castalia.institute/faculty/profile/?h='
+
+interface SpeakerIdentity {
+  name: string
+  facultyHandle?: string
+}
+
+const DIODATI_SPEAKERS: Record<string, SpeakerIdentity> = {
+  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron' },
+  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron' },
+  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' },
+  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' },
+  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' },
+  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont' },
+  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont' },
+  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' },
+  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' },
+  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' },
+  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori' },
+  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori' },
+  'salon.web': { name: 'A visitor' },
+}
+
+function speakerIdentity(message: MatrixMessage): SpeakerIdentity {
+  const localpart = message.sender.replace(/^@/, '').split(':', 1)[0].toLowerCase()
+  if (!message.cycleId) {
+    if (localpart === 'a.shelley') return { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' }
+    if (localpart === 'a.shelley1') return { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' }
+  }
+  return DIODATI_SPEAKERS[localpart] ?? { name: 'A guest' }
+}
+
+function currentCycleStart(now: number): number {
+  return Math.floor(now / THREE_DAYS_MS) * THREE_DAYS_MS
+}
+
 function parseRoomRef(splat: string | undefined): string {
   if (!splat || !splat.trim()) return ''
   const decoded = decodeURIComponent(splat.replace(/\/+$/, ''))
@@ -32,12 +70,36 @@ export function SalonLiveRoom({
   const [status, setStatus] = useState<string>('idle')
   const [sendError, setSendError] = useState<string | null>(null)
   const clientRef = useRef<MatrixRoomClient | null>(null)
+  const transcriptRef = useRef<HTMLDivElement | null>(null)
 
   const canSend =
     typeof import.meta.env.PUBLIC_SUPABASE_URL === 'string' &&
     !!import.meta.env.PUBLIC_SUPABASE_URL &&
     typeof import.meta.env.PUBLIC_SUPABASE_ANON_KEY === 'string' &&
     !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+
+  // Authentication for the satellite is deliberately fail-closed. Until a
+  // Castalia member session is handed to this origin, the public room remains
+  // an experience rather than an anonymous Matrix posting surface.
+  const memberLoggedIn = false
+  const canParticipate = canSend && memberLoggedIn
+
+  const visibleMessages = useMemo(() => {
+    const latestCycleId = messages.findLast((message) => message.cycleId)?.cycleId
+    const taggedCycleMessages = latestCycleId
+      ? messages.filter((message) => message.cycleId === latestCycleId)
+      : []
+    const cycleStart = taggedCycleMessages.length
+      ? Math.min(...taggedCycleMessages.map((message) => message.timestamp))
+      : currentCycleStart(Date.now())
+    return messages.filter((message) => message.timestamp >= cycleStart)
+  }, [messages])
+
+  useEffect(() => {
+    const transcript = transcriptRef.current
+    if (!transcript) return
+    transcript.scrollTo({ top: transcript.scrollHeight, behavior: messages.length ? 'smooth' : 'auto' })
+  }, [visibleMessages.length])
 
   useEffect(() => {
     let cancelled = false
@@ -164,65 +226,77 @@ export function SalonLiveRoom({
         </div>
       )}
 
-      {roomRefRaw && (
-        <div className="mb-6 space-y-2 text-sm">
-          <p>
-            <span className="text-slate-500">Address:</span>{' '}
-            <code className="rounded bg-slate-100 px-1 text-slate-900">{roomRefRaw}</code>
-          </p>
-          {resolvedRoomId && (
-            <p>
-              <span className="text-slate-500">Room ID:</span>{' '}
-              <code className="rounded bg-slate-100 px-1 text-slate-900">{resolvedRoomId}</code>
-            </p>
-          )}
-          <p>
-            <span className="text-slate-500">Status:</span> {status}
-          </p>
-          {resolveError && <p className="text-red-700">{resolveError}</p>}
-        </div>
-      )}
+      {roomRefRaw && resolveError && <p className="mb-4 text-red-300">The salon cannot be heard just now.</p>}
 
       {resolvedRoomId && status !== 'error' && (
-        <div className="space-y-4">
+        <div className="flex h-[calc(100dvh-17rem)] min-h-[16rem] max-h-[660px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
           <div
-            className="max-h-[min(60vh,520px)] space-y-3 overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 shadow-inner"
+            ref={transcriptRef}
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5"
             aria-live="polite"
+            aria-relevant="additions"
           >
-            {messages.map((m) => (
-              <div key={m.id} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                <div className="mb-1 font-mono text-xs text-slate-500">{m.sender}</div>
-                <div className="whitespace-pre-wrap text-slate-900">{m.content}</div>
-              </div>
-            ))}
+            {visibleMessages.map((m) => {
+              const speaker = speakerIdentity(m)
+              return (
+                <div key={m.id} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                  <div className="mb-1 text-sm font-medium tracking-wide text-slate-500">
+                    {speaker.facultyHandle ? (
+                      <a
+                        href={`${FACULTY_PROFILE_ROOT}${encodeURIComponent(speaker.facultyHandle)}`}
+                        className="text-inherit underline decoration-slate-500/40 underline-offset-4 hover:decoration-current"
+                      >
+                        {speaker.name}
+                      </a>
+                    ) : (
+                      speaker.name
+                    )}
+                  </div>
+                  <div className="whitespace-pre-wrap text-slate-900">{m.content}</div>
+                </div>
+              )
+            })}
+            {!visibleMessages.length && status === 'connected' && (
+              <p className="py-12 text-center italic text-slate-500">Rain crosses the lake. The company is gathering.</p>
+            )}
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={canSend ? 'Message the room…' : 'Read-only (configure Supabase env to send)'}
-              rows={3}
-              disabled={!canSend || status !== 'connected'}
-              className="min-h-[5rem] flex-1 rounded-md border border-slate-300 px-3 py-2 text-slate-900 shadow-sm disabled:bg-slate-50"
-            />
-            <button
-              type="button"
-              className="rounded-md bg-blue-600 px-5 py-2 text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!canSend || status !== 'connected' || !input.trim()}
-              onClick={() => void onSend()}
-            >
-              Send
-            </button>
+          <div className="shrink-0 border-t border-slate-200 bg-[#111827]/95 p-2.5 backdrop-blur">
+            {canParticipate ? (
+              <div className="flex items-center gap-2">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      void onSend()
+                    }
+                  }}
+                  placeholder="Join the conversation…"
+                  rows={1}
+                  disabled={status !== 'connected'}
+                  className="h-10 min-h-10 flex-1 resize-none rounded-md border border-slate-300 px-3 py-1.5 text-slate-900 shadow-sm"
+                />
+                <button
+                  type="button"
+                  className="h-10 rounded-md bg-blue-600 px-4 text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={status !== 'connected' || !input.trim()}
+                  onClick={() => void onSend()}
+                >
+                  Send
+                </button>
+              </div>
+            ) : (
+              <a
+                href={MEMBERSHIP_URL}
+                className="flex h-10 w-full items-center justify-center rounded-md border border-slate-500/60 bg-slate-900/70 px-4 text-sm font-medium tracking-wide text-slate-100 hover:border-slate-300 hover:text-white"
+              >
+                Join to Join
+              </a>
+            )}
+            {sendError && <p className="mt-2 text-sm text-red-300">Your words did not reach the room. Try again.</p>}
           </div>
-          {!canSend && (
-            <p className="text-sm text-slate-500">
-              Sending requires <code className="text-slate-700">PUBLIC_SUPABASE_URL</code> and{' '}
-              <code className="text-slate-700">PUBLIC_SUPABASE_ANON_KEY</code> at build time (matrix-send-message edge
-              function).
-            </p>
-          )}
-          {sendError && <p className="text-red-700">{sendError}</p>}
         </div>
       )}
     </div>

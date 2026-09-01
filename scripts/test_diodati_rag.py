@@ -46,7 +46,11 @@ class DiodatiRagTests(unittest.TestCase):
         sent = []
 
         with (
-            mock.patch.object(diodati_realtime, "send_message", side_effect=lambda token, body: sent.append((token, body))),
+            mock.patch.object(
+                diodati_realtime,
+                "send_message",
+                side_effect=lambda token, body, cycle_id=None: sent.append((token, body, cycle_id)),
+            ),
             mock.patch.object(
                 diodati_realtime,
                 "ask_faculty",
@@ -57,14 +61,40 @@ class DiodatiRagTests(unittest.TestCase):
             run_opening(bots)
 
         self.assertEqual(
-            [token for token, _ in sent],
-            ["a.byron", "a.clairmont", "a.shelley", "a.byron", "a.polidori", "a.shelley1", "a.byron"],
+            [token for token, _, _ in sent],
+            ["a.byron", "a.clairmont", "a.maryshelley", "a.byron", "a.polidori", "a.shelley", "a.byron"],
         )
         self.assertTrue(sent[0][1].startswith("📖 From Fantasmagoriana"))
         self.assertTrue(sent[3][1].startswith("📖 From Fantasmagoriana"))
         closing_prompt = ask_mock.call_args_list[-1].args[1]
         for name in ("Mary Godwin", "Claire", "Shelley", "Polidori"):
             self.assertIn(name, closing_prompt)
+
+    def test_opening_carries_the_three_day_cycle_identity(self):
+        bots = {
+            faculty_id: {"access_token": faculty_id}
+            for faculty_id, _ in diodati_realtime.CAST
+        }
+        cycle_ids = []
+        with (
+            mock.patch.object(
+                diodati_realtime,
+                "send_message",
+                side_effect=lambda _token, _body, cycle_id=None: cycle_ids.append(cycle_id),
+            ),
+            mock.patch.object(diodati_realtime, "ask_faculty", return_value="A period-safe interruption."),
+            mock.patch.object(diodati_realtime.time, "sleep"),
+        ):
+            run_opening(bots, "cycle-test")
+
+        self.assertTrue(cycle_ids)
+        self.assertEqual(set(cycle_ids), {"cycle-test"})
+
+    def test_cast_uses_canonical_facultai_identities(self):
+        self.assertEqual(
+            [faculty_id for faculty_id, _ in diodati_realtime.CAST],
+            ["a.byron", "a.maryshelley", "a.clairmont", "a.shelley", "a.polidori"],
+        )
 
     def test_byron_exile_query_retrieves_childe_harold(self):
         chunks = retrieve_rag_context("a.byron", "Speak of exile, satiety, and leaving home.", corpus=self.corpus)
@@ -105,7 +135,7 @@ class DiodatiRagTests(unittest.TestCase):
 
     def test_future_language_in_source_text_is_rejected(self):
         unsafe = copy.deepcopy(self.corpus)
-        unsafe["characters"]["a.shelley"][0]["text"] += " Frankenstein"
+        unsafe["characters"]["a.maryshelley"][0]["text"] += " Frankenstein"
         with self.assertRaisesRegex(ValueError, "Anachronistic"):
             validate_rag_corpus(unsafe)
 

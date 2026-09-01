@@ -30,15 +30,15 @@ rest_headers=(
 display_name_for() {
   case "$1" in
     a.byron) echo 'George Gordon Byron, Lord Byron' ;;
-    a.shelley) echo 'Mary Godwin' ;;
+    a.maryshelley) echo 'Mary Godwin' ;;
     a.clairmont) echo 'Claire Clairmont' ;;
-    a.shelley1) echo 'Percy Bysshe Shelley' ;;
+    a.shelley) echo 'Percy Bysshe Shelley' ;;
     a.polidori) echo 'John William Polidori' ;;
     *) return 1 ;;
   esac
 }
 
-for faculty_id in a.byron a.shelley a.clairmont a.shelley1 a.polidori; do
+for faculty_id in a.byron a.maryshelley a.clairmont a.shelley a.polidori; do
   username="@${faculty_id}:${MATRIX_DOMAIN}"
   encoded_user="$(jq -nr --arg value "$username" '$value|@uri')"
   password="$(openssl rand -hex 24)"
@@ -77,9 +77,9 @@ jq -nc --arg room_id "$DIODATI_ROOM_ID" \
 
 jq -nc --arg room_id "$DIODATI_ROOM_ID" '[
   {room_id:$room_id,faculty_id:"a.byron",role:"moderator",priority:100},
-  {room_id:$room_id,faculty_id:"a.shelley",role:"speaker",priority:90},
+  {room_id:$room_id,faculty_id:"a.maryshelley",role:"speaker",priority:90},
   {room_id:$room_id,faculty_id:"a.clairmont",role:"speaker",priority:85},
-  {room_id:$room_id,faculty_id:"a.shelley1",role:"speaker",priority:80},
+  {room_id:$room_id,faculty_id:"a.shelley",role:"speaker",priority:80},
   {room_id:$room_id,faculty_id:"a.polidori",role:"speaker",priority:70}
 ]' |
   curl -fsS -X POST "${SUPABASE_URL}/rest/v1/room_faculty_membership?on_conflict=room_id,faculty_id" \

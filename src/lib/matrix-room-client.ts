@@ -8,6 +8,7 @@ export interface MatrixMessage {
   sender: string;
   content: string;
   timestamp: number;
+  cycleId?: string;
   event?: unknown;
 }
 
@@ -103,6 +104,7 @@ export class MatrixRoomClient {
           sender: event.sender || 'unknown',
           content: event.content.body || '',
           timestamp: event.origin_server_ts || Date.now(),
+          cycleId: event.content['org.castalia.salon_cycle'],
           event,
         };
 
@@ -182,13 +184,14 @@ export class MatrixRoomClient {
           (event: {
             event_id: string;
             sender?: string;
-            content?: { body?: string };
+            content?: { body?: string; 'org.castalia.salon_cycle'?: string };
             origin_server_ts?: number;
           }) => ({
             id: event.event_id,
             sender: event.sender || 'unknown',
             content: event.content?.body || '',
             timestamp: event.origin_server_ts || Date.now(),
+            cycleId: event.content?.['org.castalia.salon_cycle'],
             event,
           })
         )

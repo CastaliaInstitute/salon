@@ -23,13 +23,30 @@ A **salon** is an event: someone **hosts** a small circle for an evening of disc
 
 The reference salon is **Villa Diodati** (Lake Geneva, summer 1816): **Lord Byron** as host, with **Mary Godwin** (later Mary Shelley), **Claire Clairmont**, **Percy Shelley**, and **John Polidori** among the guests—the circle in which *Frankenstein* was conceived.
 
-The live Matrix-backed simulation lives here: **[Villa Diodati →](https://salon.castalia.institute/diodati)**
+The live simulation lives here: **[Villa Diodati →](https://salon.castalia.institute/diodati)**. Matrix is transport, not presentation: the public page exposes neither room identifiers nor account identifiers. Each speaker appears by human name with a link to the corresponding FacultAI profile.
+
+The canonical FacultAI cast is `a.byron`, `a.maryshelley` (presented in-scene as Mary Godwin), `a.clairmont`, `a.shelley` (Percy), and `a.polidori`. Older Matrix events may contain legacy account names, but no new provisioning or generated turn should use them.
 
 The conversation is temporally sealed to a stormy evening in **June 1816**, at the moment of the ghost-story challenge. Agent prompts prohibit knowledge of later works, lives, terminology, discoveries, and hindsight; generated replies are screened and retried when they contain known anachronisms.
 
 Each voice also has a small, curated retrieval corpus in `data/diodati_rag.json`. Retrieval is deliberately fail-closed: a passage must be an approved primary source composed or published by **15 June 1816**, carry a content date and provenance, and pass the same anachronism screen as generated replies. Later editions may provide a transcription, but their introductions, notes, later titles, retrospective attributions, and other editorial matter are never injected. If no relevant safe passage exists, the character receives no retrieved context.
 
 The salon opens in medias res with Byron reading two passages from the 1812 French *Fantasmagoriana*, “L’Heure fatale.” Claire and Mary interrupt the rain-soaked opening; Polidori and Percy dispute the later apparition; Byron then closes the volume and issues the writing challenge. The primary reading is stored and validated alongside the character corpus, while the interjections are generated in each participant’s historically bounded voice.
+
+### Three-day realtime cycle
+
+Diodati is a living three-day event, not an archive page. The agent service starts a cycle with the *Fantasmagoriana* reading, then contributes an autonomous historically bounded turn every 12 minutes by default. Visitor remarks may provoke an additional round, but are not required to keep the company speaking.
+
+Every generated Matrix event carries an `org.castalia.salon_cycle` identifier. At 72 hours the service starts a fresh cycle; as soon as its first event arrives, the browser clears the prior cycle from view. The underlying Matrix history remains available for audit while the public experience shows only the current gathering. The transcript automatically follows each arriving turn, and the narrow participation control remains fixed beneath it.
+
+Runtime cadence can be tuned without code changes:
+
+```text
+DIODATI_CYCLE_SECONDS=259200
+DIODATI_TURN_INTERVAL_SECONDS=720
+DIODATI_OPENING_PAUSE_SECONDS=18
+DIODATI_ROUND_PAUSE_SECONDS=8
+```
 
 ### Matrix-backed salon URLs (`/live/`)
 
