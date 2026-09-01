@@ -39,6 +39,26 @@ class DiodatiVisitorRlTests(unittest.TestCase):
             self.assertFalse(done)
             self.assertEqual(diagnostics["rejected"], "visitor-not-registered")
 
+    def test_live_matrix_speakers_share_the_offline_evaluator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            trajectory = HashChainedTrajectory(pathlib.Path(directory) / "trajectory.jsonl")
+            environment = DiodatiRealtimeVisitorEnv(
+                "!room:test",
+                "@visitor:test",
+                "token",
+                trajectory,
+            )
+            environment.transcript = [
+                {"speaker": "@a.byron:matrix.castalia.institute", "content": "The rain has wit."},
+                {"speaker": "@m.godwin:matrix.castalia.institute", "content": "The mind gives it force."},
+            ]
+
+            evaluation = environment.evaluate()
+
+            self.assertEqual(evaluation["participation"]["counts"]["a.byron"], 1)
+            self.assertEqual(evaluation["participation"]["counts"]["a.maryshelley"], 1)
+            self.assertTrue(evaluation["history"]["clean"])
+
 
 if __name__ == "__main__":
     unittest.main()

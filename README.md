@@ -63,6 +63,8 @@ Unregistered senders are excluded from agent context and cannot trigger a round.
 
 `scripts/diodati_visitor_rl.py` exposes the live room as a wall-clock environment for a registered visitor policy. `reset()` starts at the next event—never historical backlog—and each Matrix arrival becomes one observation. `step()` accepts `wait` or `speak`; speaking fails closed unless `DIODATI_RL_USER_ID` appears in `DIODATI_REGISTERED_MATRIX_USERS`. Observations and transitions are appended to a SHA-256 hash-chained JSONL trajectory for offline evaluation.
 
+The visitor state includes `quality_window`, a read-only evaluation of the current transcript window using the same historical and participation checks as the offline Gym. Matrix sender names, including known legacy names, are normalized to the canonical FacultAI identities before scoring. The evaluator never posts to Matrix or changes a character prompt.
+
 With no `DIODATI_RL_POLICY_URL`, the visitor is observation-only. When configured, the environment POSTs its current transcript window and simulated clock to that contextual-bandit endpoint. Install `scripts/diodati-visitor-rl.service` beside the salon service and provide:
 
 ```text
@@ -70,6 +72,37 @@ DIODATI_RL_USER_ID=@salon.rl:matrix.castalia.institute
 DIODATI_RL_ACCESS_TOKEN=...
 DIODATI_RL_POLICY_URL=https://policy.example/step
 DIODATI_RL_STATE_DIR=/var/lib/diodati-visitor-rl
+```
+
+### Diodati Salon Gym
+
+`scripts/diodati_gym.py` is the deterministic, standard-library training environment. It is intentionally isolated from Matrix and supports contextual-bandit and offline policy comparison—not PPO, online learning, or automatic prompt mutation.
+
+```python
+from diodati_gym import DiodatiSalonGym
+
+gym = DiodatiSalonGym("gym-episodes", prompt_version="diodati-v1")
+state = gym.reset(seed=1816)
+state, reward, done, diagnostics = gym.step({
+    "type": "introduce_reading",
+    "speaker": "a.byron",
+    "segment": 0,
+})
+evaluation = gym.evaluate_episode()
+gym.close()
+```
+
+`reset()` returns the transcript, simulated clock, current schedule event, canonical personas and relationships, prompt version, participation counts, and reward history. `step()` accepts `select_speaker`, `respond`/`generate_response`, `ask_question`, `introduce_reading`, `redirect`, `wait`, or `end_scene`. The opening schedule requires the approved *Fantasmagoriana* passages and the cast's interruptions before free conversation.
+
+Each transition returns a decomposed reward for voice, history, flow, participation, creative payoff, and safety, plus explicit penalties for anachronisms, unsupported evidence, repetition, character drift, schedule errors, premature endings, unsafe prompt manipulation, and overlong generated replies. Approved readings are source-grounded and exempt from conversational word limits; generated speech is not.
+
+Episode identity is derived from the seed, prompt version, simulated start, turn timing, turn limit, and exact RAG hash. Every episode is written as create-only, SHA-256 hash-chained JSONL and made read-only when finalized. Re-running the same configuration produces the same state and transitions; a collision refuses to overwrite the prior episode.
+
+Run the reference policy and verify the full opening trajectory:
+
+```bash
+python3 scripts/diodati_gym.py --episodes-dir gym-episodes --demo
+python3 -m unittest discover -s scripts -p 'test_diodati*.py'
 ```
 
 ### Historical light
@@ -149,7 +182,9 @@ salon/
 ├── .github/workflows/deploy.yml   # GitHub Pages
 ├── data/diodati_rag.json           # curated, pre-cutoff character sources
 ├── scripts/copy-404.mjs           # SPA fallback for /live/* deep links
+├── scripts/diodati_gym.py         # deterministic offline RL environment
 ├── scripts/diodati_realtime.py     # Matrix agents, RAG, and historical guard
+├── scripts/diodati_visitor_rl.py   # wall-clock registered-visitor environment
 ├── scripts/cloudflare-salon-cname.sh  # optional: create CNAME in Cloudflare
 ├── src/
 │   ├── components/

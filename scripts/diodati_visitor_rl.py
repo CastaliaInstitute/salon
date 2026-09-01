@@ -147,7 +147,15 @@ class DiodatiRealtimeVisitorEnv:
             "current_simulated_at": self.last_simulated_at,
             "registered": self.user_id in REGISTERED_USERS,
             "wall_time": time.time(),
+            "quality_window": self.evaluate(),
         }
+
+    def evaluate(self):
+        # Imported lazily so the live service remains lightweight until a
+        # policy requests diagnostics for its current transcript window.
+        from diodati_gym import evaluate_transcript
+
+        return evaluate_transcript(self.transcript)
 
     def step(self, action):
         action_type = action.get("type", "wait")
