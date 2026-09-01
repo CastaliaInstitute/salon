@@ -38,7 +38,7 @@ EVENT_START_MINUTE = int(os.environ.get("DIODATI_EVENT_START_MINUTE", "0"))
 EVENT_TIMEZONE_NAME = os.environ.get("DIODATI_EVENT_TIMEZONE", "America/Denver")
 EVENT_TIMEZONE = ZoneInfo(EVENT_TIMEZONE_NAME)
 EVENT_SEASON_START = date.fromisoformat(
-    os.environ.get("DIODATI_EVENT_SEASON_START", "2026-10-01")
+    os.environ.get("DIODATI_EVENT_SEASON_START", "2026-09-18")
 )
 EVENT_SEASON_END = date.fromisoformat(
     os.environ.get("DIODATI_EVENT_SEASON_END", "2026-10-31")
@@ -355,7 +355,10 @@ def is_registered_event(event):
     content = event.get("content", {})
     return sender in REGISTERED_MATRIX_USERS or (
         sender == MEMBER_BRIDGE_USER
-        and content.get("org.castalia.member_verified") is True
+        and (
+            content.get("org.castalia.member_verified") is True
+            or content.get("org.castalia.registration_verified") is True
+        )
         and bool(content.get("org.castalia.member_user_id"))
     )
 
@@ -845,7 +848,7 @@ def sync(bots):
     cycle_filename = (
         f"test-opening-{TEST_OPENING_TIMESTAMP}.json"
         if TEST_OPENING_TIMESTAMP is not None
-        else "october-2026-weekends-v1.json"
+        else "september-preview-october-members-v1.json"
     )
     cycle_path = STATE_DIR / cycle_filename
     since = token_path.read_text(encoding="utf-8").strip() if token_path.exists() else ""

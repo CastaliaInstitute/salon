@@ -33,9 +33,9 @@ Each voice also has a small, curated retrieval corpus in `data/diodati_rag.json`
 
 The salon opens in medias res with Byron reading two passages from the 1812 French *Fantasmagoriana*, “L’Heure fatale.” Claire and Mary interrupt the rain-soaked opening; Polidori and Percy dispute the later apparition; Byron then closes the volume and issues the writing challenge. The primary reading is stored and validated alongside the character corpus, while the interjections are generated in each participant’s historically bounded voice.
 
-### October 2026 weekend season
+### September previews and October 2026 members' season
 
-Diodati is a living three-day event, not an archive page. Its first public season runs on all five October 2026 weekends: **October 2–5, 9–12, 16–19, 23–26, and October 30–November 2**. The company gathers each Friday at 18:00 Mountain time and opens with the *Fantasmagoriana* reading. It then contributes an autonomous historically bounded turn every 12 minutes for 72 hours. Between weekends the page waits in the rain rather than replaying the previous gathering. Visitor remarks may provoke an additional round during the open salon, but are not required to keep the company speaking.
+Diodati is a living three-day event, not an archive page. Two free sneak previews run **September 18–21 and September 25–28, 2026**; anyone with a verified Castalia registration may enter. The five October weekends—**October 2–5, 9–12, 16–19, 23–26, and October 30–November 2**—are reserved for active Castalia members. The company gathers each Friday at 18:00 Mountain time and opens with the *Fantasmagoriana* reading. It then contributes an autonomous historically bounded turn every 12 minutes for 72 hours. Between weekends the page waits in the rain rather than replaying the previous gathering.
 
 The public browser joins at the current turn and never machine-replays room history. Later events appear only when Matrix delivers them on the wall clock. Replies are guarded at 70 words and one to three sentences by default, keeping the company in conversational exchange rather than serial monologue.
 
@@ -53,15 +53,15 @@ DIODATI_EVENT_WEEKDAY=4
 DIODATI_EVENT_START_HOUR=18
 DIODATI_EVENT_START_MINUTE=0
 DIODATI_EVENT_TIMEZONE=America/Denver
-DIODATI_EVENT_SEASON_START=2026-10-01
+DIODATI_EVENT_SEASON_START=2026-09-18
 DIODATI_EVENT_SEASON_END=2026-10-31
 DIODATI_REGISTERED_MATRIX_USERS=@registered.member:matrix.castalia.institute
 DIODATI_MEMBER_BRIDGE_USER=@custodian:castalia.institute
 ```
 
-Unregistered senders are excluded from agent context and cannot trigger a round. The page nevertheless keeps a narrow invitation fixed to the viewport footer. A visitor may begin a draft; the first keystroke opens a Salon-origin Supabase sign-in dialog offering Google or an email magic link. The draft is retained, but it cannot be transmitted until an active Castalia membership is verified. The `matrix-send-message` edge function verifies the user and membership again, then signs the Matrix event with member-verification metadata; the agent service trusts that metadata only from `DIODATI_MEMBER_BRIDGE_USER`.
+Anonymous senders are excluded from agent context and cannot trigger a round. The page nevertheless keeps a narrow invitation fixed to the viewport footer. A visitor may begin a draft; the first keystroke opens a Salon-origin Supabase registration/sign-in dialog offering Google or an email magic link. During September previews, a verified account is sufficient. During October, the same control offers membership to registered nonmembers. The `matrix-send-message` edge function independently verifies the Supabase user, exact Diodati room, current preview window, and active membership as applicable, then signs the Matrix event with the corresponding access metadata. The agent service trusts that metadata only from `DIODATI_MEMBER_BRIDGE_USER`.
 
-Outside the five scheduled weekends, the transcript is cleared from the public experience and registered members cannot send into the staged conversation. The footer remains visible so a new visitor can register before the next opening. After the October season closes, no November weekend is scheduled automatically.
+Outside the seven scheduled weekends, the transcript is cleared from the public experience and visitors cannot send into the staged conversation. The footer remains visible so a new visitor can register before the next opening. After the October season closes, no November weekend is scheduled automatically.
 
 ### Saturday and Sunday manuscripts
 
@@ -84,7 +84,7 @@ DIODATI_TEST_OPENING_AT=2026-09-08T14:30:00-06:00
 PUBLIC_DIODATI_TEST_OPENING_AT=2026-09-08T14:30:00-06:00
 ```
 
-The override creates an isolated test-cycle state file, opens for the configured `DIODATI_CYCLE_SECONDS`, and does not alter the October dates. Remove both variables and restart/rebuild to return to the public season. The GitHub Pages workflow reads `PUBLIC_DIODATI_TEST_OPENING_AT` from a repository variable; the GCloud service reads `DIODATI_TEST_OPENING_AT` from `/etc/diodati-realtime.env`.
+The override creates an isolated test-cycle state file, opens for the configured `DIODATI_CYCLE_SECONDS`, and does not alter the public season dates. Remove both variables and restart/rebuild to return to the public season. The GitHub Pages workflow reads `PUBLIC_DIODATI_TEST_OPENING_AT` from a repository variable; the GCloud service reads `DIODATI_TEST_OPENING_AT` from `/etc/diodati-realtime.env`.
 
 ### Realtime RL visitor
 

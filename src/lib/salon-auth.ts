@@ -19,13 +19,18 @@ export function getSalonAuthClient(): SupabaseClient | null {
   return salonAuthClient
 }
 
-export async function activeMemberSession(): Promise<Session | null> {
+export interface SalonAccess {
+  session: Session | null
+  isMember: boolean
+}
+
+export async function activeSalonAccess(): Promise<SalonAccess> {
   const client = getSalonAuthClient()
-  if (!client) return null
+  if (!client) return { session: null, isMember: false }
   const {
     data: { session },
   } = await client.auth.getSession()
-  if (!session?.user) return null
+  if (!session?.user) return { session: null, isMember: false }
 
   const { data: membership, error } = await client
     .from('memberships')
@@ -33,9 +38,11 @@ export async function activeMemberSession(): Promise<Session | null> {
     .eq('user_id', session.user.id)
     .eq('status', 'active')
     .maybeSingle()
-  if (error || !membership) return null
-  if (membership.current_period_end && new Date(membership.current_period_end) < new Date()) return null
-  return session
+  if (error || !membership) return { session, isMember: false }
+  if (membership.current_period_end && new Date(membership.current_period_end) < new Date()) {
+    return { session, isMember: false }
+  }
+  return { session, isMember: true }
 }
 
 export async function sendSalonMagicLink(email: string): Promise<void> {

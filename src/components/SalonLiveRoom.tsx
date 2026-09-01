@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { MatrixRoomClient, resolveRoomAlias, type MatrixMessage } from '../lib/matrix-room-client'
 import {
-  activeMemberSession,
+  activeSalonAccess,
   getSalonAuthClient,
   sendSalonMagicLink,
   signInToSalonWithGoogle,
@@ -12,12 +12,14 @@ import {
 
 const THREE_DAYS_MS = 72 * 60 * 60 * 1000
 const EVENT_HOUR_MOUNTAIN = 18
-const OCTOBER_2026_OPENINGS = [
-  [2026, 10, 2],
-  [2026, 10, 9],
-  [2026, 10, 16],
-  [2026, 10, 23],
-  [2026, 10, 30],
+const DIODATI_2026_OPENINGS = [
+  { date: [2026, 9, 18], accessTier: 'registered-preview' },
+  { date: [2026, 9, 25], accessTier: 'registered-preview' },
+  { date: [2026, 10, 2], accessTier: 'member' },
+  { date: [2026, 10, 9], accessTier: 'member' },
+  { date: [2026, 10, 16], accessTier: 'member' },
+  { date: [2026, 10, 23], accessTier: 'member' },
+  { date: [2026, 10, 30], accessTier: 'member' },
 ] as const
 const TEST_OPENING_AT = import.meta.env.PUBLIC_DIODATI_TEST_OPENING_AT?.trim()
 const TEST_OPENING_START = TEST_OPENING_AT ? Date.parse(TEST_OPENING_AT) : undefined
@@ -92,6 +94,7 @@ interface SalonWindow {
   nextStart?: number
   seasonComplete: boolean
   testMode: boolean
+  accessTier: 'registered-preview' | 'member'
 }
 
 function scheduledSalonWindow(now: number): SalonWindow {
@@ -103,6 +106,7 @@ function scheduledSalonWindow(now: number): SalonWindow {
         nextStart: TEST_OPENING_START,
         seasonComplete: false,
         testMode: true,
+        accessTier: 'member',
       }
     }
     return {
@@ -110,20 +114,40 @@ function scheduledSalonWindow(now: number): SalonWindow {
       open: now < TEST_OPENING_START + THREE_DAYS_MS,
       seasonComplete: now >= TEST_OPENING_START + THREE_DAYS_MS,
       testMode: true,
+      accessTier: 'member',
     }
   }
-  const openings = OCTOBER_2026_OPENINGS.map(([year, month, day]) => (
-    denverEpoch(year, month, day, EVENT_HOUR_MOUNTAIN)
-  ))
-  for (const start of openings) {
-    if (now < start) return { start, open: false, nextStart: start, seasonComplete: false, testMode: false }
-    if (now < start + THREE_DAYS_MS) return { start, open: true, seasonComplete: false, testMode: false }
+  const openings = DIODATI_2026_OPENINGS.map(({ date: [year, month, day], accessTier }) => ({
+    start: denverEpoch(year, month, day, EVENT_HOUR_MOUNTAIN),
+    accessTier,
+  }))
+  for (const opening of openings) {
+    if (now < opening.start) {
+      return {
+        start: opening.start,
+        open: false,
+        nextStart: opening.start,
+        seasonComplete: false,
+        testMode: false,
+        accessTier: opening.accessTier,
+      }
+    }
+    if (now < opening.start + THREE_DAYS_MS) {
+      return {
+        start: opening.start,
+        open: true,
+        seasonComplete: false,
+        testMode: false,
+        accessTier: opening.accessTier,
+      }
+    }
   }
   return {
-    start: openings[openings.length - 1],
+    start: openings[openings.length - 1].start,
     open: false,
     seasonComplete: true,
     testMode: false,
+    accessTier: 'member',
   }
 }
 
@@ -196,7 +220,8 @@ export function SalonLiveRoom({
   const [input, setInput] = useState('')
   const [status, setStatus] = useState<string>('idle')
   const [sendError, setSendError] = useState<string | null>(null)
-  const [memberAccessToken, setMemberAccessToken] = useState<string | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [isMember, setIsMember] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authEmail, setAuthEmail] = useState('')
   const [authStatus, setAuthStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
@@ -207,8 +232,12 @@ export function SalonLiveRoom({
   const transcriptRef = useRef<HTMLDivElement | null>(null)
   const transcriptHydratedRef = useRef(false)
 
-  const canParticipate = !!memberAccessToken
   const salonWindow = useMemo(() => scheduledSalonWindow(wallClock), [wallClock])
+  const isSignedIn = !!accessToken
+  const canParticipate = isSignedIn && (
+    salonWindow.accessTier === 'registered-preview' || isMember
+  )
+  const needsMembership = isSignedIn && salonWindow.accessTier === 'member' && !isMember
 
   useEffect(() => {
     const timer = window.setInterval(() => setWallClock(Date.now()), 30_000)
@@ -230,23 +259,26 @@ export function SalonLiveRoom({
 
   useEffect(() => {
     let cancelled = false
-    const refreshMembership = async () => {
-      const session = await activeMemberSession()
+    const refreshAccess = async () => {
+      const access = await activeSalonAccess()
       if (!cancelled) {
-        setMemberAccessToken(session?.access_token ?? null)
-        if (session) setAuthOpen(false)
+        setAccessToken(access.session?.access_token ?? null)
+        setIsMember(access.isMember)
+        if (access.session && (salonWindow.accessTier === 'registered-preview' || access.isMember)) {
+          setAuthOpen(false)
+        }
       }
     }
-    void refreshMembership()
+    void refreshAccess()
     const client = getSalonAuthClient()
     const subscription = client?.auth.onAuthStateChange(() => {
-      void refreshMembership()
+      void refreshAccess()
     }).data.subscription
     return () => {
       cancelled = true
       subscription?.unsubscribe()
     }
-  }, [])
+  }, [salonWindow.accessTier])
 
   const visibleMessages = useMemo(() => {
     if (!salonWindow.open) return []
@@ -373,18 +405,18 @@ export function SalonLiveRoom({
     setSendError(null)
     try {
       setStatus('sending')
-      if (!memberAccessToken) {
+      if (!accessToken) {
         setAuthOpen(true)
         return
       }
-      await clientRef.current.sendMessage(text, memberAccessToken)
+      await clientRef.current.sendMessage(text, accessToken)
       setInput('')
       setStatus('connected')
     } catch (e) {
       setSendError(e instanceof Error ? e.message : 'Send failed')
       setStatus('connected')
     }
-  }, [input, memberAccessToken])
+  }, [input, accessToken])
 
   const onMagicLink = useCallback(async (event: React.FormEvent) => {
     event.preventDefault()
@@ -444,12 +476,14 @@ export function SalonLiveRoom({
         <div className="flex h-[calc(100dvh-17rem)] min-h-[16rem] max-h-[660px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
           <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
             {salonWindow.open
-              ? 'DARKNESS · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME'
+              ? salonWindow.accessTier === 'registered-preview'
+                ? 'FREE SNEAK PREVIEW · REGISTRATION REQUIRED · 15 JUNE 1816'
+                : 'MEMBERS’ SALON · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME'
               : salonWindow.seasonComplete
                 ? salonWindow.testMode
                   ? 'THE TEST SALON HAS CLOSED'
                   : 'THE OCTOBER 2026 SEASON HAS CLOSED'
-                : `NEXT READING · ${formatOpening(salonWindow.nextStart).toUpperCase()} MOUNTAIN TIME`}
+                : `${salonWindow.accessTier === 'registered-preview' ? 'NEXT FREE PREVIEW' : 'NEXT MEMBERS’ SALON'} · ${formatOpening(salonWindow.nextStart).toUpperCase()} MOUNTAIN TIME`}
           </div>
           <div
             ref={transcriptRef}
@@ -523,7 +557,7 @@ export function SalonLiveRoom({
                     ? salonWindow.testMode
                       ? 'The test candles have gone out. The October season remains undisturbed.'
                       : 'The candles have gone out. Villa Diodati will return in another season.'
-                    : `Rain crosses the lake. On ${formatOpening(salonWindow.nextStart)}, Byron will open Fantasmagoriana.`}
+                    : `Rain crosses the lake. On ${formatOpening(salonWindow.nextStart)}, Byron will open Fantasmagoriana. ${salonWindow.accessTier === 'registered-preview' ? 'Register free to enter.' : 'Castalia members may enter.'}`}
               </p>
             )}
           </div>
@@ -565,8 +599,8 @@ export function SalonLiveRoom({
             }}
           >
             {canParticipate
-              ? (salonWindow.open ? 'Send' : salonWindow.testMode ? 'Test closed' : 'October weekends')
-              : 'Enter'}
+              ? (salonWindow.open ? 'Send' : salonWindow.testMode ? 'Test closed' : 'Next salon')
+              : needsMembership ? 'Join' : 'Register'}
           </button>
         </div>
         {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}
@@ -627,53 +661,71 @@ export function SalonLiveRoom({
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h2 id="salon-auth-title" className="mb-1 text-2xl font-medium">Enter the salon</h2>
-                <p className="text-sm text-slate-300">Your draft is waiting. Sign in before the company can hear or acknowledge you.</p>
+                <h2 id="salon-auth-title" className="mb-1 text-2xl font-medium">
+                  {needsMembership ? 'Membership required' : 'Register for the preview'}
+                </h2>
+                <p className="text-sm text-slate-300">
+                  {needsMembership
+                    ? 'The September previews are free. October salons are reserved for Castalia members.'
+                    : 'Your draft is waiting. Register or sign in before the company can hear or acknowledge you.'}
+                </p>
               </div>
-              <button type="button" onClick={() => setAuthOpen(false)} className="text-2xl leading-none text-slate-400 hover:text-white" aria-label="Close sign-in">×</button>
+              <button type="button" onClick={() => setAuthOpen(false)} className="text-2xl leading-none text-slate-400 hover:text-white" aria-label="Close entry dialog">×</button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => void onGoogle()}
-              className="mb-4 flex w-full items-center justify-center rounded-md border border-slate-500 bg-white px-4 py-2.5 font-medium text-slate-900 hover:bg-slate-100"
-            >
-              Continue with Google
-            </button>
-
-            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-widest text-slate-500">
-              <span className="h-px flex-1 bg-slate-700" />or email magic link<span className="h-px flex-1 bg-slate-700" />
-            </div>
-
-            {authStatus === 'sent' ? (
-              <p className="rounded-md border border-emerald-700/60 bg-emerald-950/40 p-3 text-sm text-emerald-200">
-                Check your email. The link will return you to this salon.
-              </p>
+            {needsMembership ? (
+              <a
+                href={MEMBERSHIP_URL}
+                className="block w-full rounded-md bg-amber-500 px-4 py-3 text-center font-medium text-slate-950 hover:bg-amber-400"
+              >
+                Join Castalia
+              </a>
             ) : (
-              <form onSubmit={(event) => void onMagicLink(event)} className="flex gap-2">
-                <label htmlFor="salon-email" className="sr-only">Email address</label>
-                <input
-                  id="salon-email"
-                  type="email"
-                  required
-                  value={authEmail}
-                  onChange={(event) => setAuthEmail(event.target.value)}
-                  placeholder="you@example.com"
-                  className="min-w-0 flex-1 rounded-md border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
-                />
                 <button
-                  type="submit"
-                  disabled={authStatus === 'sending' || !authEmail.trim()}
-                  className="rounded-md bg-amber-500 px-3 py-2 font-medium text-slate-950 hover:bg-amber-400 disabled:opacity-50"
+                  type="button"
+                  onClick={() => void onGoogle()}
+                  className="mb-4 flex w-full items-center justify-center rounded-md border border-slate-500 bg-white px-4 py-2.5 font-medium text-slate-900 hover:bg-slate-100"
                 >
-                  {authStatus === 'sending' ? 'Sending…' : 'Send link'}
+                  Continue with Google
                 </button>
-              </form>
+            )}
+            {!needsMembership && (
+              <>
+                <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-widest text-slate-500">
+                  <span className="h-px flex-1 bg-slate-700" />or email magic link<span className="h-px flex-1 bg-slate-700" />
+                </div>
+
+                {authStatus === 'sent' ? (
+                  <p className="rounded-md border border-emerald-700/60 bg-emerald-950/40 p-3 text-sm text-emerald-200">
+                    Check your email. The link will return you to this salon.
+                  </p>
+                ) : (
+                  <form onSubmit={(event) => void onMagicLink(event)} className="flex gap-2">
+                    <label htmlFor="salon-email" className="sr-only">Email address</label>
+                    <input
+                      id="salon-email"
+                      type="email"
+                      required
+                      value={authEmail}
+                      onChange={(event) => setAuthEmail(event.target.value)}
+                      placeholder="you@example.com"
+                      className="min-w-0 flex-1 rounded-md border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={authStatus === 'sending' || !authEmail.trim()}
+                      className="rounded-md bg-amber-500 px-3 py-2 font-medium text-slate-950 hover:bg-amber-400 disabled:opacity-50"
+                    >
+                      {authStatus === 'sending' ? 'Sending…' : 'Send link'}
+                    </button>
+                  </form>
+                )}
+                <p className="mt-4 text-center text-xs text-slate-400">
+                  Free preview registration does not require a paid membership.
+                </p>
+              </>
             )}
             {authError && <p className="mt-3 text-sm text-red-300">{authError}</p>}
-            <p className="mt-4 text-center text-xs text-slate-400">
-              Not yet a member? <a href={MEMBERSHIP_URL} className="text-amber-300 underline underline-offset-2">Join Castalia</a>
-            </p>
           </section>
         </div>
       )}

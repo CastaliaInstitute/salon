@@ -60,17 +60,40 @@ class HistoricalGuardTests(unittest.TestCase):
         self.assertTrue(is_registered_event(verified))
         self.assertFalse(is_registered_event(unverified))
 
-    def test_season_waits_for_first_october_friday(self):
+    def test_registration_verified_preview_event_counts_as_registered(self):
+        preview = {
+            "sender": MEMBER_BRIDGE_USER,
+            "content": {
+                "org.castalia.registration_verified": True,
+                "org.castalia.member_verified": False,
+                "org.castalia.member_user_id": "registered-user-id",
+                "org.castalia.access_tier": "registered-preview",
+            },
+        }
+        self.assertTrue(is_registered_event(preview))
+
+    def test_season_waits_for_first_september_preview(self):
         mountain = ZoneInfo("America/Denver")
         tuesday = datetime(2026, 9, 1, 12, 0, tzinfo=mountain).timestamp()
         opening = datetime.fromtimestamp(scheduled_cycle_start(tuesday), mountain)
-        self.assertEqual(opening, datetime(2026, 10, 2, 18, 0, tzinfo=mountain))
+        self.assertEqual(opening, datetime(2026, 9, 18, 18, 0, tzinfo=mountain))
 
     def test_october_friday_cycle_remains_open_for_three_days(self):
         mountain = ZoneInfo("America/Denver")
         sunday = datetime(2026, 10, 4, 12, 0, tzinfo=mountain).timestamp()
         opening = datetime.fromtimestamp(scheduled_cycle_start(sunday), mountain)
         self.assertEqual(opening, datetime(2026, 10, 2, 18, 0, tzinfo=mountain))
+
+    def test_second_september_preview_and_october_transition_are_scheduled(self):
+        mountain = ZoneInfo("America/Denver")
+        between_previews = datetime(2026, 9, 22, 12, 0, tzinfo=mountain).timestamp()
+        after_previews = datetime(2026, 9, 29, 12, 0, tzinfo=mountain).timestamp()
+
+        second_preview = datetime.fromtimestamp(scheduled_cycle_start(between_previews), mountain)
+        first_members_weekend = datetime.fromtimestamp(scheduled_cycle_start(after_previews), mountain)
+
+        self.assertEqual(second_preview, datetime(2026, 9, 25, 18, 0, tzinfo=mountain))
+        self.assertEqual(first_members_weekend, datetime(2026, 10, 2, 18, 0, tzinfo=mountain))
 
     def test_cycle_advances_to_next_october_weekend(self):
         mountain = ZoneInfo("America/Denver")
