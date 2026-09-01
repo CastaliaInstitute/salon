@@ -30,6 +30,14 @@ EVENT_START_HOUR = int(os.environ.get("DIODATI_EVENT_START_HOUR", "18"))
 EVENT_START_MINUTE = int(os.environ.get("DIODATI_EVENT_START_MINUTE", "0"))
 EVENT_TIMEZONE_NAME = os.environ.get("DIODATI_EVENT_TIMEZONE", "America/Denver")
 EVENT_TIMEZONE = ZoneInfo(EVENT_TIMEZONE_NAME)
+EVENT_SEASON_START = date.fromisoformat(
+    os.environ.get("DIODATI_EVENT_SEASON_START", "2026-10-01")
+)
+EVENT_SEASON_END = date.fromisoformat(
+    os.environ.get("DIODATI_EVENT_SEASON_END", "2026-10-31")
+)
+if EVENT_SEASON_END < EVENT_SEASON_START:
+    raise ValueError("DIODATI_EVENT_SEASON_END must not precede DIODATI_EVENT_SEASON_START")
 REGISTERED_MATRIX_USERS = {
     username.strip()
     for username in os.environ.get("DIODATI_REGISTERED_MATRIX_USERS", "").split(",")
@@ -352,24 +360,24 @@ def simulated_time(cycle_id):
 
 
 def scheduled_cycle_start(now=None):
-    """Return the current Friday opening, or the next one after a cycle ends."""
+    """Return the active or next opening in the configured season, if any."""
     now = time.time() if now is None else float(now)
-    local_now = datetime.fromtimestamp(now, timezone.utc).astimezone(EVENT_TIMEZONE)
-    days_since_opening = (local_now.weekday() - EVENT_WEEKDAY) % 7
-    opening_date = (local_now - timedelta(days=days_since_opening)).date()
-    opening = datetime(
-        opening_date.year,
-        opening_date.month,
-        opening_date.day,
-        EVENT_START_HOUR,
-        EVENT_START_MINUTE,
-        tzinfo=EVENT_TIMEZONE,
-    )
-    if local_now < opening:
-        return int(opening.timestamp())
-    if now < opening.timestamp() + CYCLE_SECONDS:
-        return int(opening.timestamp())
-    return int((opening + timedelta(days=7)).timestamp())
+    opening_date = EVENT_SEASON_START
+    while opening_date <= EVENT_SEASON_END:
+        if opening_date.weekday() == EVENT_WEEKDAY:
+            opening = datetime(
+                opening_date.year,
+                opening_date.month,
+                opening_date.day,
+                EVENT_START_HOUR,
+                EVENT_START_MINUTE,
+                tzinfo=EVENT_TIMEZONE,
+            )
+            opening_timestamp = int(opening.timestamp())
+            if now < opening_timestamp + CYCLE_SECONDS:
+                return opening_timestamp
+        opening_date += timedelta(days=1)
+    return None
 
 
 def send_message(token, message, cycle_id=None):
@@ -656,6 +664,17 @@ def ensure_cycle(bots, cycle_path):
             return cycle
 
     started_at = scheduled_cycle_start(now)
+    if started_at is None:
+        cycle = {
+            "id": None,
+            "started_at": 0,
+            "turn_index": 0,
+            "next_turn_at": 0,
+            "opening_complete": False,
+            "season_complete": True,
+        }
+        save_json(cycle_path, cycle)
+        return cycle
     cycle = {
         "id": f"diodati-{started_at}",
         "started_at": started_at,
@@ -681,7 +700,7 @@ def sync(bots):
     observer_token = observer["access_token"]
     bot_usernames = {bot["username"] for bot in bots.values()}
     token_path = STATE_DIR / "sync-token"
-    cycle_path = STATE_DIR / "friday-three-day-cycle-v2.json"
+    cycle_path = STATE_DIR / "october-2026-weekends-v1.json"
     since = token_path.read_text(encoding="utf-8").strip() if token_path.exists() else ""
 
     if not since:
@@ -731,7 +750,7 @@ def sync(bots):
                 )
                 continue
             if not cycle.get("opening_complete"):
-                print("Held registered Diodati remark until Friday's opening", flush=True)
+                print("Held registered Diodati remark until the next scheduled opening", flush=True)
                 continue
             body = event.get("content", {}).get("body", "").strip()
             if body:

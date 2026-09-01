@@ -11,9 +11,14 @@ import {
 } from '../lib/salon-auth'
 
 const THREE_DAYS_MS = 72 * 60 * 60 * 1000
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
-const FRIDAY = 5
 const EVENT_HOUR_MOUNTAIN = 18
+const OCTOBER_2026_OPENINGS = [
+  [2026, 10, 2],
+  [2026, 10, 9],
+  [2026, 10, 16],
+  [2026, 10, 23],
+  [2026, 10, 30],
+] as const
 const MEMBERSHIP_URL = 'https://castalia.institute/membership'
 const FACULTY_PROFILE_ROOT = 'https://castalia.institute/faculty/profile/?h='
 // USNO for Villa Diodati (46.22 N, 6.18 E) gives civil twilight ending
@@ -76,21 +81,38 @@ function denverEpoch(year: number, month: number, day: number, hour: number): nu
   return approximate - (represented - approximate)
 }
 
-function scheduledSalonWindow(now: number): { start: number; open: boolean } {
-  const parts = mountainParts(new Date(now))
-  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday)
-  const localDay = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day))
-  const recentFriday = new Date(localDay - ((weekday - FRIDAY + 7) % 7) * 24 * 60 * 60 * 1000)
-  let start = denverEpoch(
-    recentFriday.getUTCFullYear(),
-    recentFriday.getUTCMonth() + 1,
-    recentFriday.getUTCDate(),
-    EVENT_HOUR_MOUNTAIN,
-  )
-  if (now < start) return { start, open: false }
-  if (now < start + THREE_DAYS_MS) return { start, open: true }
-  start += WEEK_MS
-  return { start, open: false }
+interface SalonWindow {
+  start: number
+  open: boolean
+  nextStart?: number
+  seasonComplete: boolean
+}
+
+function scheduledSalonWindow(now: number): SalonWindow {
+  const openings = OCTOBER_2026_OPENINGS.map(([year, month, day]) => (
+    denverEpoch(year, month, day, EVENT_HOUR_MOUNTAIN)
+  ))
+  for (const start of openings) {
+    if (now < start) return { start, open: false, nextStart: start, seasonComplete: false }
+    if (now < start + THREE_DAYS_MS) return { start, open: true, seasonComplete: false }
+  }
+  return {
+    start: openings[openings.length - 1],
+    open: false,
+    seasonComplete: true,
+  }
+}
+
+function formatOpening(start?: number): string {
+  if (!start) return ''
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Denver',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(start))
 }
 
 function isLegacyTravellerExchange(message: MatrixMessage): boolean {
@@ -377,7 +399,9 @@ export function SalonLiveRoom({
           <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
             {salonWindow.open
               ? 'DARKNESS · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME'
-              : 'THE READING BEGINS FRIDAY · 18:00 MOUNTAIN TIME'}
+              : salonWindow.seasonComplete
+                ? 'THE OCTOBER 2026 SEASON HAS CLOSED'
+                : `NEXT READING · ${formatOpening(salonWindow.nextStart).toUpperCase()} MOUNTAIN TIME`}
           </div>
           <div
             ref={transcriptRef}
@@ -430,7 +454,9 @@ export function SalonLiveRoom({
               <p className="py-12 text-center italic text-slate-500">
                 {salonWindow.open
                   ? 'Rain crosses the lake. The company is gathering.'
-                  : 'Rain crosses the lake. On Friday, Byron will open Fantasmagoriana and the company will answer.'}
+                  : salonWindow.seasonComplete
+                    ? 'The candles have gone out. Villa Diodati will return in another season.'
+                    : `Rain crosses the lake. On ${formatOpening(salonWindow.nextStart)}, Byron will open Fantasmagoriana.`}
               </p>
             )}
           </div>
@@ -451,8 +477,11 @@ export function SalonLiveRoom({
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault()
-                if (canParticipate) void onSend()
-                else setAuthOpen(true)
+                if (canParticipate) {
+                  if (salonWindow.open) void onSend()
+                } else {
+                  setAuthOpen(true)
+                }
               }
             }}
             placeholder="Enter the salon…"
@@ -462,13 +491,13 @@ export function SalonLiveRoom({
           <button
             type="button"
             className="h-11 rounded-md bg-amber-500 px-4 font-medium text-slate-950 shadow hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={status !== 'connected' || !input.trim()}
+            disabled={status !== 'connected' || !input.trim() || (canParticipate && !salonWindow.open)}
             onClick={() => {
-              if (canParticipate) void onSend()
+              if (canParticipate && salonWindow.open) void onSend()
               else setAuthOpen(true)
             }}
           >
-            {canParticipate ? 'Send' : 'Enter'}
+            {canParticipate ? (salonWindow.open ? 'Send' : 'October weekends') : 'Enter'}
           </button>
         </div>
         {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}

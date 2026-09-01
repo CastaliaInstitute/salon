@@ -33,9 +33,9 @@ Each voice also has a small, curated retrieval corpus in `data/diodati_rag.json`
 
 The salon opens in medias res with Byron reading two passages from the 1812 French *Fantasmagoriana*, “L’Heure fatale.” Claire and Mary interrupt the rain-soaked opening; Polidori and Percy dispute the later apparition; Byron then closes the volume and issues the writing challenge. The primary reading is stored and validated alongside the character corpus, while the interjections are generated in each participant’s historically bounded voice.
 
-### Friday-to-Monday realtime cycle
+### October 2026 weekend season
 
-Diodati is a living three-day event, not an archive page. The company gathers every Friday at 18:00 Mountain time and opens with the *Fantasmagoriana* reading. It then contributes an autonomous historically bounded turn every 12 minutes until the 72-hour cycle ends on Monday evening. Between cycles the page waits in the rain rather than replaying the previous gathering. Visitor remarks may provoke an additional round during the open salon, but are not required to keep the company speaking.
+Diodati is a living three-day event, not an archive page. Its first public season runs on all five October 2026 weekends: **October 2–5, 9–12, 16–19, 23–26, and October 30–November 2**. The company gathers each Friday at 18:00 Mountain time and opens with the *Fantasmagoriana* reading. It then contributes an autonomous historically bounded turn every 12 minutes for 72 hours. Between weekends the page waits in the rain rather than replaying the previous gathering. Visitor remarks may provoke an additional round during the open salon, but are not required to keep the company speaking.
 
 The public browser joins at the current turn and never machine-replays room history. Later events appear only when Matrix delivers them on the wall clock. Replies are guarded at 70 words and one to three sentences by default, keeping the company in conversational exchange rather than serial monologue.
 
@@ -53,11 +53,15 @@ DIODATI_EVENT_WEEKDAY=4
 DIODATI_EVENT_START_HOUR=18
 DIODATI_EVENT_START_MINUTE=0
 DIODATI_EVENT_TIMEZONE=America/Denver
+DIODATI_EVENT_SEASON_START=2026-10-01
+DIODATI_EVENT_SEASON_END=2026-10-31
 DIODATI_REGISTERED_MATRIX_USERS=@registered.member:matrix.castalia.institute
 DIODATI_MEMBER_BRIDGE_USER=@custodian:castalia.institute
 ```
 
 Unregistered senders are excluded from agent context and cannot trigger a round. The page nevertheless keeps a narrow invitation fixed to the viewport footer. A visitor may begin a draft; the first keystroke opens a Salon-origin Supabase sign-in dialog offering Google or an email magic link. The draft is retained, but it cannot be transmitted until an active Castalia membership is verified. The `matrix-send-message` edge function verifies the user and membership again, then signs the Matrix event with member-verification metadata; the agent service trusts that metadata only from `DIODATI_MEMBER_BRIDGE_USER`.
+
+Outside the five scheduled weekends, the transcript is cleared from the public experience and registered members cannot send into the staged conversation. The footer remains visible so a new visitor can register before the next opening. After the October season closes, no November weekend is scheduled automatically.
 
 ### Realtime RL visitor
 

@@ -58,23 +58,34 @@ class HistoricalGuardTests(unittest.TestCase):
         self.assertTrue(is_registered_event(verified))
         self.assertFalse(is_registered_event(unverified))
 
-    def test_cycle_waits_for_friday_evening(self):
+    def test_season_waits_for_first_october_friday(self):
         mountain = ZoneInfo("America/Denver")
         tuesday = datetime(2026, 9, 1, 12, 0, tzinfo=mountain).timestamp()
         opening = datetime.fromtimestamp(scheduled_cycle_start(tuesday), mountain)
-        self.assertEqual(opening, datetime(2026, 9, 4, 18, 0, tzinfo=mountain))
+        self.assertEqual(opening, datetime(2026, 10, 2, 18, 0, tzinfo=mountain))
 
-    def test_friday_cycle_remains_open_for_three_days(self):
+    def test_october_friday_cycle_remains_open_for_three_days(self):
         mountain = ZoneInfo("America/Denver")
-        sunday = datetime(2026, 9, 6, 12, 0, tzinfo=mountain).timestamp()
+        sunday = datetime(2026, 10, 4, 12, 0, tzinfo=mountain).timestamp()
         opening = datetime.fromtimestamp(scheduled_cycle_start(sunday), mountain)
-        self.assertEqual(opening, datetime(2026, 9, 4, 18, 0, tzinfo=mountain))
+        self.assertEqual(opening, datetime(2026, 10, 2, 18, 0, tzinfo=mountain))
 
-    def test_cycle_advances_after_monday_evening(self):
+    def test_cycle_advances_to_next_october_weekend(self):
         mountain = ZoneInfo("America/Denver")
-        monday = datetime(2026, 9, 7, 18, 1, tzinfo=mountain).timestamp()
+        monday = datetime(2026, 10, 5, 18, 1, tzinfo=mountain).timestamp()
         opening = datetime.fromtimestamp(scheduled_cycle_start(monday), mountain)
-        self.assertEqual(opening, datetime(2026, 9, 11, 18, 0, tzinfo=mountain))
+        self.assertEqual(opening, datetime(2026, 10, 9, 18, 0, tzinfo=mountain))
+
+    def test_final_october_weekend_is_offered(self):
+        mountain = ZoneInfo("America/Denver")
+        friday = datetime(2026, 10, 30, 20, 0, tzinfo=mountain).timestamp()
+        opening = datetime.fromtimestamp(scheduled_cycle_start(friday), mountain)
+        self.assertEqual(opening, datetime(2026, 10, 30, 18, 0, tzinfo=mountain))
+
+    def test_season_does_not_schedule_a_november_weekend(self):
+        mountain = ZoneInfo("America/Denver")
+        after_season = datetime(2026, 11, 3, 12, 0, tzinfo=mountain).timestamp()
+        self.assertIsNone(scheduled_cycle_start(after_season))
 
 
 if __name__ == "__main__":
