@@ -1,0 +1,21 @@
+[Unit]
+Description=Villa Diodati realtime RL visitor environment
+After=network-online.target diodati-realtime.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=diodati
+Group=diodati
+EnvironmentFile=/etc/diodati-realtime.env
+ExecStart=/usr/bin/python3 /opt/diodati-realtime/diodati_visitor_rl.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/diodati-visitor-rl
+
+[Install]
+WantedBy=multi-user.target

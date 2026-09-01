@@ -9,7 +9,12 @@ import unittest
 os.environ.setdefault("DIODATI_ROOM_ID", "test-room")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-key")
 
-from diodati_realtime import find_anachronisms, redact_future_leaks  # noqa: E402
+from diodati_realtime import (  # noqa: E402
+    MEMBER_BRIDGE_USER,
+    find_anachronisms,
+    is_registered_event,
+    redact_future_leaks,
+)
 
 
 class HistoricalGuardTests(unittest.TestCase):
@@ -34,6 +39,21 @@ class HistoricalGuardTests(unittest.TestCase):
         ).lower()
         for forbidden in ("mary shelley", "marry percy", "1817", "frankenstein"):
             self.assertNotIn(forbidden, redacted)
+
+    def test_only_verified_bridge_events_count_as_registered(self):
+        verified = {
+            "sender": MEMBER_BRIDGE_USER,
+            "content": {
+                "org.castalia.member_verified": True,
+                "org.castalia.member_user_id": "member-id",
+            },
+        }
+        unverified = {
+            "sender": MEMBER_BRIDGE_USER,
+            "content": {"org.castalia.member_verified": False},
+        }
+        self.assertTrue(is_registered_event(verified))
+        self.assertFalse(is_registered_event(unverified))
 
 
 if __name__ == "__main__":

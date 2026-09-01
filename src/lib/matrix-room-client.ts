@@ -9,6 +9,7 @@ export interface MatrixMessage {
   content: string;
   timestamp: number;
   cycleId?: string;
+  simulatedAt?: string;
   event?: unknown;
 }
 
@@ -105,6 +106,7 @@ export class MatrixRoomClient {
           content: event.content.body || '',
           timestamp: event.origin_server_ts || Date.now(),
           cycleId: event.content['org.castalia.salon_cycle'],
+          simulatedAt: event.content['org.castalia.simulated_at'],
           event,
         };
 
@@ -124,20 +126,20 @@ export class MatrixRoomClient {
     }
   }
 
-  async sendMessage(content: string): Promise<string> {
+  async sendMessage(content: string, memberAccessToken?: string): Promise<string> {
     if (!this.isConnected) throw new Error('Not connected to Matrix room');
 
     const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
     const anonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-    if (!supabaseUrl || !anonKey) {
+    if (!supabaseUrl || !anonKey || !memberAccessToken) {
       throw new Error('Configure PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY to send messages');
     }
 
     const response = await fetch(`${supabaseUrl}/functions/v1/matrix-send-message`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${anonKey}`,
+        Authorization: `Bearer ${memberAccessToken}`,
         apikey: anonKey,
         'Content-Type': 'application/json',
       },
@@ -184,7 +186,11 @@ export class MatrixRoomClient {
           (event: {
             event_id: string;
             sender?: string;
-            content?: { body?: string; 'org.castalia.salon_cycle'?: string };
+            content?: {
+              body?: string;
+              'org.castalia.salon_cycle'?: string;
+              'org.castalia.simulated_at'?: string;
+            };
             origin_server_ts?: number;
           }) => ({
             id: event.event_id,
@@ -192,6 +198,7 @@ export class MatrixRoomClient {
             content: event.content?.body || '',
             timestamp: event.origin_server_ts || Date.now(),
             cycleId: event.content?.['org.castalia.salon_cycle'],
+            simulatedAt: event.content?.['org.castalia.simulated_at'],
             event,
           })
         )

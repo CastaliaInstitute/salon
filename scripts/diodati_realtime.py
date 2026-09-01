@@ -8,7 +8,7 @@ import pathlib
 import re
 import sys
 import time
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -23,6 +23,15 @@ CYCLE_SECONDS = int(os.environ.get("DIODATI_CYCLE_SECONDS", str(72 * 60 * 60)))
 TURN_INTERVAL_SECONDS = int(os.environ.get("DIODATI_TURN_INTERVAL_SECONDS", "720"))
 OPENING_PAUSE_SECONDS = float(os.environ.get("DIODATI_OPENING_PAUSE_SECONDS", "18"))
 ROUND_PAUSE_SECONDS = float(os.environ.get("DIODATI_ROUND_PAUSE_SECONDS", "8"))
+MAX_RESPONSE_WORDS = int(os.environ.get("DIODATI_MAX_RESPONSE_WORDS", "70"))
+REGISTERED_MATRIX_USERS = {
+    username.strip()
+    for username in os.environ.get("DIODATI_REGISTERED_MATRIX_USERS", "").split(",")
+    if username.strip()
+}
+MEMBER_BRIDGE_USER = os.environ.get(
+    "DIODATI_MEMBER_BRIDGE_USER", "@custodian:castalia.institute"
+).strip()
 DEFAULT_RAG_PATH = pathlib.Path(
     os.environ.get("DIODATI_RAG_PATH", "/opt/diodati-realtime/diodati_rag.json")
 )
@@ -313,6 +322,29 @@ def matrix_headers(token):
     return {"Authorization": f"Bearer {token}"}
 
 
+def is_registered_event(event):
+    sender = event.get("sender", "")
+    content = event.get("content", {})
+    return sender in REGISTERED_MATRIX_USERS or (
+        sender == MEMBER_BRIDGE_USER
+        and content.get("org.castalia.member_verified") is True
+        and bool(content.get("org.castalia.member_user_id"))
+    )
+
+
+def simulated_time(cycle_id):
+    try:
+        cycle_started_at = int(cycle_id.rsplit("-", 1)[1])
+    except (AttributeError, IndexError, ValueError):
+        cycle_started_at = int(time.time())
+    elapsed = max(0, time.time() - cycle_started_at)
+    # Civil twilight ended at 20:07 UTC at Villa Diodati. Apparent solar
+    # time in Geneva was about 25 minutes ahead, so the environment begins
+    # at 20:32 Geneva apparent solar time.
+    scene_start = datetime(1816, 6, 15, 20, 32, tzinfo=timezone.utc)
+    return (scene_start + timedelta(seconds=elapsed)).isoformat().replace("+00:00", "Z")
+
+
 def send_message(token, message, cycle_id=None):
     txn_id = f"diodati-{int(time.time() * 1000)}"
     encoded_room = urllib.parse.quote(ROOM_ID, safe="")
@@ -324,6 +356,8 @@ def send_message(token, message, cycle_id=None):
             "msgtype": "m.text",
             "body": message,
             **({"org.castalia.salon_cycle": cycle_id} if cycle_id else {}),
+            **({"org.castalia.simulated_at": simulated_time(cycle_id)} if cycle_id else {}),
+            **({"org.castalia.time_basis": "Geneva apparent solar time"} if cycle_id else {}),
         },
     )
 
@@ -333,12 +367,17 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=N
     context = "\n\n".join(
         f"{speaker}: {response}" for speaker, response in prior_responses[-3:]
     )
-    response_style = response_style or "Keep this conversational and vivid, in two to four paragraphs."
+    response_style = response_style or (
+        "Keep this conversational and vivid: one thought in one to three sentences, "
+        f"never more than {MAX_RESPONSE_WORDS} words."
+    )
     prompt = (
         "You are speaking in the Villa Diodati salon at Lake Geneva during the storm-bound summer of 1816. "
-        "Reply in your own historically grounded voice, directly engaging the visitor and the other guests. "
+        "Reply in your own historically grounded voice to the established company. Do not welcome or address "
+        "an unknown traveller, visitor, guest, or audience. Address a registered guest only when their remark "
+        "is explicitly supplied as the initiating remark. "
         f"{response_style}\n\n"
-        f"Visitor or initiating remark: {visitor_prompt}"
+        f"Initiating remark: {visitor_prompt}"
     )
     if context:
         prompt += f"\n\nWhat the salon has just said:\n{context}"
@@ -363,9 +402,9 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=N
         attempt_prompt = prompt
         if attempt:
             attempt_prompt += (
-                "\n\nYour previous draft leaked knowledge or terminology unavailable in June 1816. "
-                "Rewrite the answer completely from inside the historical knowledge boundary. Do not mention "
-                "the correction, quote future terms, or foreshadow later works and lives."
+                "\n\nYour previous draft broke the historical boundary or was too long for live conversation. "
+                f"Rewrite it completely in no more than {MAX_RESPONSE_WORDS} words and one to three sentences. "
+                "Do not mention the correction or any future knowledge."
             )
         result = request_json(
             f"{SUPABASE_URL}/functions/v1/ask-faculty",
@@ -392,15 +431,17 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=N
             raise RuntimeError(f"ask-faculty returned no response for {faculty_id}")
         response = response.strip()
         violations = find_anachronisms(response)
-        if not violations:
+        too_long = len(response.split()) > MAX_RESPONSE_WORDS
+        if not violations and not too_long:
             return response
+        rejection_reasons = [*violations, *(["overlong response"] if too_long else [])]
         print(
-            f"Rejected {faculty_id} draft for: {', '.join(violations)}",
+            f"Rejected {faculty_id} draft for: {', '.join(rejection_reasons)}",
             file=sys.stderr,
             flush=True,
         )
 
-    raise RuntimeError(f"historical cutoff failed for {faculty_id}: {', '.join(violations)}")
+    raise RuntimeError(f"response guard failed for {faculty_id}: {', '.join(rejection_reasons)}")
 
 
 def run_round(bots, prompt, cycle_id=None):
@@ -516,8 +557,11 @@ def recent_salon_context(observer_token, cycle_id, limit=10):
         event_cycle = content.get("org.castalia.salon_cycle")
         if event_cycle and event_cycle != cycle_id:
             continue
-        localpart = event.get("sender", "").split(":", 1)[0].lstrip("@")
-        context.append((names.get(localpart, "A visitor"), content.get("body", "").strip()))
+        sender = event.get("sender", "")
+        localpart = sender.split(":", 1)[0].lstrip("@")
+        if localpart not in names and not is_registered_event(event):
+            continue
+        context.append((names.get(localpart, "A registered guest"), content.get("body", "").strip()))
     return [(speaker, body) for speaker, body in context if body][-limit:]
 
 
@@ -542,15 +586,18 @@ def run_autonomous_turn(bots, cycle):
     context = recent_salon_context(bots["a.byron"]["access_token"], cycle["id"])
     prompt = (
         f"This is day {day} of the company's three-day storm-bound gathering. {cue} "
-        "Speak to the people in the room, never to a visitor or audience unless a visitor has just spoken."
+        "Speak only to the established company. Never welcome, acknowledge, or address a traveller, visitor, "
+        "guest, or audience. You may address a registered guest only when the most recent context line is "
+        "explicitly labelled 'A registered guest'."
     )
     response = ask_faculty(
         faculty_id,
         prompt,
         context,
         response_style=(
-            "Continue the live exchange in two to five sentences. Respond to the most recent thought, "
-            "make one distinct contribution, and end with tension, invitation, or a question rather than a speech."
+            f"Continue the live exchange in one to three sentences and no more than {MAX_RESPONSE_WORDS} words. "
+            "Respond to the most recent thought, make one distinct contribution, and end with tension, "
+            "invitation, or a question rather than a speech."
         ),
     )
     send_message(bots[faculty_id]["access_token"], response, cycle["id"])
@@ -633,6 +680,12 @@ def sync(bots):
             if event.get("type") != "m.room.message":
                 continue
             if event.get("sender") in bot_usernames:
+                continue
+            if not is_registered_event(event):
+                print(
+                    f"Ignored unregistered Diodati sender {event.get('sender', '<unknown>')}",
+                    flush=True,
+                )
                 continue
             body = event.get("content", {}).get("body", "").strip()
             if body:

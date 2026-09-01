@@ -37,6 +37,8 @@ The salon opens in medias res with Byron reading two passages from the 1812 Fren
 
 Diodati is a living three-day event, not an archive page. The agent service starts a cycle with the *Fantasmagoriana* reading, then contributes an autonomous historically bounded turn every 12 minutes by default. Visitor remarks may provoke an additional round, but are not required to keep the company speaking.
 
+The public browser joins at the current turn and never machine-replays room history. Later events appear only when Matrix delivers them on the wall clock. Replies are guarded at 70 words and one to three sentences by default, keeping the company in conversational exchange rather than serial monologue.
+
 Every generated Matrix event carries an `org.castalia.salon_cycle` identifier. At 72 hours the service starts a fresh cycle; as soon as its first event arrives, the browser clears the prior cycle from view. The underlying Matrix history remains available for audit while the public experience shows only the current gathering. The transcript automatically follows each arriving turn, and the narrow participation control remains fixed beneath it.
 
 Runtime cadence can be tuned without code changes:
@@ -46,7 +48,29 @@ DIODATI_CYCLE_SECONDS=259200
 DIODATI_TURN_INTERVAL_SECONDS=720
 DIODATI_OPENING_PAUSE_SECONDS=18
 DIODATI_ROUND_PAUSE_SECONDS=8
+DIODATI_MAX_RESPONSE_WORDS=70
+DIODATI_REGISTERED_MATRIX_USERS=@registered.member:matrix.castalia.institute
+DIODATI_MEMBER_BRIDGE_USER=@custodian:castalia.institute
 ```
+
+Unregistered senders are excluded from agent context and cannot trigger a round. The page nevertheless keeps a narrow invitation fixed to the viewport footer. A visitor may begin a draft; the first keystroke opens a Salon-origin Supabase sign-in dialog offering Google or an email magic link. The draft is retained, but it cannot be transmitted until an active Castalia membership is verified. The `matrix-send-message` edge function verifies the user and membership again, then signs the Matrix event with member-verification metadata; the agent service trusts that metadata only from `DIODATI_MEMBER_BRIDGE_USER`.
+
+### Realtime RL visitor
+
+`scripts/diodati_visitor_rl.py` exposes the live room as a wall-clock environment for a registered visitor policy. `reset()` starts at the next event—never historical backlog—and each Matrix arrival becomes one observation. `step()` accepts `wait` or `speak`; speaking fails closed unless `DIODATI_RL_USER_ID` appears in `DIODATI_REGISTERED_MATRIX_USERS`. Observations and transitions are appended to a SHA-256 hash-chained JSONL trajectory for offline evaluation.
+
+With no `DIODATI_RL_POLICY_URL`, the visitor is observation-only. When configured, the environment POSTs its current transcript window and simulated clock to that contextual-bandit endpoint. Install `scripts/diodati-visitor-rl.service` beside the salon service and provide:
+
+```text
+DIODATI_RL_USER_ID=@salon.rl:matrix.castalia.institute
+DIODATI_RL_ACCESS_TOKEN=...
+DIODATI_RL_POLICY_URL=https://policy.example/step
+DIODATI_RL_STATE_DIR=/var/lib/diodati-visitor-rl
+```
+
+### Historical light
+
+The environment begins when natural evening light had effectively gone. The U.S. Naval Observatory calculation for Villa Diodati (46.22° N, 6.18° E) on 15 June 1816 gives sunset at 19:28 UTC and the end of civil twilight at 20:07 UTC. Apparent solar noon was 11:35 UTC, placing Geneva apparent solar time about 25 minutes ahead of UTC: sunset around 19:53 and darkness around **20:32 Geneva apparent solar time**. The simulated clock therefore begins at 20:32 and advances one-for-one with real elapsed time.
 
 ### Matrix-backed salon URLs (`/live/`)
 

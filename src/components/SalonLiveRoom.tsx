@@ -3,43 +3,85 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { MatrixRoomClient, resolveRoomAlias, type MatrixMessage } from '../lib/matrix-room-client'
+import {
+  activeMemberSession,
+  getSalonAuthClient,
+  sendSalonMagicLink,
+  signInToSalonWithGoogle,
+} from '../lib/salon-auth'
 
 const THREE_DAYS_MS = 72 * 60 * 60 * 1000
 const MEMBERSHIP_URL = 'https://castalia.institute/membership'
 const FACULTY_PROFILE_ROOT = 'https://castalia.institute/faculty/profile/?h='
+const FACULTY_BUST_ROOT = 'https://castalia.institute/inquisitors/portraits/'
+// USNO for Villa Diodati (46.22 N, 6.18 E) gives civil twilight ending
+// 20:07 UTC on 15 June 1816. Apparent solar noon was 11:35 UTC, placing
+// Geneva apparent solar time about 25 minutes ahead: darkness at ~20:32.
+const SIMULATION_START_UTC = Date.UTC(1816, 5, 15, 20, 32, 0)
 
 interface SpeakerIdentity {
   name: string
   facultyHandle?: string
+  bust?: string
 }
 
 const DIODATI_SPEAKERS: Record<string, SpeakerIdentity> = {
-  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron' },
-  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron' },
-  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' },
-  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' },
-  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' },
-  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont' },
-  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont' },
-  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' },
-  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' },
-  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' },
-  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori' },
-  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori' },
+  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bust: 'villa-lord-byron.jpg' },
+  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bust: 'villa-lord-byron.jpg' },
+  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bust: 'villa-mary-shelley.jpg' },
+  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bust: 'villa-mary-shelley.jpg' },
+  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bust: 'villa-mary-shelley.jpg' },
+  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bust: 'villa-claire-clairmont.jpg' },
+  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bust: 'villa-claire-clairmont.jpg' },
+  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bust: 'villa-percy-shelley.jpg' },
+  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bust: 'villa-percy-shelley.jpg' },
+  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bust: 'villa-percy-shelley.jpg' },
+  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bust: 'villa-john-polidori.jpg' },
+  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bust: 'villa-john-polidori.jpg' },
   'salon.web': { name: 'A visitor' },
 }
 
 function speakerIdentity(message: MatrixMessage): SpeakerIdentity {
   const localpart = message.sender.replace(/^@/, '').split(':', 1)[0].toLowerCase()
   if (!message.cycleId) {
-    if (localpart === 'a.shelley') return { name: 'Mary Godwin', facultyHandle: 'a.maryshelley' }
-    if (localpart === 'a.shelley1') return { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley' }
+    if (localpart === 'a.shelley') return DIODATI_SPEAKERS['a.maryshelley']
+    if (localpart === 'a.shelley1') return DIODATI_SPEAKERS['a.shelley']
   }
   return DIODATI_SPEAKERS[localpart] ?? { name: 'A guest' }
 }
 
 function currentCycleStart(now: number): number {
   return Math.floor(now / THREE_DAYS_MS) * THREE_DAYS_MS
+}
+
+function isLegacyTravellerExchange(message: MatrixMessage): boolean {
+  if (message.cycleId) return false
+  const localpart = message.sender.replace(/^@/, '').split(':', 1)[0].toLowerCase()
+  if (localpart === 'salon.web') return true
+  return /\b(?:travell?er|visitor|our guest|dear guest|welcome|draw up a chair|what brings you)\b/i.test(
+    message.content,
+  )
+}
+
+function simulatedDate(message: MatrixMessage): Date {
+  if (message.simulatedAt) return new Date(message.simulatedAt)
+  const cycleEpoch = message.cycleId?.match(/diodati-(\d+)/)?.[1]
+  const realCycleStart = cycleEpoch
+    ? Number(cycleEpoch) * 1000
+    : currentCycleStart(message.timestamp)
+  return new Date(SIMULATION_START_UTC + Math.max(0, message.timestamp - realCycleStart))
+}
+
+function formatSimulatedTime(message: MatrixMessage): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  }).format(simulatedDate(message))
 }
 
 function parseRoomRef(splat: string | undefined): string {
@@ -69,20 +111,36 @@ export function SalonLiveRoom({
   const [input, setInput] = useState('')
   const [status, setStatus] = useState<string>('idle')
   const [sendError, setSendError] = useState<string | null>(null)
+  const [memberAccessToken, setMemberAccessToken] = useState<string | null>(null)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authEmail, setAuthEmail] = useState('')
+  const [authStatus, setAuthStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
+  const [authError, setAuthError] = useState<string | null>(null)
   const clientRef = useRef<MatrixRoomClient | null>(null)
   const transcriptRef = useRef<HTMLDivElement | null>(null)
+  const transcriptHydratedRef = useRef(false)
 
-  const canSend =
-    typeof import.meta.env.PUBLIC_SUPABASE_URL === 'string' &&
-    !!import.meta.env.PUBLIC_SUPABASE_URL &&
-    typeof import.meta.env.PUBLIC_SUPABASE_ANON_KEY === 'string' &&
-    !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+  const canParticipate = !!memberAccessToken
 
-  // Authentication for the satellite is deliberately fail-closed. Until a
-  // Castalia member session is handed to this origin, the public room remains
-  // an experience rather than an anonymous Matrix posting surface.
-  const memberLoggedIn = false
-  const canParticipate = canSend && memberLoggedIn
+  useEffect(() => {
+    let cancelled = false
+    const refreshMembership = async () => {
+      const session = await activeMemberSession()
+      if (!cancelled) {
+        setMemberAccessToken(session?.access_token ?? null)
+        if (session) setAuthOpen(false)
+      }
+    }
+    void refreshMembership()
+    const client = getSalonAuthClient()
+    const subscription = client?.auth.onAuthStateChange(() => {
+      void refreshMembership()
+    }).data.subscription
+    return () => {
+      cancelled = true
+      subscription?.unsubscribe()
+    }
+  }, [])
 
   const visibleMessages = useMemo(() => {
     const latestCycleId = messages.findLast((message) => message.cycleId)?.cycleId
@@ -92,13 +150,20 @@ export function SalonLiveRoom({
     const cycleStart = taggedCycleMessages.length
       ? Math.min(...taggedCycleMessages.map((message) => message.timestamp))
       : currentCycleStart(Date.now())
-    return messages.filter((message) => message.timestamp >= cycleStart)
+    return messages.filter(
+      (message) => message.timestamp >= cycleStart && !isLegacyTravellerExchange(message),
+    )
   }, [messages])
 
   useEffect(() => {
     const transcript = transcriptRef.current
-    if (!transcript) return
-    transcript.scrollTo({ top: transcript.scrollHeight, behavior: messages.length ? 'smooth' : 'auto' })
+    if (!transcript || !visibleMessages.length) return
+    if (!transcriptHydratedRef.current) {
+      transcript.scrollTop = transcript.scrollHeight
+      transcriptHydratedRef.current = true
+      return
+    }
+    transcript.scrollTo({ top: transcript.scrollHeight, behavior: 'smooth' })
   }, [visibleMessages.length])
 
   useEffect(() => {
@@ -139,6 +204,7 @@ export function SalonLiveRoom({
 
   useEffect(() => {
     if (!resolvedRoomId) {
+      transcriptHydratedRef.current = false
       clientRef.current?.disconnect()
       clientRef.current = null
       setMessages([])
@@ -156,7 +222,9 @@ export function SalonLiveRoom({
         await client.connect()
         const initial = await client.getRecentMessages(80)
         if (!cancelled) {
-          setMessages(initial)
+          // Joining a live salon begins at its present turn. History remains in
+          // Matrix for audit, but is never machine-replayed into the browser.
+          setMessages(initial.filter((message) => !isLegacyTravellerExchange(message)).slice(-1))
           setStatus('connected')
         }
       } catch (e) {
@@ -188,17 +256,44 @@ export function SalonLiveRoom({
     setSendError(null)
     try {
       setStatus('sending')
-      await clientRef.current.sendMessage(text)
+      if (!memberAccessToken) {
+        setAuthOpen(true)
+        return
+      }
+      await clientRef.current.sendMessage(text, memberAccessToken)
       setInput('')
       setStatus('connected')
     } catch (e) {
       setSendError(e instanceof Error ? e.message : 'Send failed')
       setStatus('connected')
     }
-  }, [input])
+  }, [input, memberAccessToken])
+
+  const onMagicLink = useCallback(async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!authEmail.trim()) return
+    setAuthError(null)
+    setAuthStatus('sending')
+    try {
+      await sendSalonMagicLink(authEmail.trim())
+      setAuthStatus('sent')
+    } catch (error) {
+      setAuthStatus('idle')
+      setAuthError(error instanceof Error ? error.message : 'The magic link could not be sent.')
+    }
+  }, [authEmail])
+
+  const onGoogle = useCallback(async () => {
+    setAuthError(null)
+    try {
+      await signInToSalonWithGoogle()
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Google sign-in could not begin.')
+    }
+  }, [])
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 py-8 pb-28">
       <header className="mb-8">
         <h1 className="mb-3 text-3xl font-light tracking-wide text-slate-900">{salonTitle}</h1>
         <p className="text-slate-600">
@@ -230,6 +325,9 @@ export function SalonLiveRoom({
 
       {resolvedRoomId && status !== 'error' && (
         <div className="flex h-[calc(100dvh-17rem)] min-h-[16rem] max-h-[660px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
+          <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
+            DARKNESS · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME
+          </div>
           <div
             ref={transcriptRef}
             className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5"
@@ -239,8 +337,25 @@ export function SalonLiveRoom({
             {visibleMessages.map((m) => {
               const speaker = speakerIdentity(m)
               return (
-                <div key={m.id} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                  <div className="mb-1 text-sm font-medium tracking-wide text-slate-500">
+                <div key={m.id} className="flex gap-3 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                  {speaker.facultyHandle && speaker.bust && (
+                    <a
+                      href={`${FACULTY_PROFILE_ROOT}${encodeURIComponent(speaker.facultyHandle)}`}
+                      className="mt-0.5 shrink-0"
+                      aria-label={`${speaker.name} FacultAI profile`}
+                    >
+                      <img
+                        src={`${FACULTY_BUST_ROOT}${speaker.bust}`}
+                        alt=""
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        className="h-12 w-12 rounded-full border border-slate-500/40 object-cover shadow-sm"
+                      />
+                    </a>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 text-sm font-medium tracking-wide text-slate-500">
                     {speaker.facultyHandle ? (
                       <a
                         href={`${FACULTY_PROFILE_ROOT}${encodeURIComponent(speaker.facultyHandle)}`}
@@ -251,8 +366,12 @@ export function SalonLiveRoom({
                     ) : (
                       speaker.name
                     )}
+                      <time dateTime={simulatedDate(m).toISOString()} className="text-xs font-normal tracking-wider opacity-75">
+                        {formatSimulatedTime(m)} · Geneva solar time
+                      </time>
+                    </div>
+                    <div className="whitespace-pre-wrap text-slate-900">{m.content}</div>
                   </div>
-                  <div className="whitespace-pre-wrap text-slate-900">{m.content}</div>
                 </div>
               )
             })}
@@ -261,42 +380,103 @@ export function SalonLiveRoom({
             )}
           </div>
 
-          <div className="shrink-0 border-t border-slate-200 bg-[#111827]/95 p-2.5 backdrop-blur">
-            {canParticipate ? (
-              <div className="flex items-center gap-2">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault()
-                      void onSend()
-                    }
-                  }}
-                  placeholder="Join the conversation…"
-                  rows={1}
-                  disabled={status !== 'connected'}
-                  className="h-10 min-h-10 flex-1 resize-none rounded-md border border-slate-300 px-3 py-1.5 text-slate-900 shadow-sm"
+        </div>
+      )}
+
+      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-600/50 bg-[#0b1020]/95 px-3 py-3 shadow-[0_-14px_35px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        <div className="mx-auto flex max-w-3xl items-center gap-2">
+          <label htmlFor="salon-entry" className="sr-only">Enter the salon</label>
+          <textarea
+            id="salon-entry"
+            value={input}
+            onChange={(event) => {
+              setInput(event.target.value)
+              if (event.target.value && !canParticipate) setAuthOpen(true)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                if (canParticipate) void onSend()
+                else setAuthOpen(true)
+              }
+            }}
+            placeholder="Enter the salon…"
+            rows={1}
+            className="h-11 min-h-11 flex-1 resize-none rounded-md border border-slate-500/70 bg-slate-950/80 px-3 py-2 text-slate-100 shadow-inner placeholder:text-slate-400 focus:border-amber-400 focus:outline-none"
+          />
+          <button
+            type="button"
+            className="h-11 rounded-md bg-amber-500 px-4 font-medium text-slate-950 shadow hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={status !== 'connected' || !input.trim()}
+            onClick={() => {
+              if (canParticipate) void onSend()
+              else setAuthOpen(true)
+            }}
+          >
+            {canParticipate ? 'Send' : 'Enter'}
+          </button>
+        </div>
+        {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}
+      </footer>
+
+      {authOpen && !canParticipate && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center" role="presentation">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="salon-auth-title"
+            className="w-full max-w-md rounded-xl border border-slate-600 bg-[#111827] p-6 text-slate-100 shadow-2xl"
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 id="salon-auth-title" className="mb-1 text-2xl font-medium">Enter the salon</h2>
+                <p className="text-sm text-slate-300">Your draft is waiting. Sign in before the company can hear or acknowledge you.</p>
+              </div>
+              <button type="button" onClick={() => setAuthOpen(false)} className="text-2xl leading-none text-slate-400 hover:text-white" aria-label="Close sign-in">×</button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void onGoogle()}
+              className="mb-4 flex w-full items-center justify-center rounded-md border border-slate-500 bg-white px-4 py-2.5 font-medium text-slate-900 hover:bg-slate-100"
+            >
+              Continue with Google
+            </button>
+
+            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-widest text-slate-500">
+              <span className="h-px flex-1 bg-slate-700" />or email magic link<span className="h-px flex-1 bg-slate-700" />
+            </div>
+
+            {authStatus === 'sent' ? (
+              <p className="rounded-md border border-emerald-700/60 bg-emerald-950/40 p-3 text-sm text-emerald-200">
+                Check your email. The link will return you to this salon.
+              </p>
+            ) : (
+              <form onSubmit={(event) => void onMagicLink(event)} className="flex gap-2">
+                <label htmlFor="salon-email" className="sr-only">Email address</label>
+                <input
+                  id="salon-email"
+                  type="email"
+                  required
+                  value={authEmail}
+                  onChange={(event) => setAuthEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  className="min-w-0 flex-1 rounded-md border border-slate-600 bg-slate-950 px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
                 />
                 <button
-                  type="button"
-                  className="h-10 rounded-md bg-blue-600 px-4 text-white shadow hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={status !== 'connected' || !input.trim()}
-                  onClick={() => void onSend()}
+                  type="submit"
+                  disabled={authStatus === 'sending' || !authEmail.trim()}
+                  className="rounded-md bg-amber-500 px-3 py-2 font-medium text-slate-950 hover:bg-amber-400 disabled:opacity-50"
                 >
-                  Send
+                  {authStatus === 'sending' ? 'Sending…' : 'Send link'}
                 </button>
-              </div>
-            ) : (
-              <a
-                href={MEMBERSHIP_URL}
-                className="flex h-10 w-full items-center justify-center rounded-md border border-slate-500/60 bg-slate-900/70 px-4 text-sm font-medium tracking-wide text-slate-100 hover:border-slate-300 hover:text-white"
-              >
-                Join to Join
-              </a>
+              </form>
             )}
-            {sendError && <p className="mt-2 text-sm text-red-300">Your words did not reach the room. Try again.</p>}
-          </div>
+            {authError && <p className="mt-3 text-sm text-red-300">{authError}</p>}
+            <p className="mt-4 text-center text-xs text-slate-400">
+              Not yet a member? <a href={MEMBERSHIP_URL} className="text-amber-300 underline underline-offset-2">Join Castalia</a>
+            </p>
+          </section>
         </div>
       )}
     </div>
