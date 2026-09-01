@@ -19,6 +19,11 @@ const OCTOBER_2026_OPENINGS = [
   [2026, 10, 23],
   [2026, 10, 30],
 ] as const
+const TEST_OPENING_AT = import.meta.env.PUBLIC_DIODATI_TEST_OPENING_AT?.trim()
+const TEST_OPENING_START = TEST_OPENING_AT ? Date.parse(TEST_OPENING_AT) : undefined
+if (TEST_OPENING_AT && !Number.isFinite(TEST_OPENING_START)) {
+  throw new Error('PUBLIC_DIODATI_TEST_OPENING_AT must be an ISO 8601 date and time')
+}
 const MEMBERSHIP_URL = 'https://castalia.institute/membership'
 const FACULTY_PROFILE_ROOT = 'https://castalia.institute/faculty/profile/?h='
 // USNO for Villa Diodati (46.22 N, 6.18 E) gives civil twilight ending
@@ -86,20 +91,39 @@ interface SalonWindow {
   open: boolean
   nextStart?: number
   seasonComplete: boolean
+  testMode: boolean
 }
 
 function scheduledSalonWindow(now: number): SalonWindow {
+  if (TEST_OPENING_START !== undefined) {
+    if (now < TEST_OPENING_START) {
+      return {
+        start: TEST_OPENING_START,
+        open: false,
+        nextStart: TEST_OPENING_START,
+        seasonComplete: false,
+        testMode: true,
+      }
+    }
+    return {
+      start: TEST_OPENING_START,
+      open: now < TEST_OPENING_START + THREE_DAYS_MS,
+      seasonComplete: now >= TEST_OPENING_START + THREE_DAYS_MS,
+      testMode: true,
+    }
+  }
   const openings = OCTOBER_2026_OPENINGS.map(([year, month, day]) => (
     denverEpoch(year, month, day, EVENT_HOUR_MOUNTAIN)
   ))
   for (const start of openings) {
-    if (now < start) return { start, open: false, nextStart: start, seasonComplete: false }
-    if (now < start + THREE_DAYS_MS) return { start, open: true, seasonComplete: false }
+    if (now < start) return { start, open: false, nextStart: start, seasonComplete: false, testMode: false }
+    if (now < start + THREE_DAYS_MS) return { start, open: true, seasonComplete: false, testMode: false }
   }
   return {
     start: openings[openings.length - 1],
     open: false,
     seasonComplete: true,
+    testMode: false,
   }
 }
 
@@ -400,7 +424,9 @@ export function SalonLiveRoom({
             {salonWindow.open
               ? 'DARKNESS · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME'
               : salonWindow.seasonComplete
-                ? 'THE OCTOBER 2026 SEASON HAS CLOSED'
+                ? salonWindow.testMode
+                  ? 'THE TEST SALON HAS CLOSED'
+                  : 'THE OCTOBER 2026 SEASON HAS CLOSED'
                 : `NEXT READING · ${formatOpening(salonWindow.nextStart).toUpperCase()} MOUNTAIN TIME`}
           </div>
           <div
@@ -455,7 +481,9 @@ export function SalonLiveRoom({
                 {salonWindow.open
                   ? 'Rain crosses the lake. The company is gathering.'
                   : salonWindow.seasonComplete
-                    ? 'The candles have gone out. Villa Diodati will return in another season.'
+                    ? salonWindow.testMode
+                      ? 'The test candles have gone out. The October season remains undisturbed.'
+                      : 'The candles have gone out. Villa Diodati will return in another season.'
                     : `Rain crosses the lake. On ${formatOpening(salonWindow.nextStart)}, Byron will open Fantasmagoriana.`}
               </p>
             )}
@@ -497,7 +525,9 @@ export function SalonLiveRoom({
               else setAuthOpen(true)
             }}
           >
-            {canParticipate ? (salonWindow.open ? 'Send' : 'October weekends') : 'Enter'}
+            {canParticipate
+              ? (salonWindow.open ? 'Send' : salonWindow.testMode ? 'Test closed' : 'October weekends')
+              : 'Enter'}
           </button>
         </div>
         {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}

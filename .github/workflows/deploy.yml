@@ -35,6 +35,7 @@ jobs:
           PUBLIC_MATRIX_SERVER: ${{ vars.PUBLIC_MATRIX_SERVER }}
           PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+          PUBLIC_DIODATI_TEST_OPENING_AT: ${{ vars.PUBLIC_DIODATI_TEST_OPENING_AT }}
         run: npm run build
 
       - name: Upload artifact

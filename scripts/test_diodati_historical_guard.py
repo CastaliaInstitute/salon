@@ -5,6 +5,7 @@
 import os
 import unittest
 from datetime import datetime
+from unittest import mock
 from zoneinfo import ZoneInfo
 
 
@@ -18,6 +19,7 @@ from diodati_realtime import (  # noqa: E402
     redact_future_leaks,
     scheduled_cycle_start,
 )
+import diodati_realtime  # noqa: E402
 
 
 class HistoricalGuardTests(unittest.TestCase):
@@ -86,6 +88,16 @@ class HistoricalGuardTests(unittest.TestCase):
         mountain = ZoneInfo("America/Denver")
         after_season = datetime(2026, 11, 3, 12, 0, tzinfo=mountain).timestamp()
         self.assertIsNone(scheduled_cycle_start(after_season))
+
+    def test_one_shot_test_opening_can_start_on_a_tuesday(self):
+        mountain = ZoneInfo("America/Denver")
+        opening = datetime(2026, 9, 8, 14, 30, tzinfo=mountain).timestamp()
+        during = datetime(2026, 9, 8, 15, 0, tzinfo=mountain).timestamp()
+        after = opening + diodati_realtime.CYCLE_SECONDS + 1
+
+        with mock.patch.object(diodati_realtime, "TEST_OPENING_TIMESTAMP", int(opening)):
+            self.assertEqual(scheduled_cycle_start(during), int(opening))
+            self.assertIsNone(scheduled_cycle_start(after))
 
 
 if __name__ == "__main__":

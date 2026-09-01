@@ -38,6 +38,13 @@ EVENT_SEASON_END = date.fromisoformat(
 )
 if EVENT_SEASON_END < EVENT_SEASON_START:
     raise ValueError("DIODATI_EVENT_SEASON_END must not precede DIODATI_EVENT_SEASON_START")
+TEST_OPENING_AT = os.environ.get("DIODATI_TEST_OPENING_AT", "").strip()
+TEST_OPENING_TIMESTAMP = None
+if TEST_OPENING_AT:
+    test_opening = datetime.fromisoformat(TEST_OPENING_AT.replace("Z", "+00:00"))
+    if test_opening.tzinfo is None:
+        test_opening = test_opening.replace(tzinfo=EVENT_TIMEZONE)
+    TEST_OPENING_TIMESTAMP = int(test_opening.timestamp())
 REGISTERED_MATRIX_USERS = {
     username.strip()
     for username in os.environ.get("DIODATI_REGISTERED_MATRIX_USERS", "").split(",")
@@ -362,6 +369,10 @@ def simulated_time(cycle_id):
 def scheduled_cycle_start(now=None):
     """Return the active or next opening in the configured season, if any."""
     now = time.time() if now is None else float(now)
+    if TEST_OPENING_TIMESTAMP is not None:
+        if now < TEST_OPENING_TIMESTAMP + CYCLE_SECONDS:
+            return TEST_OPENING_TIMESTAMP
+        return None
     opening_date = EVENT_SEASON_START
     while opening_date <= EVENT_SEASON_END:
         if opening_date.weekday() == EVENT_WEEKDAY:
@@ -700,7 +711,12 @@ def sync(bots):
     observer_token = observer["access_token"]
     bot_usernames = {bot["username"] for bot in bots.values()}
     token_path = STATE_DIR / "sync-token"
-    cycle_path = STATE_DIR / "october-2026-weekends-v1.json"
+    cycle_filename = (
+        f"test-opening-{TEST_OPENING_TIMESTAMP}.json"
+        if TEST_OPENING_TIMESTAMP is not None
+        else "october-2026-weekends-v1.json"
+    )
+    cycle_path = STATE_DIR / cycle_filename
     since = token_path.read_text(encoding="utf-8").strip() if token_path.exists() else ""
 
     if not since:

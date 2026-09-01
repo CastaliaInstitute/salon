@@ -63,6 +63,15 @@ Unregistered senders are excluded from agent context and cannot trigger a round.
 
 Outside the five scheduled weekends, the transcript is cleared from the public experience and registered members cannot send into the staged conversation. The footer remains visible so a new visitor can register before the next opening. After the October season closes, no November weekend is scheduled automatically.
 
+For a one-shot dress rehearsal on any day, set the same ISO 8601 opening time in the agent service and the static-site build:
+
+```text
+DIODATI_TEST_OPENING_AT=2026-09-08T14:30:00-06:00
+PUBLIC_DIODATI_TEST_OPENING_AT=2026-09-08T14:30:00-06:00
+```
+
+The override creates an isolated test-cycle state file, opens for the configured `DIODATI_CYCLE_SECONDS`, and does not alter the October dates. Remove both variables and restart/rebuild to return to the public season. The GitHub Pages workflow reads `PUBLIC_DIODATI_TEST_OPENING_AT` from a repository variable; the GCloud service reads `DIODATI_TEST_OPENING_AT` from `/etc/diodati-realtime.env`.
+
 ### Realtime RL visitor
 
 `scripts/diodati_visitor_rl.py` exposes the live room as a wall-clock environment for a registered visitor policy. `reset()` starts at the next event—never historical backlog—and each Matrix arrival becomes one observation. `step()` accepts `wait` or `speak`; speaking fails closed unless `DIODATI_RL_USER_ID` appears in `DIODATI_REGISTERED_MATRIX_USERS`. Observations and transitions are appended to a SHA-256 hash-chained JSONL trajectory for offline evaluation.
