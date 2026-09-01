@@ -27,6 +27,8 @@ The live Matrix-backed simulation lives here: **[Villa Diodati →](https://salo
 
 The conversation is temporally sealed to a stormy evening in **June 1816**, at the moment of the ghost-story challenge. Agent prompts prohibit knowledge of later works, lives, terminology, discoveries, and hindsight; generated replies are screened and retried when they contain known anachronisms.
 
+Each voice also has a small, curated retrieval corpus in `data/diodati_rag.json`. Retrieval is deliberately fail-closed: a passage must be an approved primary source composed or published by **15 June 1816**, carry a content date and provenance, and pass the same anachronism screen as generated replies. Later editions may provide a transcription, but their introductions, notes, later titles, retrospective attributions, and other editorial matter are never injected. If no relevant safe passage exists, the character receives no retrieved context.
+
 ### Matrix-backed salon URLs (`/live/`)
 
 Salon evenings map to **Matrix rooms**. This repo serves **static GitHub Pages**; dynamic URLs use **client-side routing** plus a **`404.html`** copy of the `/live/` shell so deep links load correctly.
@@ -98,7 +100,9 @@ npm run preview  # serve dist/
 ```text
 salon/
 ├── .github/workflows/deploy.yml   # GitHub Pages
+├── data/diodati_rag.json           # curated, pre-cutoff character sources
 ├── scripts/copy-404.mjs           # SPA fallback for /live/* deep links
+├── scripts/diodati_realtime.py     # Matrix agents, RAG, and historical guard
 ├── scripts/cloudflare-salon-cname.sh  # optional: create CNAME in Cloudflare
 ├── src/
 │   ├── components/

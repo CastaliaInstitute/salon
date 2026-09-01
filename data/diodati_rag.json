@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "scene_cutoff": "1816-06-15",
+  "policy": "Only approved primary-source words composed or published on or before the scene cutoff may be injected. Later editions may supply a transcription, but their introductions, notes, modernized attributions, and retrospective titles are excluded.",
+  "characters": {
+    "a.byron": [
+      {
+        "id": "byron-childe-harold-canto-i-satiety",
+        "title": "Childe Harold's Pilgrimage, Canto I",
+        "author": "Lord Byron",
+        "content_date": "1812-03-10",
+        "date_basis": "published",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "low",
+        "source_url": "https://www.gutenberg.org/ebooks/5131",
+        "source_note": "Canto I only. Later cantos and editorial matter in the electronic edition are excluded.",
+        "topics": ["satiety", "melancholy", "exile", "travel", "pride", "revelry", "home"],
+        "text": "Childe Harold basked him in the noontide sun, disporting there like any other fly, nor deemed before his little day was done one blast might chill him into misery. But long ere scarce a third of his passed by, worse than adversity the Childe befell; he felt the fulness of satiety: then loathed he in his native land to dwell, which seemed to him more lone than eremite's sad cell."
+      },
+      {
+        "id": "byron-childe-harold-canto-i-reverie",
+        "title": "Childe Harold's Pilgrimage, Canto I",
+        "author": "Lord Byron",
+        "content_date": "1812-03-10",
+        "date_basis": "published",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "low",
+        "source_url": "https://www.gutenberg.org/ebooks/5131",
+        "source_note": "Canto I only. Later cantos and editorial matter in the electronic edition are excluded.",
+        "topics": ["melancholy", "solitude", "exile", "travel", "pleasure", "pride", "sorrow"],
+        "text": "And now Childe Harold was sore sick at heart, and from his fellow bacchanals would flee; 'tis said, at times the sullen tear would start, but pride congealed the drop within his eye. Apart he stalked in joyless reverie, and from his native land resolved to go, and visit scorching climes beyond the sea; with pleasure drugged, he almost longed for woe, and e'en for change of scene would seek the shades below."
+      }
+    ],
+    "a.shelley": [
+      {
+        "id": "mary-godwin-letter-geneva-1816-05-17",
+        "title": "Letter from Geneva, 17 May",
+        "author": "Mary Godwin",
+        "content_date": "1816-05-17",
+        "date_basis": "written",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "medium",
+        "source_url": "https://www.gutenberg.org/ebooks/52790",
+        "source_note": "Only the letter dated 17 May is used from an edition published after the scene. The later preface and later letters are excluded.",
+        "topics": ["Geneva", "lake", "Alps", "nature", "travel", "liberty", "weather", "boat", "reading"],
+        "text": "From the windows of our hotel we see the lovely lake, blue as the heavens which it reflects, and sparkling with golden beams. The opposite shore is sloping, and covered with vines; behind it rise the various ridges of black mountains, and towering far above, in the midst of its snowy Alps, the majestic Mont Blanc. We have hired a boat, and every evening at about six o'clock we sail on the lake. The tossing of our boat raises my spirits and inspires me with unusual hilarity."
+      },
+      {
+        "id": "mary-godwin-letter-coligny-1816-06-01-storm",
+        "title": "Letter from Coligny, 1 June",
+        "author": "Mary Godwin",
+        "content_date": "1816-06-01",
+        "date_basis": "written",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "medium",
+        "source_url": "https://www.gutenberg.org/ebooks/52790",
+        "source_note": "Only the letter dated 1 June is used from an edition published after the scene. The later preface, later letters, and editorial framing are excluded.",
+        "topics": ["storm", "thunder", "lightning", "lake", "Jura", "rain", "nature", "darkness", "Geneva"],
+        "text": "The thunder storms that visit us are grander and more terrific than I have ever seen before. We watch them as they approach from the opposite side of the lake, observing the lightning play among the clouds in various parts of the heavens, and dart in jagged figures upon the piny heights of Jura. One night we enjoyed a finer storm than I had ever before beheld. The lake was lit up, the pines on Jura made visible, and all the scene illuminated for an instant, when a pitchy blackness succeeded, and the thunder came in frightful bursts over our heads amid the darkness."
+      }
+    ],
+    "a.clairmont": [
+      {
+        "id": "claire-clairmont-letter-byron-1816-05-06",
+        "title": "Letter to Lord Byron, 6 May",
+        "author": "Claire Clairmont",
+        "content_date": "1816-05-06",
+        "date_basis": "written",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "medium",
+        "source_url": "https://shelleygodwinarchive.org/contents/frankenstein/frankenstein-chronology/",
+        "source_note": "A brief manuscript quotation preserved in the Shelley-Godwin Archive chronology. No later biographical interpretation is injected.",
+        "topics": ["Clare", "Clairville", "name", "identity", "Byron", "affection", "letter"],
+        "text": "I have taken the name of Clairville because you said you liked the name of Clare very much."
+      }
+    ],
+    "a.shelley1": [
+      {
+        "id": "percy-shelley-queen-mab-death-and-sleep",
+        "title": "Queen Mab",
+        "author": "Percy Bysshe Shelley",
+        "content_date": "1813-12-31",
+        "date_basis": "published_by",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "low",
+        "source_url": "https://www.gutenberg.org/ebooks/4799",
+        "source_note": "Text from the original poem published in 1813. Later notes, revisions, and editorial apparatus are excluded.",
+        "topics": ["death", "sleep", "soul", "sensation", "nature", "wonder", "imagination"],
+        "text": "How wonderful is Death, Death and his brother Sleep! One, pale as yonder waning moon with lips of lurid blue; the other, rosy as the morn when throned on ocean's wave it blushes o'er the world: yet both so passing wonderful! Or is it only a sweet slumber stealing o'er sensation, which the breath of roseate morning chaseth into darkness?"
+      },
+      {
+        "id": "percy-shelley-queen-mab-sound-and-light",
+        "title": "Queen Mab",
+        "author": "Percy Bysshe Shelley",
+        "content_date": "1813-12-31",
+        "date_basis": "published_by",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "low",
+        "source_url": "https://www.gutenberg.org/ebooks/4799",
+        "source_note": "Text from the original poem published in 1813. Later notes, revisions, and editorial apparatus are excluded.",
+        "topics": ["sound", "light", "ruin", "wind", "moon", "imagination", "nature", "music"],
+        "text": "Hark! whence that rushing sound? 'Tis like the wondrous strain that round a lonely ruin swells, which, wandering on the echoing shore, the enthusiast hears at evening. 'Tis softer than the west wind's sigh; 'tis wilder than the unmeasured notes of that strange lyre whose strings the genii of the breezes sweep. Those lines of rainbow light are like the moonbeams when they fall through some cathedral window."
+      }
+    ],
+    "a.polidori": [
+      {
+        "id": "polidori-diary-1816-06-11-12",
+        "title": "Journal entries, 11–12 June",
+        "author": "John William Polidori",
+        "content_date": "1816-06-12",
+        "date_basis": "written",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "medium",
+        "source_url": "https://www.gutenberg.org/ebooks/55017",
+        "source_note": "Polidori's dated diary text only. William Michael Rossetti's later bracketed notes and expansions are excluded.",
+        "topics": ["Lucian", "reading", "medicine", "doctor", "dance", "music", "society", "Geneva"],
+        "text": "11 June.—Wrote home and to Pryse Gordon. Read Lucian. Went to Shelley's; dined; Shelley in the evening with us. 12 June.—Rode to town. Subscribed to a circulating library, and went in the evening to Madame Odier. Miss Odier, to make time pass, played the Ranz des Vaches—plaintive and war-like. Had a confab with Dr. Odier. Began dancing: waltzes, cotillons, French country-dances and English ones."
+      },
+      {
+        "id": "polidori-diary-1816-06-13-lightning",
+        "title": "Journal entry, 13 June",
+        "author": "John William Polidori",
+        "content_date": "1816-06-13",
+        "date_basis": "written",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "medium",
+        "source_url": "https://www.gutenberg.org/ebooks/55017",
+        "source_note": "Polidori's dated diary text only. Later bracketed editorial notes are excluded.",
+        "topics": ["thunder", "lightning", "storm", "lost", "police", "dance", "chess", "Geneva"],
+        "text": "Rode home, and to town again. Went to Mrs. Slaney: a ball. Danced and played at chess. Walked home in thunder and lightning: lost my way. Went back in search of some one—fell upon the police. Slept at the Balance."
+      },
+      {
+        "id": "polidori-diary-1816-06-15-principles",
+        "title": "Journal entry, 15 June",
+        "author": "John William Polidori",
+        "content_date": "1816-06-15",
+        "date_basis": "written",
+        "primary_source": true,
+        "approval_status": "approved",
+        "editorial_risk": "medium",
+        "source_url": "https://www.gutenberg.org/ebooks/55017",
+        "source_note": "Polidori's dated diary text ends before the later editor's bracketed explanation, which is excluded.",
+        "topics": ["principles", "instrument", "agency", "free will", "play", "writing", "injury", "Shelley"],
+        "text": "Up late; began my letters. Went to Shelley's. After dinner, jumping a wall my foot slipped and I strained my left ankle. Shelley and the others came in the evening; talked of my play, which all agreed was worth nothing. Afterwards Shelley and I had a conversation about principles—whether man was to be thought merely an instrument."
+      }
+    ]
+  }
+}

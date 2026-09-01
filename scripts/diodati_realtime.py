@@ -8,6 +8,7 @@ import pathlib
 import re
 import sys
 import time
+from datetime import date
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -18,6 +19,10 @@ ROOM_ID = os.environ["DIODATI_ROOM_ID"]
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://pilmscrodlitdrygabvo.supabase.co").rstrip("/")
 SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 STATE_DIR = pathlib.Path(os.environ.get("DIODATI_STATE_DIR", "/var/lib/diodati-realtime"))
+DEFAULT_RAG_PATH = pathlib.Path(
+    os.environ.get("DIODATI_RAG_PATH", "/opt/diodati-realtime/diodati_rag.json")
+)
+LOCAL_RAG_PATH = pathlib.Path(__file__).resolve().parents[1] / "data" / "diodati_rag.json"
 
 CAST = [
     ("a.byron", "Lord Byron"),
@@ -66,7 +71,7 @@ PERSONAS = {
 }
 
 HISTORICAL_GROUND_RULES = """
-The scene is a stormy evening in June 1816, during the ghost-story conversations at Villa Diodati.
+The scene is a stormy evening in mid-June 1816, at the beginning of the ghost-story conversations at Villa Diodati.
 Treat that evening as the absolute boundary of your knowledge. You may know only events, people, language,
 science, books, relationships, and beliefs available by then. You cannot know what happens later in 1816 or
 in any later year. No one present has yet conceived or written the works later associated with this gathering.
@@ -98,6 +103,17 @@ ANACHRONISM_PATTERNS = {
     "future Polidori plot": r"\b(?:aristocratic predator|beautiful leech|drain(?:s|ed|ing)? (?:their |the )?vital spirits?)\b",
 }
 
+RAG_STOP_WORDS = {
+    "a", "about", "after", "again", "all", "also", "am", "an", "and", "are", "as", "at",
+    "be", "because", "been", "before", "but", "by", "can", "could", "did", "do", "does", "for",
+    "from", "had", "has", "have", "he", "her", "here", "him", "his", "how", "i", "if", "in",
+    "into", "is", "it", "its", "me", "my", "no", "not", "of", "on", "one", "or", "our", "she",
+    "so", "some", "than", "that", "the", "their", "them", "then", "there", "these", "they", "this",
+    "to", "us", "was", "we", "were", "what", "when", "where", "which", "who", "will", "with",
+    "would", "you", "your",
+}
+_rag_corpus = None
+
 
 def find_anachronisms(text):
     lowered = text.lower()
@@ -118,6 +134,91 @@ def redact_future_leaks(text):
             flags=re.IGNORECASE,
         )
     return redacted
+
+
+def validate_rag_corpus(corpus):
+    cutoff = date.fromisoformat(corpus["scene_cutoff"])
+    if corpus.get("schema_version") != 1:
+        raise ValueError("Unsupported Diodati RAG schema")
+    if set(corpus.get("characters", {})) != {faculty_id for faculty_id, _ in CAST}:
+        raise ValueError("Diodati RAG corpus must contain exactly the configured cast")
+
+    seen_ids = set()
+    for faculty_id, chunks in corpus["characters"].items():
+        for chunk in chunks:
+            chunk_id = chunk.get("id", "<missing>")
+            if chunk_id in seen_ids:
+                raise ValueError(f"Duplicate RAG chunk id: {chunk_id}")
+            seen_ids.add(chunk_id)
+            if chunk.get("approval_status") != "approved" or chunk.get("primary_source") is not True:
+                raise ValueError(f"Unapproved or non-primary RAG chunk: {chunk_id}")
+            if date.fromisoformat(chunk["content_date"]) > cutoff:
+                raise ValueError(f"Post-cutoff RAG chunk: {chunk_id}")
+            if not chunk.get("source_url") or not chunk.get("source_note"):
+                raise ValueError(f"RAG chunk lacks provenance: {chunk_id}")
+            violations = find_anachronisms(chunk.get("text", ""))
+            if violations:
+                raise ValueError(f"Anachronistic RAG chunk {chunk_id}: {', '.join(violations)}")
+    return corpus
+
+
+def load_rag_corpus(path=None):
+    global _rag_corpus
+    if path is None and _rag_corpus is not None:
+        return _rag_corpus
+    corpus_path = pathlib.Path(path) if path else DEFAULT_RAG_PATH
+    if not corpus_path.exists() and path is None:
+        corpus_path = LOCAL_RAG_PATH
+    corpus = validate_rag_corpus(json.loads(corpus_path.read_text(encoding="utf-8")))
+    if path is None:
+        _rag_corpus = corpus
+    return corpus
+
+
+def rag_tokens(text):
+    return {
+        token
+        for token in re.findall(r"[a-z][a-z'-]{2,}", text.lower())
+        if token not in RAG_STOP_WORDS
+    }
+
+
+def retrieve_rag_context(faculty_id, query, *, corpus=None, limit=2):
+    corpus = corpus or load_rag_corpus()
+    query_tokens = rag_tokens(query)
+    if not query_tokens:
+        return []
+
+    ranked = []
+    for chunk in corpus["characters"].get(faculty_id, []):
+        topic_tokens = rag_tokens(" ".join(chunk.get("topics", [])))
+        text_tokens = rag_tokens(chunk["text"])
+        topic_hits = query_tokens & topic_tokens
+        text_hits = query_tokens & text_tokens
+        score = (3 * len(topic_hits)) + len(text_hits)
+        if score:
+            ranked.append((score, chunk["content_date"], chunk["id"], chunk))
+    ranked.sort(key=lambda item: (-item[0], item[1], item[2]))
+    return [item[3] for item in ranked[:limit]]
+
+
+def format_rag_context(chunks):
+    if not chunks:
+        return ""
+    sources = []
+    for index, chunk in enumerate(chunks, 1):
+        sources.append(
+            f"[S{index}] {chunk['title']} — {chunk['content_date']} ({chunk['date_basis']})\n"
+            f"{chunk['text']}"
+        )
+    return (
+        "\n\nCURATED PRE-CUTOFF PRIMARY-SOURCE CONTEXT:\n"
+        + "\n\n".join(sources)
+        + "\n\nUse these passages only as evidence for period voice, experience, and ideas. "
+        "Paraphrase naturally rather than reciting them. Do not mention source labels, dates, editions, URLs, "
+        "or retrieval. This context never expands the historical boundary. If it does not answer the visitor, "
+        "say only what this character could reasonably know and do not invent documentary evidence."
+    )
 
 
 def request_json(url, *, method="GET", headers=None, payload=None, timeout=45):
@@ -183,7 +284,21 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses):
     if context:
         prompt += f"\n\nWhat the salon has just said:\n{context}"
 
-    system_instruction = f"{HISTORICAL_GROUND_RULES}\n\nCHARACTER-SPECIFIC VOICE:\n{PERSONAS[faculty_id]}"
+    retrieval_query = "\n".join(
+        [visitor_prompt, *(response for _, response in prior_responses[-3:])]
+    )
+    rag_chunks = retrieve_rag_context(faculty_id, retrieval_query)
+    if rag_chunks:
+        print(
+            f"RAG {faculty_id}: {', '.join(chunk['id'] for chunk in rag_chunks)}",
+            flush=True,
+        )
+    else:
+        print(f"RAG {faculty_id}: no safe relevant source", flush=True)
+    system_instruction = (
+        f"{HISTORICAL_GROUND_RULES}\n\nCHARACTER-SPECIFIC VOICE:\n{PERSONAS[faculty_id]}"
+        f"{format_rag_context(rag_chunks)}"
+    )
 
     for attempt in range(2):
         attempt_prompt = prompt
