@@ -17,7 +17,7 @@ export default function SalonLiveApp() {
             <SalonLiveRoom
               roomRef="#villa-diodati:matrix.castalia.institute"
               salonTitle="Villa Diodati"
-              salonSubtitle="Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori. This page reflects their Matrix salon as it unfolds."
+              salonSubtitle="Lord Byron hosts Mary Shelley, Claire Clairmont, Percy Shelley, and John Polidori. This page reflects their Matrix salon as it unfolds."
             />
           }
         />
@@ -27,7 +27,7 @@ export default function SalonLiveApp() {
             <SalonLiveRoom
               roomRef="#villa-diodati:matrix.castalia.institute"
               salonTitle="Villa Diodati"
-              salonSubtitle="Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori. This page reflects their Matrix salon as it unfolds."
+              salonSubtitle="Lord Byron hosts Mary Shelley, Claire Clairmont, Percy Shelley, and John Polidori. This page reflects their Matrix salon as it unfolds."
             />
           }
         />

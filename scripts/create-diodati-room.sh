@@ -43,9 +43,10 @@ if [[ -z "$room_id" ]]; then
     visibility: "public",
     preset: "public_chat",
     name: "Villa Diodati",
-    topic: "A storm-bound salon at Lake Geneva with Lord Byron, Mary Shelley, Percy Shelley, and John Polidori.",
+    topic: "A storm-bound salon at Lake Geneva with Lord Byron, Mary Shelley, Claire Clairmont, Percy Shelley, and John Polidori.",
     invite: [
       ("@m.shelley:" + $domain),
+      ("@c.clairmont:" + $domain),
       ("@a.shelley:" + $domain),
       ("@j.polidori:" + $domain)
     ],
@@ -64,11 +65,12 @@ fi
 declare -A display_names=(
   [g.byron]='Lord Byron'
   [m.shelley]='Mary Shelley'
+  [c.clairmont]='Claire Clairmont'
   [a.shelley]='Percy Bysshe Shelley'
   [j.polidori]='John William Polidori'
 )
 
-for localpart in g.byron m.shelley a.shelley j.polidori; do
+for localpart in g.byron m.shelley c.clairmont a.shelley j.polidori; do
   token="$(login "$localpart")"
   user_id="@${localpart}:${MATRIX_DOMAIN}"
   encoded_user="$(jq -nr --arg value "$user_id" '$value|@uri')"
