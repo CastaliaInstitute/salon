@@ -2,6 +2,30 @@
   "schema_version": 1,
   "scene_cutoff": "1816-06-15",
   "policy": "Only approved primary-source words composed or published on or before the scene cutoff may be injected. Later editions may supply a transcription, but their introductions, notes, modernized attributions, and retrospective titles are excluded.",
+  "salon_readings": [
+    {
+      "id": "fantasmagoriana-heure-fatale",
+      "title": "Fantasmagoriana — L'Heure fatale",
+      "author": "Friedrich Laun, translated anonymously into French",
+      "content_date": "1812-12-31",
+      "date_basis": "published_by",
+      "primary_source": true,
+      "approval_status": "approved",
+      "editorial_risk": "low",
+      "source_url": "https://fr.wikisource.org/wiki/Fantasmagoriana/L%E2%80%99Heure_fatale",
+      "source_note": "Passages transcribed from the 1812 Paris edition, volume II, pages 105–160. Modern commentary is excluded.",
+      "segments": [
+        {
+          "id": "rain-and-three-friends",
+          "text": "Une pluie affreuse empêchoit les trois amies de faire la promenade du matin qu'elles avoient concertée ; cependant Amélie et Marie ne manquèrent pas de se trouver au logis de Florentine à l'heure indiquée. Celle-ci étoit, depuis quelque temps, silencieuse, pensive, aisée à émouvoir, et l'active amitié ne pouvoit que s'inquiéter de l'impression qu'avoit produite sur elle cette nuit affreuse signalée par la tempête la plus violente."
+        },
+        {
+          "id": "double-from-the-wardrobe",
+          "text": "Mais juge de ma frayeur mortelle, lorsque me préparant à l'ouvrir, les deux battans se déploient sans faire le moindre bruit ; la lumière que je tenois à la main s'éteint ; et comme si je me trouvois devant un miroir, mon image fidelle sort de l'armoire : l'éclat qu'elle répand éclaire une grande partie de l'appartement. Alors j'entends ces paroles : « Pourquoi trembler en voyant ton être propre s'avancer vers toi, pour te donner la connoissance de ta mort prochaine, et pour te révéler la destinée de ta maison ? »"
+        }
+      ]
+    }
+  ],
   "characters": {
     "a.byron": [
       {

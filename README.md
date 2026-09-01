@@ -29,6 +29,8 @@ The conversation is temporally sealed to a stormy evening in **June 1816**, at t
 
 Each voice also has a small, curated retrieval corpus in `data/diodati_rag.json`. Retrieval is deliberately fail-closed: a passage must be an approved primary source composed or published by **15 June 1816**, carry a content date and provenance, and pass the same anachronism screen as generated replies. Later editions may provide a transcription, but their introductions, notes, later titles, retrospective attributions, and other editorial matter are never injected. If no relevant safe passage exists, the character receives no retrieved context.
 
+The salon opens in medias res with Byron reading two passages from the 1812 French *Fantasmagoriana*, “L’Heure fatale.” Claire and Mary interrupt the rain-soaked opening; Polidori and Percy dispute the later apparition; Byron then closes the volume and issues the writing challenge. The primary reading is stored and validated alongside the character corpus, while the interjections are generated in each participant’s historically bounded voice.
+
 ### Matrix-backed salon URLs (`/live/`)
 
 Salon evenings map to **Matrix rooms**. This repo serves **static GitHub Pages**; dynamic URLs use **client-side routing** plus a **`404.html`** copy of the `/live/` shell so deep links load correctly.

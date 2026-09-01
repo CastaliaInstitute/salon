@@ -114,6 +114,30 @@ RAG_STOP_WORDS = {
 }
 _rag_corpus = None
 
+OPENING_INTERRUPTERS = (
+    (
+        "a.clairmont",
+        "The rain has scarcely been named. Tease Byron or the story for finding terror in three women "
+        "prevented from taking a walk, while noticing what the women understand before the tale admits it.",
+    ),
+    (
+        "a.shelley",
+        "Comment on how ordinary weather and intimate friendship make the first unease credible. "
+        "Do not predict where the tale is going.",
+    ),
+    (
+        "a.polidori",
+        "Interrupt as a physician: offer a concise natural explanation for the extinguished lamp or the double, "
+        "but concede the one detail your explanation does not settle.",
+    ),
+    (
+        "a.shelley1",
+        "Answer Polidori's material explanation. Treat the double as a problem of identity, perception, and mind, "
+        "without claiming the apparition is fact.",
+    ),
+)
+OPENING_CHALLENGE_NAMES = "Mary Godwin, Claire, Shelley, Polidori, and yourself"
+
 
 def find_anachronisms(text):
     lowered = text.lower()
@@ -144,6 +168,32 @@ def validate_rag_corpus(corpus):
         raise ValueError("Diodati RAG corpus must contain exactly the configured cast")
 
     seen_ids = set()
+
+    salon_readings = corpus.get("salon_readings", [])
+    if not salon_readings:
+        raise ValueError("Diodati RAG corpus must contain an approved salon reading")
+    for reading in salon_readings:
+        reading_id = reading.get("id", "<missing>")
+        if reading_id in seen_ids:
+            raise ValueError(f"Duplicate RAG chunk id: {reading_id}")
+        seen_ids.add(reading_id)
+        if reading.get("approval_status") != "approved" or reading.get("primary_source") is not True:
+            raise ValueError(f"Unapproved or non-primary RAG chunk: {reading_id}")
+        if date.fromisoformat(reading["content_date"]) > cutoff:
+            raise ValueError(f"Post-cutoff RAG chunk: {reading_id}")
+        if not reading.get("source_url") or not reading.get("source_note"):
+            raise ValueError(f"RAG chunk lacks provenance: {reading_id}")
+        if not reading.get("segments"):
+            raise ValueError(f"Salon reading has no segments: {reading_id}")
+        for segment in reading["segments"]:
+            segment_id = f"{reading_id}/{segment.get('id', '<missing>')}"
+            if segment_id in seen_ids:
+                raise ValueError(f"Duplicate RAG chunk id: {segment_id}")
+            seen_ids.add(segment_id)
+            violations = find_anachronisms(segment.get("text", ""))
+            if violations:
+                raise ValueError(f"Anachronistic RAG chunk {segment_id}: {', '.join(violations)}")
+
     for faculty_id, chunks in corpus["characters"].items():
         for chunk in chunks:
             chunk_id = chunk.get("id", "<missing>")
@@ -270,15 +320,16 @@ def send_message(token, message):
     )
 
 
-def ask_faculty(faculty_id, visitor_prompt, prior_responses):
+def ask_faculty(faculty_id, visitor_prompt, prior_responses, *, response_style=None):
     visitor_prompt = redact_future_leaks(visitor_prompt)
     context = "\n\n".join(
         f"{speaker}: {response}" for speaker, response in prior_responses[-3:]
     )
+    response_style = response_style or "Keep this conversational and vivid, in two to four paragraphs."
     prompt = (
         "You are speaking in the Villa Diodati salon at Lake Geneva during the storm-bound summer of 1816. "
         "Reply in your own historically grounded voice, directly engaging the visitor and the other guests. "
-        "Keep this conversational and vivid, in two to four paragraphs.\n\n"
+        f"{response_style}\n\n"
         f"Visitor or initiating remark: {visitor_prompt}"
     )
     if context:
@@ -358,6 +409,78 @@ def run_round(bots, prompt):
             print(f"{display_name} response failed: {error}", file=sys.stderr, flush=True)
 
 
+def opening_reading_message(reading, segment):
+    return (
+        f"📖 From {reading['title']}:\n\n"
+        f"« {segment['text']} »"
+    )
+
+
+def run_opening(bots):
+    reading = load_rag_corpus()["salon_readings"][0]
+    segments = reading["segments"]
+    prior_responses = []
+    print(f"Starting Diodati opening with {reading['id']}", flush=True)
+
+    first_reading = opening_reading_message(reading, segments[0])
+    send_message(bots["a.byron"]["access_token"], first_reading)
+    prior_responses.append(("Lord Byron, reading", first_reading))
+    print("Sent first Fantasmagoriana passage", flush=True)
+    time.sleep(1.25)
+
+    for faculty_id, cue in OPENING_INTERRUPTERS[:2]:
+        display_name = dict(CAST)[faculty_id]
+        response = ask_faculty(
+            faculty_id,
+            f"Byron has paused after the first passage of L'Heure fatale. {cue}",
+            prior_responses,
+            response_style=(
+                "Interrupt the reading with one lively observation or quip of one to three sentences. "
+                "Do not summarize the passage, address a visitor, ask the audience a question, or turn this into a speech."
+            ),
+        )
+        send_message(bots[faculty_id]["access_token"], response)
+        prior_responses.append((display_name, response))
+        print(f"Sent {display_name} opening interruption", flush=True)
+        time.sleep(1.25)
+
+    second_reading = opening_reading_message(reading, segments[1])
+    send_message(bots["a.byron"]["access_token"], second_reading)
+    prior_responses.append(("Lord Byron, reading", second_reading))
+    print("Sent second Fantasmagoriana passage", flush=True)
+    time.sleep(1.25)
+
+    for faculty_id, cue in OPENING_INTERRUPTERS[2:]:
+        display_name = dict(CAST)[faculty_id]
+        response = ask_faculty(
+            faculty_id,
+            f"Byron has paused after the apparition emerges from the wardrobe in L'Heure fatale. {cue}",
+            prior_responses,
+            response_style=(
+                "Interrupt the reading with one lively observation or rebuttal of one to three sentences. "
+                "Address the company, not a visitor; do not summarize the tale or make a closing speech."
+            ),
+        )
+        send_message(bots[faculty_id]["access_token"], response)
+        prior_responses.append((display_name, response))
+        print(f"Sent {display_name} opening interruption", flush=True)
+        time.sleep(1.25)
+
+    closing = ask_faculty(
+        "a.byron",
+        "The company has repeatedly interrupted your reading. Retort briefly, close the volume, and challenge "
+        "everyone present to attempt a supernatural tale of their own. The challenge must explicitly include "
+        f"{OPENING_CHALLENGE_NAMES}; Claire must not be omitted.",
+        prior_responses,
+        response_style=(
+            "Reply in two or three sharp sentences, ending with the writing challenge. "
+            "Do not address an outside visitor or claim to know what anyone will write."
+        ),
+    )
+    send_message(bots["a.byron"]["access_token"], closing)
+    print("Sent Byron's opening challenge", flush=True)
+
+
 def save_text(path, value):
     temporary = path.with_suffix(".tmp")
     temporary.write_text(value, encoding="utf-8")
@@ -369,7 +492,7 @@ def sync(bots):
     observer_token = observer["access_token"]
     bot_usernames = {bot["username"] for bot in bots.values()}
     token_path = STATE_DIR / "sync-token"
-    seed_path = STATE_DIR / "seeded"
+    opening_seed_path = STATE_DIR / "opening-fantasmagoriana-v1"
     since = token_path.read_text(encoding="utf-8").strip() if token_path.exists() else ""
 
     if not since:
@@ -380,12 +503,9 @@ def sync(bots):
         since = initial["next_batch"]
         save_text(token_path, since)
 
-    if not seed_path.exists():
-        run_round(
-            bots,
-            "The thunder has trapped us indoors. What kind of ghost story could reveal the deepest danger in modern creation?",
-        )
-        save_text(seed_path, str(int(time.time())))
+    if not opening_seed_path.exists():
+        run_opening(bots)
+        save_text(opening_seed_path, str(int(time.time())))
 
     while True:
         query = urllib.parse.urlencode(
