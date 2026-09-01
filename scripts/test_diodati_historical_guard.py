@@ -4,6 +4,8 @@
 
 import os
 import unittest
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 os.environ.setdefault("DIODATI_ROOM_ID", "test-room")
@@ -14,6 +16,7 @@ from diodati_realtime import (  # noqa: E402
     find_anachronisms,
     is_registered_event,
     redact_future_leaks,
+    scheduled_cycle_start,
 )
 
 
@@ -54,6 +57,24 @@ class HistoricalGuardTests(unittest.TestCase):
         }
         self.assertTrue(is_registered_event(verified))
         self.assertFalse(is_registered_event(unverified))
+
+    def test_cycle_waits_for_friday_evening(self):
+        mountain = ZoneInfo("America/Denver")
+        tuesday = datetime(2026, 9, 1, 12, 0, tzinfo=mountain).timestamp()
+        opening = datetime.fromtimestamp(scheduled_cycle_start(tuesday), mountain)
+        self.assertEqual(opening, datetime(2026, 9, 4, 18, 0, tzinfo=mountain))
+
+    def test_friday_cycle_remains_open_for_three_days(self):
+        mountain = ZoneInfo("America/Denver")
+        sunday = datetime(2026, 9, 6, 12, 0, tzinfo=mountain).timestamp()
+        opening = datetime.fromtimestamp(scheduled_cycle_start(sunday), mountain)
+        self.assertEqual(opening, datetime(2026, 9, 4, 18, 0, tzinfo=mountain))
+
+    def test_cycle_advances_after_monday_evening(self):
+        mountain = ZoneInfo("America/Denver")
+        monday = datetime(2026, 9, 7, 18, 1, tzinfo=mountain).timestamp()
+        opening = datetime.fromtimestamp(scheduled_cycle_start(monday), mountain)
+        self.assertEqual(opening, datetime(2026, 9, 11, 18, 0, tzinfo=mountain))
 
 
 if __name__ == "__main__":

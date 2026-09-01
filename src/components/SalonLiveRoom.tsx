@@ -11,9 +11,11 @@ import {
 } from '../lib/salon-auth'
 
 const THREE_DAYS_MS = 72 * 60 * 60 * 1000
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+const FRIDAY = 5
+const EVENT_HOUR_MOUNTAIN = 18
 const MEMBERSHIP_URL = 'https://castalia.institute/membership'
 const FACULTY_PROFILE_ROOT = 'https://castalia.institute/faculty/profile/?h='
-const FACULTY_BUST_ROOT = 'https://castalia.institute/inquisitors/portraits/'
 // USNO for Villa Diodati (46.22 N, 6.18 E) gives civil twilight ending
 // 20:07 UTC on 15 June 1816. Apparent solar noon was 11:35 UTC, placing
 // Geneva apparent solar time about 25 minutes ahead: darkness at ~20:32.
@@ -22,22 +24,22 @@ const SIMULATION_START_UTC = Date.UTC(1816, 5, 15, 20, 32, 0)
 interface SpeakerIdentity {
   name: string
   facultyHandle?: string
-  bust?: string
+  bustUrl?: string
 }
 
 const DIODATI_SPEAKERS: Record<string, SpeakerIdentity> = {
-  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bust: 'villa-lord-byron.jpg' },
-  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bust: 'villa-lord-byron.jpg' },
-  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bust: 'villa-mary-shelley.jpg' },
-  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bust: 'villa-mary-shelley.jpg' },
-  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bust: 'villa-mary-shelley.jpg' },
-  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bust: 'villa-claire-clairmont.jpg' },
-  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bust: 'villa-claire-clairmont.jpg' },
-  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bust: 'villa-percy-shelley.jpg' },
-  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bust: 'villa-percy-shelley.jpg' },
-  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bust: 'villa-percy-shelley.jpg' },
-  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bust: 'villa-john-polidori.jpg' },
-  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bust: 'villa-john-polidori.jpg' },
+  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png' },
+  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png' },
+  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png' },
+  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png' },
+  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png' },
+  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png' },
+  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png' },
+  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png' },
+  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png' },
+  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png' },
+  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png' },
+  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png' },
   'salon.web': { name: 'A visitor' },
 }
 
@@ -52,6 +54,43 @@ function speakerIdentity(message: MatrixMessage): SpeakerIdentity {
 
 function currentCycleStart(now: number): number {
   return Math.floor(now / THREE_DAYS_MS) * THREE_DAYS_MS
+}
+
+function mountainParts(at: Date) {
+  const entries = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Denver',
+    year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23',
+    weekday: 'short',
+  }).formatToParts(at)
+  return Object.fromEntries(entries.map((entry) => [entry.type, entry.value]))
+}
+
+function denverEpoch(year: number, month: number, day: number, hour: number): number {
+  const approximate = Date.UTC(year, month - 1, day, hour)
+  const parts = mountainParts(new Date(approximate))
+  const represented = Date.UTC(
+    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
+    Number(parts.hour), Number(parts.minute), Number(parts.second),
+  )
+  return approximate - (represented - approximate)
+}
+
+function scheduledSalonWindow(now: number): { start: number; open: boolean } {
+  const parts = mountainParts(new Date(now))
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday)
+  const localDay = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day))
+  const recentFriday = new Date(localDay - ((weekday - FRIDAY + 7) % 7) * 24 * 60 * 60 * 1000)
+  let start = denverEpoch(
+    recentFriday.getUTCFullYear(),
+    recentFriday.getUTCMonth() + 1,
+    recentFriday.getUTCDate(),
+    EVENT_HOUR_MOUNTAIN,
+  )
+  if (now < start) return { start, open: false }
+  if (now < start + THREE_DAYS_MS) return { start, open: true }
+  start += WEEK_MS
+  return { start, open: false }
 }
 
 function isLegacyTravellerExchange(message: MatrixMessage): boolean {
@@ -116,11 +155,18 @@ export function SalonLiveRoom({
   const [authEmail, setAuthEmail] = useState('')
   const [authStatus, setAuthStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
   const [authError, setAuthError] = useState<string | null>(null)
+  const [wallClock, setWallClock] = useState(() => Date.now())
   const clientRef = useRef<MatrixRoomClient | null>(null)
   const transcriptRef = useRef<HTMLDivElement | null>(null)
   const transcriptHydratedRef = useRef(false)
 
   const canParticipate = !!memberAccessToken
+  const salonWindow = useMemo(() => scheduledSalonWindow(wallClock), [wallClock])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setWallClock(Date.now()), 30_000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -143,17 +189,20 @@ export function SalonLiveRoom({
   }, [])
 
   const visibleMessages = useMemo(() => {
+    if (!salonWindow.open) return []
     const latestCycleId = messages.findLast((message) => message.cycleId)?.cycleId
     const taggedCycleMessages = latestCycleId
       ? messages.filter((message) => message.cycleId === latestCycleId)
       : []
     const cycleStart = taggedCycleMessages.length
-      ? Math.min(...taggedCycleMessages.map((message) => message.timestamp))
-      : currentCycleStart(Date.now())
+      ? Math.max(salonWindow.start, Math.min(...taggedCycleMessages.map((message) => message.timestamp)))
+      : salonWindow.start
     return messages.filter(
-      (message) => message.timestamp >= cycleStart && !isLegacyTravellerExchange(message),
+      (message) => message.timestamp >= cycleStart
+        && message.timestamp < salonWindow.start + THREE_DAYS_MS
+        && !isLegacyTravellerExchange(message),
     )
-  }, [messages])
+  }, [messages, salonWindow])
 
   useEffect(() => {
     const transcript = transcriptRef.current
@@ -326,7 +375,9 @@ export function SalonLiveRoom({
       {resolvedRoomId && status !== 'error' && (
         <div className="flex h-[calc(100dvh-17rem)] min-h-[16rem] max-h-[660px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
           <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
-            DARKNESS · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME
+            {salonWindow.open
+              ? 'DARKNESS · 15 JUNE 1816 · 20:32 GENEVA SOLAR TIME'
+              : 'THE READING BEGINS FRIDAY · 18:00 MOUNTAIN TIME'}
           </div>
           <div
             ref={transcriptRef}
@@ -338,19 +389,19 @@ export function SalonLiveRoom({
               const speaker = speakerIdentity(m)
               return (
                 <div key={m.id} className="flex gap-3 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                  {speaker.facultyHandle && speaker.bust && (
+                  {speaker.facultyHandle && speaker.bustUrl && (
                     <a
                       href={`${FACULTY_PROFILE_ROOT}${encodeURIComponent(speaker.facultyHandle)}`}
                       className="mt-0.5 shrink-0"
                       aria-label={`${speaker.name} FacultAI profile`}
                     >
                       <img
-                        src={`${FACULTY_BUST_ROOT}${speaker.bust}`}
+                        src={speaker.bustUrl}
                         alt=""
                         width={48}
                         height={48}
                         loading="lazy"
-                        className="h-12 w-12 rounded-full border border-slate-500/40 object-cover shadow-sm"
+                        className="h-12 w-12 rounded-full border border-slate-500/40 bg-slate-900/90 object-contain p-0.5 shadow-sm"
                       />
                     </a>
                   )}
@@ -376,7 +427,11 @@ export function SalonLiveRoom({
               )
             })}
             {!visibleMessages.length && status === 'connected' && (
-              <p className="py-12 text-center italic text-slate-500">Rain crosses the lake. The company is gathering.</p>
+              <p className="py-12 text-center italic text-slate-500">
+                {salonWindow.open
+                  ? 'Rain crosses the lake. The company is gathering.'
+                  : 'Rain crosses the lake. On Friday, Byron will open Fantasmagoriana and the company will answer.'}
+              </p>
             )}
           </div>
 

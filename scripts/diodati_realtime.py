@@ -9,6 +9,7 @@ import re
 import sys
 import time
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -24,6 +25,11 @@ TURN_INTERVAL_SECONDS = int(os.environ.get("DIODATI_TURN_INTERVAL_SECONDS", "720
 OPENING_PAUSE_SECONDS = float(os.environ.get("DIODATI_OPENING_PAUSE_SECONDS", "18"))
 ROUND_PAUSE_SECONDS = float(os.environ.get("DIODATI_ROUND_PAUSE_SECONDS", "8"))
 MAX_RESPONSE_WORDS = int(os.environ.get("DIODATI_MAX_RESPONSE_WORDS", "70"))
+EVENT_WEEKDAY = int(os.environ.get("DIODATI_EVENT_WEEKDAY", "4"))
+EVENT_START_HOUR = int(os.environ.get("DIODATI_EVENT_START_HOUR", "18"))
+EVENT_START_MINUTE = int(os.environ.get("DIODATI_EVENT_START_MINUTE", "0"))
+EVENT_TIMEZONE_NAME = os.environ.get("DIODATI_EVENT_TIMEZONE", "America/Denver")
+EVENT_TIMEZONE = ZoneInfo(EVENT_TIMEZONE_NAME)
 REGISTERED_MATRIX_USERS = {
     username.strip()
     for username in os.environ.get("DIODATI_REGISTERED_MATRIX_USERS", "").split(",")
@@ -345,6 +351,27 @@ def simulated_time(cycle_id):
     return (scene_start + timedelta(seconds=elapsed)).isoformat().replace("+00:00", "Z")
 
 
+def scheduled_cycle_start(now=None):
+    """Return the current Friday opening, or the next one after a cycle ends."""
+    now = time.time() if now is None else float(now)
+    local_now = datetime.fromtimestamp(now, timezone.utc).astimezone(EVENT_TIMEZONE)
+    days_since_opening = (local_now.weekday() - EVENT_WEEKDAY) % 7
+    opening_date = (local_now - timedelta(days=days_since_opening)).date()
+    opening = datetime(
+        opening_date.year,
+        opening_date.month,
+        opening_date.day,
+        EVENT_START_HOUR,
+        EVENT_START_MINUTE,
+        tzinfo=EVENT_TIMEZONE,
+    )
+    if local_now < opening:
+        return int(opening.timestamp())
+    if now < opening.timestamp() + CYCLE_SECONDS:
+        return int(opening.timestamp())
+    return int((opening + timedelta(days=7)).timestamp())
+
+
 def send_message(token, message, cycle_id=None):
     txn_id = f"diodati-{int(time.time() * 1000)}"
     encoded_room = urllib.parse.quote(ROOM_ID, safe="")
@@ -615,21 +642,37 @@ def ensure_cycle(bots, cycle_path):
         except (ValueError, OSError):
             cycle = None
 
-    if cycle and now - int(cycle.get("started_at", 0)) < CYCLE_SECONDS:
-        return cycle
+    if cycle:
+        started_at = int(cycle.get("started_at", 0))
+        if now < started_at:
+            return cycle
+        if now - started_at < CYCLE_SECONDS:
+            if not cycle.get("opening_complete"):
+                run_opening(bots, cycle["id"])
+                cycle["opening_complete"] = True
+                cycle["next_turn_at"] = int(time.time()) + TURN_INTERVAL_SECONDS
+                save_json(cycle_path, cycle)
+                print(f"Opened scheduled Diodati cycle {cycle['id']}", flush=True)
+            return cycle
 
+    started_at = scheduled_cycle_start(now)
     cycle = {
-        "id": f"diodati-{now}",
-        "started_at": now,
+        "id": f"diodati-{started_at}",
+        "started_at": started_at,
         "turn_index": 0,
-        "next_turn_at": now + TURN_INTERVAL_SECONDS,
+        "next_turn_at": started_at + TURN_INTERVAL_SECONDS,
+        "opening_complete": False,
     }
-    # Persist before generation so a process restart cannot duplicate the full opening.
     save_json(cycle_path, cycle)
-    run_opening(bots, cycle["id"])
-    cycle["next_turn_at"] = int(time.time()) + TURN_INTERVAL_SECONDS
-    save_json(cycle_path, cycle)
-    print(f"Started three-day Diodati cycle {cycle['id']}", flush=True)
+    if now >= started_at:
+        run_opening(bots, cycle["id"])
+        cycle["opening_complete"] = True
+        cycle["next_turn_at"] = int(time.time()) + TURN_INTERVAL_SECONDS
+        save_json(cycle_path, cycle)
+        print(f"Opened scheduled Diodati cycle {cycle['id']}", flush=True)
+    else:
+        opening = datetime.fromtimestamp(started_at, timezone.utc).astimezone(EVENT_TIMEZONE)
+        print(f"Diodati waits for {opening.isoformat()}", flush=True)
     return cycle
 
 
@@ -638,7 +681,7 @@ def sync(bots):
     observer_token = observer["access_token"]
     bot_usernames = {bot["username"] for bot in bots.values()}
     token_path = STATE_DIR / "sync-token"
-    cycle_path = STATE_DIR / "three-day-cycle-v1.json"
+    cycle_path = STATE_DIR / "friday-three-day-cycle-v2.json"
     since = token_path.read_text(encoding="utf-8").strip() if token_path.exists() else ""
 
     if not since:
@@ -653,7 +696,7 @@ def sync(bots):
 
     while True:
         cycle = ensure_cycle(bots, cycle_path)
-        if int(time.time()) >= int(cycle.get("next_turn_at", 0)):
+        if cycle.get("opening_complete") and int(time.time()) >= int(cycle.get("next_turn_at", 0)):
             run_autonomous_turn(bots, cycle)
             save_json(cycle_path, cycle)
 
@@ -686,6 +729,9 @@ def sync(bots):
                     f"Ignored unregistered Diodati sender {event.get('sender', '<unknown>')}",
                     flush=True,
                 )
+                continue
+            if not cycle.get("opening_complete"):
+                print("Held registered Diodati remark until Friday's opening", flush=True)
                 continue
             body = event.get("content", {}).get("body", "").strip()
             if body:
