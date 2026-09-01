@@ -30,7 +30,7 @@ rest_headers=(
 display_name_for() {
   case "$1" in
     a.byron) echo 'George Gordon Byron, Lord Byron' ;;
-    a.shelley) echo 'Mary Wollstonecraft Shelley' ;;
+    a.shelley) echo 'Mary Godwin' ;;
     a.clairmont) echo 'Claire Clairmont' ;;
     a.shelley1) echo 'Percy Bysshe Shelley' ;;
     a.polidori) echo 'John William Polidori' ;;

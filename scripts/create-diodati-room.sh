@@ -43,7 +43,7 @@ if [[ -z "$room_id" ]]; then
     visibility: "public",
     preset: "public_chat",
     name: "Villa Diodati",
-    topic: "A storm-bound salon at Lake Geneva with Lord Byron, Mary Shelley, Claire Clairmont, Percy Shelley, and John Polidori.",
+    topic: "A storm-bound salon at Lake Geneva with Lord Byron, Mary Godwin, Claire Clairmont, Percy Shelley, and John Polidori.",
     invite: [
       ("@m.shelley:" + $domain),
       ("@c.clairmont:" + $domain),
@@ -64,7 +64,7 @@ fi
 
 declare -A display_names=(
   [g.byron]='Lord Byron'
-  [m.shelley]='Mary Shelley'
+  [m.shelley]='Mary Godwin'
   [c.clairmont]='Claire Clairmont'
   [a.shelley]='Percy Bysshe Shelley'
   [j.polidori]='John William Polidori'

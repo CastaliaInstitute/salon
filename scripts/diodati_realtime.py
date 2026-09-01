@@ -20,7 +20,7 @@ STATE_DIR = pathlib.Path(os.environ.get("DIODATI_STATE_DIR", "/var/lib/diodati-r
 
 CAST = [
     ("a.byron", "Lord Byron"),
-    ("a.shelley", "Mary Shelley"),
+    ("a.shelley", "Mary Godwin"),
     ("a.clairmont", "Claire Clairmont"),
     ("a.shelley1", "Percy Bysshe Shelley"),
     ("a.polidori", "John Polidori"),

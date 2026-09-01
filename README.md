@@ -21,7 +21,7 @@ A **salon** is an event: someone **hosts** a small circle for an evening of disc
 
 ### Canonical example: Villa Diodati
 
-The reference salon is **Villa Diodati** (Lake Geneva, summer 1816): **Lord Byron** as host, with **Mary Shelley**, **Claire Clairmont**, **Percy Shelley**, and **John Polidori** among the guests—the circle in which *Frankenstein* was conceived.
+The reference salon is **Villa Diodati** (Lake Geneva, summer 1816): **Lord Byron** as host, with **Mary Godwin** (later Mary Shelley), **Claire Clairmont**, **Percy Shelley**, and **John Polidori** among the guests—the circle in which *Frankenstein* was conceived.
 
 The live Matrix-backed simulation lives here: **[Villa Diodati →](https://salon.castalia.institute/diodati)**
 
