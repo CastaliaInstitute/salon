@@ -23,7 +23,7 @@ A **salon** is an event: someone **hosts** a small circle for an evening of disc
 
 The reference salon is **Villa Diodati** (Lake Geneva, summer 1816): **Lord Byron** as host, with **Percy Shelley**, **Mary Shelley**, and **John Polidori** among the guests—the circle in which *Frankenstein* was conceived.
 
-The live simulation lives on the main institute site: **[Villa Diodati →](https://castalia.institute/salon/villa.diodati)**
+The live Matrix-backed simulation lives here: **[Villa Diodati →](https://salon.castalia.institute/diodati)**
 
 ### Matrix-backed salon URLs (`/live/`)
 
@@ -43,8 +43,8 @@ Reading messages uses the Matrix Client-Server API (polling). **Sending** messag
 
 ### Enable GitHub Pages
 
-1. Repo **Settings → Secrets and variables → Actions**: add **`CASTALIA_PLATFORM_READ_TOKEN`** — a fine-grained or classic PAT with **Contents: Read** on **`CastaliaInstitute/castalia-platform`** (the default `GITHUB_TOKEN` cannot clone other private repos).
-2. **Settings → Pages → Build and deployment**: source **GitHub Actions**.
+1. **Settings → Pages → Build and deployment**: source **GitHub Actions**.
+2. Add `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` as Actions secrets to enable visitor messages.
 3. Push to **`main`** (the workflow uploads **`dist/`**, including **`404.html`**).
 4. **Cloudflare DNS** + **GitHub custom domain** (below).
 
@@ -76,16 +76,7 @@ After DNS propagates: **Settings → Pages → Custom domain** → `salon.castal
 
 ## Development
 
-Satellite site built with [Astro](https://astro.build), [Tailwind](https://tailwindcss.com), and [`@castalia/platform`](https://github.com/CastaliaInstitute/castalia-platform) for the shared Castalia shell—same pattern as [Symposia](https://github.com/InquiryInstitute/symposia). CI checks out that private repo using **`CASTALIA_PLATFORM_READ_TOKEN`** (see above).
-
-**Local clone layout** (so `file:../CastaliaInstitute/castalia-platform` resolves):
-
-```text
-~/GitHub/
-├── salon/                         ← this repo
-└── CastaliaInstitute/
-    └── castalia-platform/         ← shared UI package (sibling path)
-```
+Satellite site built with [Astro](https://astro.build), React, and [Tailwind](https://tailwindcss.com). It is self-contained so the separate Salon repository can build and deploy without access to another private repository.
 
 ```bash
 cd ~/GitHub/salon

@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SalonLiveApp from '../components/SalonLiveApp.tsx';
+---
+
+<BaseLayout
+  title="Villa Diodati"
+  description="Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori in a Matrix-backed salon."
+>
+  <SalonLiveApp client:only="react" />
+</BaseLayout>

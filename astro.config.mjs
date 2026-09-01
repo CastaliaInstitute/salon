@@ -36,5 +36,8 @@ export default defineConfig({
   },
   vite: {
     plugins: [salonLiveSpaFallback()],
+    resolve: {
+      dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
   },
 });

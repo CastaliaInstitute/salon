@@ -11,6 +11,26 @@ export default function SalonLiveApp() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route
+          path="/diodati"
+          element={
+            <SalonLiveRoom
+              roomRef="#villa-diodati:matrix.castalia.institute"
+              salonTitle="Villa Diodati"
+              salonSubtitle="Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori. This page reflects their Matrix salon as it unfolds."
+            />
+          }
+        />
+        <Route
+          path="/villa-diodati"
+          element={
+            <SalonLiveRoom
+              roomRef="#villa-diodati:matrix.castalia.institute"
+              salonTitle="Villa Diodati"
+              salonSubtitle="Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori. This page reflects their Matrix salon as it unfolds."
+            />
+          }
+        />
         <Route path="/live/*" element={<SalonLiveRoom />} />
       </Routes>
     </BrowserRouter>

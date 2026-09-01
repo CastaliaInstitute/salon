@@ -18,6 +18,42 @@ function matrixServer(): string {
   return 'https://matrix.castalia.institute';
 }
 
+let guestAccessTokenPromise: Promise<string> | null = null;
+
+async function guestAccessToken(): Promise<string> {
+  if (!guestAccessTokenPromise) {
+    const MATRIX_SERVER = matrixServer();
+    guestAccessTokenPromise = fetch(`${MATRIX_SERVER}/_matrix/client/v3/register?kind=guest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Matrix guest registration failed: ${response.status}`);
+        }
+        const data = await response.json();
+        if (!data.access_token) throw new Error('Matrix guest registration returned no access token');
+        return data.access_token as string;
+      })
+      .catch((error) => {
+        guestAccessTokenPromise = null;
+        throw error;
+      });
+  }
+  return guestAccessTokenPromise;
+}
+
+async function matrixRead(path: string): Promise<Response> {
+  const token = await guestAccessToken();
+  return fetch(`${matrixServer()}${path}`, {
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
 export class MatrixRoomClient {
   private roomId: string;
   private onMessageCallbacks = new Set<(message: MatrixMessage) => void>();
@@ -42,11 +78,9 @@ export class MatrixRoomClient {
   }
 
   private async pollMessages(): Promise<void> {
-    const MATRIX_SERVER = matrixServer();
     try {
-      const response = await fetch(
-        `${MATRIX_SERVER}/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/messages?dir=b&limit=50`,
-        { headers: { Accept: 'application/json' } }
+      const response = await matrixRead(
+        `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/messages?dir=b&limit=50`
       );
 
       if (!response.ok) {
@@ -126,11 +160,9 @@ export class MatrixRoomClient {
   }
 
   async getRecentMessages(limit = 50): Promise<MatrixMessage[]> {
-    const MATRIX_SERVER = matrixServer();
     try {
-      const response = await fetch(
-        `${MATRIX_SERVER}/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/messages?dir=b&limit=${limit}`,
-        { headers: { Accept: 'application/json' } }
+      const response = await matrixRead(
+        `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/messages?dir=b&limit=${limit}`
       );
 
       if (!response.ok) {

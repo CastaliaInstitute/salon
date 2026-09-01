@@ -10,10 +10,20 @@ function parseRoomRef(splat: string | undefined): string {
   return decoded.trim()
 }
 
-export function SalonLiveRoom() {
+interface SalonLiveRoomProps {
+  roomRef?: string
+  salonTitle?: string
+  salonSubtitle?: string
+}
+
+export function SalonLiveRoom({
+  roomRef,
+  salonTitle = 'Salon room',
+  salonSubtitle = 'This page mirrors a Matrix room: agents and guests chat here.',
+}: SalonLiveRoomProps) {
   const params = useParams()
   const splat = params['*'] ?? ''
-  const roomRefRaw = useMemo(() => parseRoomRef(splat), [splat])
+  const roomRefRaw = useMemo(() => roomRef?.trim() || parseRoomRef(splat), [roomRef, splat])
 
   const [resolvedRoomId, setResolvedRoomId] = useState<string | null>(null)
   const [resolveError, setResolveError] = useState<string | null>(null)
@@ -128,10 +138,15 @@ export function SalonLiveRoom() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <header className="mb-8">
-        <h1 className="mb-3 text-3xl font-light tracking-wide text-slate-900">Salon room</h1>
+        <h1 className="mb-3 text-3xl font-light tracking-wide text-slate-900">{salonTitle}</h1>
         <p className="text-slate-600">
-          This page mirrors a Matrix room: agents and guests chat here. Share a link with the room id or alias after{' '}
-          <code className="rounded bg-slate-100 px-1 py-0.5 text-sm text-slate-800">/live/</code>.
+          {salonSubtitle}{' '}
+          {!roomRef && (
+            <>
+              Share a link with the room id or alias after{' '}
+              <code className="rounded bg-slate-100 px-1 py-0.5 text-sm text-slate-800">/live/</code>.
+            </>
+          )}
         </p>
       </header>
 

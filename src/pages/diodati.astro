@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SalonLiveApp from '../components/SalonLiveApp.tsx';
+---
+
+<BaseLayout
+  title="Villa Diodati"
+  description="A realtime, Matrix-backed salon with Lord Byron, Mary Shelley, Percy Shelley, and John Polidori."
+>
+  <div class="diodati-storm">
+    <div class="lightning lightning-one" aria-hidden="true"></div>
+    <div class="lightning lightning-two" aria-hidden="true"></div>
+    <div class="storm-clouds" aria-hidden="true"></div>
+    <div class="salon-stage">
+      <p class="place">Lake Geneva · Summer 1816</p>
+      <SalonLiveApp client:only="react" />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .diodati-storm {
+    position: relative;
+    min-height: 78vh;
+    overflow: hidden;
+    color: #f5efe2;
+    background:
+      radial-gradient(circle at 50% 110%, rgba(180, 94, 34, 0.25), transparent 32%),
+      linear-gradient(165deg, #070a13 0%, #111829 48%, #05070d 100%);
+  }
+
+  .storm-clouds {
+    position: absolute;
+    inset: 0;
+    opacity: 0.7;
+    background:
+      radial-gradient(ellipse at 15% 12%, rgba(91, 105, 134, 0.45), transparent 34%),
+      radial-gradient(ellipse at 78% 3%, rgba(69, 83, 116, 0.42), transparent 38%),
+      radial-gradient(ellipse at 48% 30%, rgba(24, 31, 50, 0.75), transparent 52%);
+    animation: clouds 18s ease-in-out infinite alternate;
+  }
+
+  .lightning {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: rgba(224, 235, 255, 0.92);
+    mix-blend-mode: screen;
+  }
+
+  .lightning-one { animation: lightning 9s steps(1, end) infinite; }
+  .lightning-two { animation: lightning 13s 4.7s steps(1, end) infinite; }
+
+  .salon-stage {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 0 4rem;
+  }
+
+  .place {
+    margin: 0 auto -1.25rem;
+    padding: 0 1rem;
+    max-width: 48rem;
+    color: #b9c5dc;
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .diodati-storm :global(h1),
+  .diodati-storm :global(p),
+  .diodati-storm :global(code) { color: inherit; }
+
+  .diodati-storm :global(.bg-white) { background-color: rgba(12, 17, 29, 0.86); }
+  .diodati-storm :global(.bg-slate-100) { background-color: rgba(38, 48, 68, 0.9); }
+  .diodati-storm :global(.text-slate-900),
+  .diodati-storm :global(.text-slate-800),
+  .diodati-storm :global(.text-slate-700),
+  .diodati-storm :global(.text-slate-600),
+  .diodati-storm :global(.text-slate-500) { color: #d9dfeb; }
+  .diodati-storm :global(.border-slate-200),
+  .diodati-storm :global(.border-slate-100),
+  .diodati-storm :global(.border-slate-300) { border-color: rgba(166, 181, 207, 0.24); }
+
+  @keyframes clouds {
+    from { transform: translate3d(-2%, 0, 0) scale(1.03); }
+    to { transform: translate3d(2%, -1%, 0) scale(1.08); }
+  }
+
+  @keyframes lightning {
+    0%, 7%, 9%, 11%, 100% { opacity: 0; }
+    8% { opacity: 0.72; }
+    10% { opacity: 0.28; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lightning, .storm-clouds { animation: none; }
+  }
+</style>
