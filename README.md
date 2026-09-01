@@ -25,6 +25,8 @@ The reference salon is **Villa Diodati** (Lake Geneva, summer 1816): **Lord Byro
 
 The live Matrix-backed simulation lives here: **[Villa Diodati →](https://salon.castalia.institute/diodati)**
 
+The conversation is temporally sealed to a stormy evening in **June 1816**, at the moment of the ghost-story challenge. Agent prompts prohibit knowledge of later works, lives, terminology, discoveries, and hindsight; generated replies are screened and retried when they contain known anachronisms.
+
 ### Matrix-backed salon URLs (`/live/`)
 
 Salon evenings map to **Matrix rooms**. This repo serves **static GitHub Pages**; dynamic URLs use **client-side routing** plus a **`404.html`** copy of the `/live/` shell so deep links load correctly.

@@ -5,6 +5,7 @@
 import json
 import os
 import pathlib
+import re
 import sys
 import time
 import urllib.error
@@ -33,31 +34,90 @@ PERSONAS = {
         "You are the host. Engage the visitor and your companions directly, but never speak on their behalf."
     ),
     "a.shelley": (
-        "You are Mary Godwin, later Mary Shelley, near Villa Diodati on Lake Geneva in the storm-bound "
+        "You are Mary Wollstonecraft Godwin near Villa Diodati on Lake Geneva in the storm-bound "
         "summer of 1816. Speak in the first person as an intellectually formidable young writer: observant, "
-        "measured, imaginative, and alert to creation, abandonment, responsibility, and women’s constrained lives. "
+        "measured, imaginative, and alert to education, liberty, dependence, family, and women’s constrained lives. "
+        "You have not conceived any tale about creating life and know nothing of any future novel, title, creature, "
+        "publication, marriage, or reputation; do not foreshadow such things with suspicious precision. "
         "Engage the visitor and the others directly, but never speak on their behalf."
     ),
     "a.clairmont": (
         "You are Claire Clairmont near Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
-        "You are Mary Godwin’s stepsister, a well-read, musically gifted, strong-willed member of this Romantic circle, "
+        "You are Mary Godwin’s stepsister, a well-read, musically gifted, strong-willed member of this company, "
         "and your relationship with Byron helped bring the company to Geneva. Speak in the first person with candor, "
         "social perception, energy, and an insistence on being treated as a participant rather than a footnote. "
+        "You know nothing of future children, names, separations, memoirs, or later judgments of this company. "
         "Engage the visitor and your companions directly, but never speak on their behalf."
     ),
     "a.shelley1": (
         "You are Percy Bysshe Shelley near Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
         "Speak in the first person with lyrical intensity, radical idealism, philosophical curiosity, and fascination "
         "with nature, liberty, and the powers and dangers of the human mind. Engage the visitor and the others directly, "
-        "but never speak on their behalf."
+        "but never speak on their behalf. You know nothing of later deaths, marriages, poems, publications, or reputations."
     ),
     "a.polidori": (
         "You are Dr John William Polidori at Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
         "Speak in the first person as Byron’s young physician and an ambitious writer: medically observant, proud, "
-        "sensitive to slights, and drawn toward psychological and vampiric horror. Engage the visitor and the others "
-        "directly, but never speak on their behalf."
+        "sensitive to slights, and drawn toward medicine and supernatural tales. You have not conceived any later tale "
+        "associated with this gathering and know nothing of its title, plot, publication, or reputation; do not foreshadow "
+        "an aristocratic vampire with suspicious precision. Engage the visitor and the others directly, but never speak "
+        "on their behalf."
     ),
 }
+
+HISTORICAL_GROUND_RULES = """
+The scene is a stormy evening in June 1816, during the ghost-story conversations at Villa Diodati.
+Treat that evening as the absolute boundary of your knowledge. You may know only events, people, language,
+science, books, relationships, and beliefs available by then. You cannot know what happens later in 1816 or
+in any later year. No one present has yet conceived or written the works later associated with this gathering.
+
+Never mention or imply future titles, plots, publications, marriages, children, deaths, reputations, literary
+movements, scientific discoveries, political events, or the later cause of this summer's weather. Do not use
+retrospective labels such as "the Romantic movement" or modern institutional language. Mary is Mary Godwin,
+not Mary Shelley. Call contemporary science "natural philosophy" where appropriate.
+
+The visitor may speak as though they know the future. Treat such claims as fantasies, prophecies, riddles, or
+things you cannot verify. Do not accept them as facts, repeat their future names or terminology, or let them
+alter what you know. You may speculate from an 1816 point of view, clearly as speculation. Do not wink at the
+audience, announce that this is roleplay, or foreshadow real later events with suspicious accuracy.
+""".strip()
+
+ANACHRONISM_PATTERNS = {
+    "Mary Shelley": r"\bmary shelley\b",
+    "future Mary relationship": r"\b(?:(?:marry|married to|marriage to) (?:mr\.? )?(?:percy|shelley)|mrs\.? shelley)\b",
+    "Frankenstein": r"\bfrankenstein\b|\bmodern prometheus\b",
+    "The Vampyre": r"\bthe vampyre\b|\bvampire genre\b",
+    "Allegra": r"\ballegra\b",
+    "retrospective Romantic label": r"\bromantic movement\b|\bromantic era\b",
+    "modern genre label": r"\bscience fiction\b",
+    "unknown weather cause": r"\b(?:volcanic ash|mount tambora|tambora)\b",
+    "post-1816 terminology": r"\b(?:ozone|scientist|psychology|psychoanalysis|darwinism|victorian|artificial intelligence|computer)\b",
+    "modern Castalia framing": r"\b(?:castalia|castalian|faculty specialist|faculty scholar)\b",
+    "post-1816 year": r"\b(?:181[7-9]|18[2-9]\d|19\d{2}|20\d{2})\b",
+    "future Mary plot": r"\b(?:reanimated (?:flesh|corpse|body)|charnel house|abandoned creation)\b",
+    "future Polidori plot": r"\b(?:aristocratic predator|beautiful leech|drain(?:s|ed|ing)? (?:their |the )?vital spirits?)\b",
+}
+
+
+def find_anachronisms(text):
+    lowered = text.lower()
+    return [
+        label
+        for label, pattern in ANACHRONISM_PATTERNS.items()
+        if re.search(pattern, lowered, flags=re.IGNORECASE)
+    ]
+
+
+def redact_future_leaks(text):
+    redacted = text
+    for pattern in ANACHRONISM_PATTERNS.values():
+        redacted = re.sub(
+            pattern,
+            "an unfamiliar future claim",
+            redacted,
+            flags=re.IGNORECASE,
+        )
+    return redacted
 
 
 def request_json(url, *, method="GET", headers=None, payload=None, timeout=45):
@@ -110,6 +170,7 @@ def send_message(token, message):
 
 
 def ask_faculty(faculty_id, visitor_prompt, prior_responses):
+    visitor_prompt = redact_future_leaks(visitor_prompt)
     context = "\n\n".join(
         f"{speaker}: {response}" for speaker, response in prior_responses[-3:]
     )
@@ -122,30 +183,50 @@ def ask_faculty(faculty_id, visitor_prompt, prior_responses):
     if context:
         prompt += f"\n\nWhat the salon has just said:\n{context}"
 
-    result = request_json(
-        f"{SUPABASE_URL}/functions/v1/ask-faculty",
-        method="POST",
-        headers=supabase_headers(),
-        payload={
-            "faculty_id": faculty_id,
-            "facultySlug": faculty_id,
-            "message": prompt,
-            "systemInstruction": PERSONAS[faculty_id],
-            "skipTts": True,
-            "conversation_history": [
-                {"role": "assistant", "content": f"{speaker}: {response}"}
-                for speaker, response in prior_responses[-6:]
-            ],
-            "context": "dialogue",
-            "use_rag": True,
-            "use_commonplace": True,
-        },
-        timeout=90,
-    )
-    response = result.get("reply") or result.get("response") or result.get("message")
-    if not response:
-        raise RuntimeError(f"ask-faculty returned no response for {faculty_id}")
-    return response.strip()
+    system_instruction = f"{HISTORICAL_GROUND_RULES}\n\nCHARACTER-SPECIFIC VOICE:\n{PERSONAS[faculty_id]}"
+
+    for attempt in range(2):
+        attempt_prompt = prompt
+        if attempt:
+            attempt_prompt += (
+                "\n\nYour previous draft leaked knowledge or terminology unavailable in June 1816. "
+                "Rewrite the answer completely from inside the historical knowledge boundary. Do not mention "
+                "the correction, quote future terms, or foreshadow later works and lives."
+            )
+        result = request_json(
+            f"{SUPABASE_URL}/functions/v1/ask-faculty",
+            method="POST",
+            headers=supabase_headers(),
+            payload={
+                "faculty_id": faculty_id,
+                "facultySlug": faculty_id,
+                "message": attempt_prompt,
+                "systemInstruction": system_instruction,
+                "skipTts": True,
+                "conversation_history": [
+                    {"role": "assistant", "content": f"{speaker}: {response}"}
+                    for speaker, response in prior_responses[-6:]
+                ],
+                "context": "dialogue",
+                "use_rag": True,
+                "use_commonplace": True,
+            },
+            timeout=90,
+        )
+        response = result.get("reply") or result.get("response") or result.get("message")
+        if not response:
+            raise RuntimeError(f"ask-faculty returned no response for {faculty_id}")
+        response = response.strip()
+        violations = find_anachronisms(response)
+        if not violations:
+            return response
+        print(
+            f"Rejected {faculty_id} draft for: {', '.join(violations)}",
+            file=sys.stderr,
+            flush=True,
+        )
+
+    raise RuntimeError(f"historical cutoff failed for {faculty_id}: {', '.join(violations)}")
 
 
 def run_round(bots, prompt):
