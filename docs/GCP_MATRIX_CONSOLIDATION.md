@@ -86,6 +86,21 @@ place. Matrix must never run writable in both projects.
 Returning to the target repeats the same single-writer process in the opposite
 direction and must account for any events accepted by the rollback host.
 
+### Isolated rollback rehearsal — September 2, 2026
+
+The pre-consolidation snapshot was cloned into `inquiry-institute` and booted as
+`matrix-rollback-rehearsal-20260902` with no public IP and no DNS change. Docker
+started Element, Synapse 1.151.0, Caddy, PostgreSQL 15, Redis, and CalDAV. Both
+local Matrix client and federation version endpoints answered, PostgreSQL was
+ready, the Diodati room alias resolved, and the snapshot contained 59 users, 1
+room, and 80 events. Production remained on `136.64.21.139` and healthy.
+
+The disposable rehearsal VM and cloned disk were deleted after verification.
+The protected source VM, source disk, and
+`matrix-synapse-pre-consolidation-20260901` snapshot were not modified. This
+proves the preserved snapshot is bootable; an actual rollback must still follow
+the single-writer and DNS procedure above.
+
 ## Required health checks
 
 ```bash
