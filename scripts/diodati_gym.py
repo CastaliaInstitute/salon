@@ -36,6 +36,7 @@ from diodati_realtime import (  # noqa: E402
     DEFAULT_RAG_PATH,
     LOCAL_RAG_PATH,
     find_anachronisms,
+    find_response_violations,
     load_rag_corpus,
 )
 
@@ -465,6 +466,15 @@ class DiodatiSalonGym:
         tokens = _token_set(content)
         word_count = len(_words(content))
         violations = find_anachronisms(content)
+        interaction_violations = (
+            find_response_violations(
+                content,
+                max_words=MAX_WORDS,
+                faculty_id=speaker,
+            )
+            if action_type != "introduce_reading"
+            else []
+        )
         lower = content.lower()
 
         voice = 0.35
@@ -517,6 +527,7 @@ class DiodatiSalonGym:
             "schedule_mismatch": 0.0 if schedule_matched or not self._state["current_schedule_event"] else 0.30,
             "fabricated_fact": 0.75 if invalid_evidence else 0.0,
             "safety_violation": 1.0 - scores["safety"],
+            "interaction_boundary": min(1.5, 0.5 * len(interaction_violations)),
         }
         weighted = sum(scores[name] * WEIGHTS[name] for name in WEIGHTS)
         total = weighted - sum(penalties.values())
@@ -527,6 +538,7 @@ class DiodatiSalonGym:
             "diagnostics": {
                 "word_count": word_count,
                 "anachronisms": violations,
+                "interaction_violations": interaction_violations,
                 "repetition_overlap": round(overlap, 6),
                 "schedule_matched": schedule_matched,
                 "evidence_ids": sorted(set(evidence_ids)),

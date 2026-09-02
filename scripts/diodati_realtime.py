@@ -172,6 +172,7 @@ DRAFT_ANACHRONISM_PATTERNS = {
     "future manuscript title": r"\b(?:frankenstein|the vampyre)\b",
     "future Mary name": r"\bmary shelley\b",
     "post-1816 manuscript year": r"\b(?:181[7-9]|18[2-9]\d|19\d{2}|20\d{2})\b",
+    "post-1816 manuscript framing": r"\b(?:future|modern|centuries|as an ai|language model|simulation|roleplay)\b",
     "Polidori later vampire trajectory": r"\bvamp(?:ire|yre)s?\b",
 }
 

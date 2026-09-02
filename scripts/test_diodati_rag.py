@@ -170,6 +170,12 @@ class DiodatiRagTests(unittest.TestCase):
             find_draft_anachronisms("a.byron", "A vampire entered the room."),
         )
 
+    def test_draft_guard_rejects_generic_future_framing(self):
+        self.assertIn(
+            "post-1816 manuscript framing",
+            find_draft_anachronisms("a.clairmont", "A modern voice promised the future would remember her."),
+        )
+
     def test_byron_draft_develops_darvell_and_must_remain_unfinished(self):
         saturday = draft_prompt("a.byron", "saturday")
         sunday = draft_prompt("a.byron", "sunday", "Earlier leaves")

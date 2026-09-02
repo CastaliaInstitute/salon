@@ -31,7 +31,13 @@ from diodati_gym import (
     _token_set,
     _words,
 )
-from diodati_realtime import DEFAULT_RAG_PATH, LOCAL_RAG_PATH, find_anachronisms, load_rag_corpus
+from diodati_realtime import (
+    DEFAULT_RAG_PATH,
+    LOCAL_RAG_PATH,
+    find_anachronisms,
+    find_draft_anachronisms,
+    load_rag_corpus,
+)
 
 
 SCHEMA_VERSION = 1
@@ -527,9 +533,9 @@ class DiodatiWeekendGym:
             manuscripts = self._state["artifacts"][stage]
             missing = sorted(set(CAST_IDS) - set(manuscripts))
             manuscript_violations = {
-                speaker: find_anachronisms(text)
+                speaker: find_draft_anachronisms(speaker, text)
                 for speaker, text in manuscripts.items()
-                if find_anachronisms(text)
+                if find_draft_anachronisms(speaker, text)
             }
             texts = list(manuscripts.values())
             pairwise_distinctness = []
