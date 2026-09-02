@@ -34,6 +34,17 @@ deleted as part of the Matrix rollback-window procedure:
   `castalia-gazetteer-files`, Ghost/Therapist state, and Cloud Build buckets.
 - Legacy service accounts and Secret Manager entries used by those workloads.
 
+The live dependency map recorded during that audit is:
+
+| Legacy surface | Observed resources | Required before migration or retirement |
+| --- | --- | --- |
+| Cloud Run | `castalia-face-api`, `castalia-omnisvg`, `castalia-omnisvg-8b-test`, `castalia-tournament-api`, `codex`, `commonplace-directus`, `faculty-oauth-appservice`, `ghost`, `openclaw-chat-proxy`, `outline`, `outline-test-db`, `talkie-gpu`, `talkie-web`, `therapist-hello-test`, `therapist-session`, `zonetrip-processor` | Copy or rebuild images in the canonical Artifact Registry; recreate service accounts, secret bindings, environment configuration, ingress, traffic, and custom-domain cutovers; run application smoke tests. |
+| Cloud Run custom domains | `codex.castalia.institute`, `commonplace.castalia.institute`, `commonplace.inquiry.institute`, `face-api.castalia.institute`, `talkie.castalia.institute` | Verify ownership records and TLS issuance in the canonical project before changing DNS. |
+| Stateful services | Cloud SQL `outline-db` and `ghost-db-instance`; Memorystore `outline-redis` | Take application-consistent exports, restore into canonical services, validate row counts and application reads/writes, then perform a planned cutover. |
+| Compute Engine | Running `gotosocial-vm` and `lms-moodle`; stopped legacy Matrix VM | Migrate each stateful VM and DNS identity separately. Only the stopped Matrix VM is covered by the rollback gate below. |
+| Storage and identity | Corpora, gazetteer, Ghost/Therapist state, build buckets; legacy service accounts and secrets | Classify ownership, copy data with checksums, rotate secrets, recreate least-privilege IAM, and verify consumers before decommissioning. |
+| Network remnants | `ghost-vpc` plus WorkAdventure/Kubernetes load-balancer artifacts | Identify current DNS consumers and owners; do not delete as part of Matrix cleanup. |
+
 These resources are not part of the Matrix rollback asset set and have not
 been migrated or decommissioned. The old project therefore cannot be retired
 or disabled wholesale. A full Castalia project consolidation requires a
