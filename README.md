@@ -63,9 +63,9 @@ Anonymous senders are excluded from agent context and cannot trigger a round. Th
 
 Outside the seven scheduled weekends, the transcript is cleared from the public experience and visitors cannot send into the staged conversation. The footer remains visible so a new visitor can register before the next opening. After the October season closes, no November weekend is scheduled automatically.
 
-### Saturday and Sunday manuscripts
+### Friday, Saturday, and Sunday manuscripts
 
-Byron's Friday challenge now produces writing as well as conversation. Twenty-four hours after each opening, all five characters publish clickable Saturday manuscript leaves. At forty-eight hours, each character revises and continues their own Saturday text as a Sunday draft. Both versions are written by the existing `ask-faculty` endpoint under the same June 1816 persona, RAG, provenance, and anachronism guard used for dialogue; no browser placeholder or canned story is substituted.
+Byron's Friday challenge now produces writing as well as conversation. Four hours after each opening, all five characters publish clickable Friday first leaves. Twenty-four hours after opening, each revises their own Friday text on Saturday; at forty-eight hours, each revises that Saturday text again for Sunday. All fifteen artifacts are written by the existing `ask-faculty` endpoint under the same June 1816 persona, RAG, provenance, and anachronism guard used for dialogue; no browser placeholder or canned story is substituted.
 
 Byron's private manuscript trajectory develops the untitled eastern travel narrative of Augustus Darvell across the weekend. The direction is character-visible only as present composition: it supplies no later title, publication history, vampire label, reception, or influence. The Sunday leaves may reach Darvell's burial and unexplained injunction, but the Gym penalizes any explicit resolution or return from death. The work therefore develops without becoming a finished story.
 
@@ -74,6 +74,7 @@ The complete prose is stored in its Matrix event with `org.castalia.diodati_draf
 Draft generation is restart-safe. Generated prose is persisted before transmission, and each artifact uses a deterministic Matrix transaction id, so a service retry republishes neither a duplicate nor a newly generated substitute. Timing and maximum length are configurable for rehearsals:
 
 ```text
+DIODATI_FRIDAY_DRAFT_OFFSET_SECONDS=14400
 DIODATI_SATURDAY_DRAFT_OFFSET_SECONDS=86400
 DIODATI_SUNDAY_DRAFT_OFFSET_SECONDS=172800
 DIODATI_DRAFT_MAX_WORDS=450
