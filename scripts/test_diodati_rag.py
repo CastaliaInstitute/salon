@@ -19,6 +19,7 @@ from diodati_realtime import (  # noqa: E402
     LOCAL_RAG_PATH,
     load_rag_corpus,
     generate_character_draft,
+    find_draft_anachronisms,
     draft_prompt,
     publish_due_drafts,
     retrieve_rag_context,
@@ -156,6 +157,16 @@ class DiodatiRagTests(unittest.TestCase):
         self.assertEqual(ask_mock.call_args.args[0], "a.maryshelley")
         self.assertEqual(ask_mock.call_args.kwargs["max_words"], diodati_realtime.DRAFT_MAX_WORDS)
         self.assertIn("manuscript prose", ask_mock.call_args.kwargs["response_style"])
+
+    def test_polidori_draft_guard_rejects_later_vampire_trajectory(self):
+        self.assertIn(
+            "Polidori later vampire trajectory",
+            find_draft_anachronisms("a.polidori", "A vampire entered the room."),
+        )
+        self.assertNotIn(
+            "Polidori later vampire trajectory",
+            find_draft_anachronisms("a.byron", "A vampire entered the room."),
+        )
 
     def test_byron_draft_develops_darvell_and_must_remain_unfinished(self):
         saturday = draft_prompt("a.byron", "saturday")

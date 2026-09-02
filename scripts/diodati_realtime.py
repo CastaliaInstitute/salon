@@ -149,6 +149,13 @@ ANACHRONISM_PATTERNS = {
     "future Polidori plot": r"\b(?:aristocratic predator|beautiful leech|drain(?:s|ed|ing)? (?:their |the )?vital spirits?)\b",
 }
 
+DRAFT_ANACHRONISM_PATTERNS = {
+    "future manuscript title": r"\b(?:frankenstein|the vampyre)\b",
+    "future Mary name": r"\bmary shelley\b",
+    "post-1816 manuscript year": r"\b(?:181[7-9]|18[2-9]\d|19\d{2}|20\d{2})\b",
+    "Polidori later vampire trajectory": r"\bvamp(?:ire|yre)s?\b",
+}
+
 RAG_STOP_WORDS = {
     "a", "about", "after", "again", "all", "also", "am", "an", "and", "are", "as", "at",
     "be", "because", "been", "before", "but", "by", "can", "could", "did", "do", "does", "for",
@@ -192,6 +199,21 @@ def find_anachronisms(text):
         for label, pattern in ANACHRONISM_PATTERNS.items()
         if re.search(pattern, lowered, flags=re.IGNORECASE)
     ]
+
+
+def find_draft_anachronisms(faculty_id, text):
+    """Apply the shared boundary plus character-specific manuscript checks."""
+    violations = find_anachronisms(text)
+    patterns = DRAFT_ANACHRONISM_PATTERNS
+    if faculty_id != "a.polidori":
+        patterns = {
+            name: pattern for name, pattern in patterns.items()
+            if name != "Polidori later vampire trajectory"
+        }
+    for name, pattern in patterns.items():
+        if re.search(pattern, text, re.IGNORECASE) and name not in violations:
+            violations.append(name)
+    return violations
 
 
 def redact_future_leaks(text):
@@ -730,7 +752,7 @@ def draft_prompt(faculty_id, stage_id, saturday_text=None):
 
 def generate_character_draft(faculty_id, stage_id, saturday_text=None):
     prior = [("Your Saturday manuscript", saturday_text)] if saturday_text else []
-    return ask_faculty(
+    manuscript = ask_faculty(
         faculty_id,
         draft_prompt(faculty_id, stage_id, saturday_text),
         prior,
@@ -741,6 +763,12 @@ def generate_character_draft(faculty_id, stage_id, saturday_text=None):
         ),
         max_words=DRAFT_MAX_WORDS,
     )
+    violations = find_draft_anachronisms(faculty_id, manuscript)
+    if violations:
+        raise RuntimeError(
+            f"manuscript boundary failed for {faculty_id}: {', '.join(violations)}"
+        )
+    return manuscript
 
 
 def publish_due_drafts(bots, cycle, cycle_path, now=None):
