@@ -226,6 +226,23 @@ After DNS propagates: **Settings → Pages → Custom domain** → `salon.castal
 
 ---
 
+### Update the Matrix runtime
+
+The repository-owned rollout command updates only the Diodati agent code, RAG
+corpus, and service units on the canonical VM. It never copies environment
+files, credentials, Matrix data, or cycle state. It is dry-run by default:
+
+```bash
+./infra/matrix/deploy-diodati-runtime.sh
+./infra/matrix/deploy-diodati-runtime.sh --apply
+```
+
+The apply path requires Compute SSH access to `matrix-synapse` in the
+`inquiry-institute` project, then restarts both Diodati services and verifies
+that they are active.
+
+---
+
 ## Development
 
 Satellite site built with [Astro](https://astro.build), React, and [Tailwind](https://tailwindcss.com). It is self-contained so the separate Salon repository can build and deploy without access to another private repository.
