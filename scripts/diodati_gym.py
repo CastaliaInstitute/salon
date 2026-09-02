@@ -32,6 +32,7 @@ os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "offline-diodati-gym")
 
 from diodati_realtime import (  # noqa: E402
     CAST,
+    DEFAULT_RAG_PATH,
     LOCAL_RAG_PATH,
     find_anachronisms,
     load_rag_corpus,
@@ -216,13 +217,15 @@ class DiodatiSalonGym:
         prompt_version="diodati-v1",
         max_turns=DEFAULT_MAX_TURNS,
         turn_seconds=DEFAULT_TURN_SECONDS,
-        rag_path=LOCAL_RAG_PATH,
+        rag_path=None,
     ):
         self.episodes_dir = pathlib.Path(episodes_dir)
         self.prompt_version = prompt_version
         self.max_turns = int(max_turns)
         self.turn_seconds = int(turn_seconds)
-        self.rag_path = pathlib.Path(rag_path)
+        self.rag_path = pathlib.Path(
+            rag_path or (LOCAL_RAG_PATH if LOCAL_RAG_PATH.exists() else DEFAULT_RAG_PATH)
+        )
         self.rag_sha256 = hashlib.sha256(self.rag_path.read_bytes()).hexdigest()
         self.rag = load_rag_corpus(self.rag_path)
         self.reading = self.rag["salon_readings"][0]
