@@ -11,7 +11,7 @@ import statistics
 from datetime import datetime, timezone
 
 from diodati_optimize import OPENING_CUES
-from diodati_realtime import ask_faculty
+from diodati_realtime import BYRON_FRAGMENT_DIRECTION, ask_faculty
 from diodati_weekend_gym import DiodatiWeekendGym, relationship_id
 
 
@@ -24,6 +24,7 @@ POLICIES = {
 }
 
 CHARACTER_NUDGES = {
+    "a.byron": BYRON_FRAGMENT_DIRECTION,
     "a.maryshelley": (
         "Optional pressure for Mary Godwin: responsibility toward a dependent being, failures of education or care, "
         "abandonment, and the uncertain border between dream and waking. Do not predict or name any later work."
@@ -105,7 +106,9 @@ def generation_prompt(state, event, policy):
             "Write your original supernatural story on Friday night. Give it a distinct premise, human conflict, "
             "source of dread, and unfinished final image. Let the evening's exchange exert pressure without summarizing it.\n"
             f"RELATIONSHIPS:\n{_relationship_context(state, speaker)}\nFRIDAY EXCHANGES:\n{friday}\n"
-            f"{CHARACTER_NUDGES.get(speaker, '')}\n{policy_instruction}",
+            f"{CHARACTER_NUDGES.get(speaker, '')}\n"
+            f"{('Establish the journey and Darvell’s disturbing reserve without racing to an ending.' if speaker == 'a.byron' else '')}\n"
+            f"{policy_instruction}",
             350,
         )
     if event["action"] == "offer_criticism":
@@ -123,16 +126,20 @@ def generation_prompt(state, event, policy):
             "Revise your Friday story on Saturday night after the evening's criticism. Preserve its identity while "
             "deepening motive, consequence, and supernatural uncertainty.\n"
             f"FRIDAY STORY:\n{story}\nCRITICISM RECEIVED:\n{criticism}\n"
-            f"{CHARACTER_NUDGES.get(speaker, '')}\n{policy_instruction}",
+            f"{CHARACTER_NUDGES.get(speaker, '')}\n"
+            f"{('Deepen Darvell’s decline and the narrator’s binding concern; preserve the unexplained charge.' if speaker == 'a.byron' else '')}\n"
+            f"{policy_instruction}",
             400,
         )
     story = state["artifacts"]["saturday"][speaker]
     criticism = state["artifacts"]["criticisms"].get(speaker, "")
     return (
-        "Write Sunday's final version. Preserve the Saturday revision's premise, but visibly answer the criticism through "
+        "Write Sunday's version. Preserve the Saturday revision's premise, but visibly answer the criticism through "
         "scene, motive, or consequence rather than commentary. End on a resonant image without claiming finality.\n"
         f"SATURDAY REVISION:\n{story}\nCRITICISM TO FOLD IN:\n{criticism}\n"
-        f"{CHARACTER_NUDGES.get(speaker, '')}\n{policy_instruction}",
+        f"{CHARACTER_NUDGES.get(speaker, '')}\n"
+        f"{('The leaves may reach Darvell’s burial, but must stop with the oath and errand unresolved.' if speaker == 'a.byron' else '')}\n"
+        f"{policy_instruction}",
         420,
     )
 
@@ -185,7 +192,12 @@ def main():
             f"relationship={evaluation['scores']['relationship']:.6f} development={evaluation['scores']['development']:.6f}",
             flush=True,
         )
-    eligible = [item for item in results if item["evaluation"]["weekend_completed"] and item["evaluation"]["historically_clean"]]
+    eligible = [
+        item for item in results
+        if item["evaluation"]["weekend_completed"]
+        and item["evaluation"]["historically_clean"]
+        and item["evaluation"]["byron_fragment"]["unfinished"]
+    ]
     winner = max(eligible, key=lambda item: item["evaluation"]["reward_mean"])["policy"] if eligible else None
     report = {"schema_version": 1, "run_id": run_id, "winner": winner, "results": results}
     report_path = run_dir / "report.json"

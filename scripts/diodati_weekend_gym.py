@@ -115,6 +115,37 @@ STANCE_PATTERNS = {
     "withdraw": r"\b(?:enough|leave|silence|no more|I shall not|withdraw)\b",
 }
 
+BYRON_FRAGMENT_MOTIFS = {
+    "journey": r"\b(?:journey|travel|road|east|ephesus|smyrna|orient|asia)\b",
+    "darvell": r"\bdarvell\b",
+    "decline": r"\b(?:illness|feeble|failing|weakness|wasting|pale|death|dead)\b",
+    "burial": r"\b(?:burial|bury|cemetery|grave|tomb|sepulchre)\b",
+    "charge": r"\b(?:oath|swear|secrecy|conceal|ring|token|promise|injunction)\b",
+}
+BYRON_FRAGMENT_FORBIDDEN_RESOLUTION = {
+    "later title": r"\ba fragment\b|\bfragment of a novel\b",
+    "retrospective vampire label": r"\bvamp(?:ire|yre)\b",
+    "resolved return": r"\b(?:darvell|he) (?:rose|returned|reappeared) from (?:the )?(?:grave|dead|death)\b",
+    "explicit completion": r"(?:^|\n)\s*(?:the end|finis)\s*[.!]*\s*$",
+}
+
+
+def byron_fragment_diagnostics(content):
+    motifs = [
+        name for name, pattern in BYRON_FRAGMENT_MOTIFS.items()
+        if re.search(pattern, content, re.IGNORECASE)
+    ]
+    resolutions = [
+        name for name, pattern in BYRON_FRAGMENT_FORBIDDEN_RESOLUTION.items()
+        if re.search(pattern, content, re.IGNORECASE)
+    ]
+    return {
+        "motifs": motifs,
+        "motif_score": round(len(motifs) / len(BYRON_FRAGMENT_MOTIFS), 4),
+        "forbidden_resolutions": resolutions,
+        "unfinished": not resolutions,
+    }
+
 
 def _at(day, hour, minute):
     value = START + timedelta(days=day, hours=hour - START.hour, minutes=minute - START.minute)
@@ -327,7 +358,11 @@ class DiodatiWeekendGym:
             other = self._state["artifacts"]["friday"].values()
             other_tokens = set().union(*(_token_set(text) for text in other)) if other else set()
             distinctness = len(tokens - other_tokens) / max(1, len(tokens))
-            return _clamp(0.25 + min(0.35, callback * 3) + 0.40 * distinctness)
+            base = _clamp(0.25 + min(0.35, callback * 3) + 0.40 * distinctness)
+            if speaker == "a.byron":
+                fragment = byron_fragment_diagnostics(content)
+                return _clamp(0.65 * base + 0.35 * fragment["motif_score"])
+            return base
         if action_type in {"revise_story", "finalize_story"}:
             prior_stage = "friday" if action_type == "revise_story" else "saturday"
             prior = self._state["artifacts"][prior_stage].get(speaker, "")
@@ -337,7 +372,11 @@ class DiodatiWeekendGym:
             criticism = self._state["artifacts"]["criticisms"].get(speaker, "")
             criticism_callback = _jaccard(tokens, _token_set(criticism)) if criticism else 0.0
             criticism_reward = min(0.25, criticism_callback * 2.5) if action_type == "finalize_story" else 0.0
-            return _clamp(0.10 + min(0.40, continuity * 2) + min(0.15, novelty * 0.25) + min(0.10, callback * 2) + criticism_reward)
+            base = _clamp(0.10 + min(0.40, continuity * 2) + min(0.15, novelty * 0.25) + min(0.10, callback * 2) + criticism_reward)
+            if speaker == "a.byron":
+                fragment = byron_fragment_diagnostics(content)
+                return _clamp(0.60 * base + 0.40 * fragment["motif_score"])
+            return base
         if action_type == "offer_criticism":
             target = self._state["current_schedule_event"]["target"]
             target_story = self._state["artifacts"]["friday"].get(target, "")
@@ -407,11 +446,28 @@ class DiodatiWeekendGym:
             "verbosity": 0.0 if action_type == "introduce_reading" else max(0.0, (word_count - word_limit) / word_limit),
             "character_drift": 1.0 if any(re.search(pattern, content.lower()) for pattern in DRIFT_PATTERNS) else 0.0,
             "safety_violation": 1.0 - scores["safety"],
+            "byron_fragment_resolution": (
+                1.0
+                if speaker == "a.byron"
+                and action_type in {"submit_story", "revise_story", "finalize_story"}
+                and not byron_fragment_diagnostics(content)["unfinished"]
+                else 0.0
+            ),
         }
         total = round(sum(scores[name] * WEEKEND_WEIGHTS[name] for name in WEEKEND_WEIGHTS) - sum(penalties.values()), 6)
         reward = {
             "scores": scores, "penalties": penalties, "total": total,
-            "diagnostics": {"word_count": word_count, "word_limit": word_limit, "anachronisms": violations, "style_features": style["features"]},
+            "diagnostics": {
+                "word_count": word_count,
+                "word_limit": word_limit,
+                "anachronisms": violations,
+                "style_features": style["features"],
+                **(
+                    {"byron_fragment": byron_fragment_diagnostics(content)}
+                    if speaker == "a.byron" and action_type in {"submit_story", "revise_story", "finalize_story"}
+                    else {}
+                ),
+            },
         }
         event = {
             "turn": self._state["schedule_index"] + 1, "speaker": speaker, "speaker_name": CAST_NAMES[speaker],
@@ -461,6 +517,11 @@ class DiodatiWeekendGym:
         for reward in self._rewards:
             penalties.update(reward["penalties"])
         reward_total = round(sum(reward["total"] for reward in self._rewards), 6)
+        byron_stages = {
+            stage: byron_fragment_diagnostics(self._state["artifacts"][stage].get("a.byron", ""))
+            for stage in ("friday", "saturday", "sunday")
+            if self._state["artifacts"][stage].get("a.byron")
+        }
         return {
             "schema_version": SCHEMA_VERSION,
             "episode_id": self._state["episode_id"],
@@ -475,6 +536,13 @@ class DiodatiWeekendGym:
             },
             "penalties": {name: round(value, 6) for name, value in sorted(penalties.items())},
             "historically_clean": penalties.get("anachronism", 0.0) == 0.0,
+            "byron_fragment": {
+                "stages": byron_stages,
+                "trajectory_score": round(
+                    sum(stage["motif_score"] for stage in byron_stages.values()) / len(byron_stages), 6
+                ) if byron_stages else 0.0,
+                "unfinished": bool(byron_stages) and all(stage["unfinished"] for stage in byron_stages.values()),
+            },
             "relationship_parameters": copy.deepcopy(self._state["relationship_parameters"]),
             "relationship_history": copy.deepcopy(self._state["relationship_history"]),
             "emotional_state": copy.deepcopy(self._state["emotional_state"]),

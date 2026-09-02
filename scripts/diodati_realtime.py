@@ -115,7 +115,9 @@ HISTORICAL_GROUND_RULES = """
 The scene is a stormy evening in mid-June 1816, at the beginning of the ghost-story conversations at Villa Diodati.
 Treat that evening as the absolute boundary of your knowledge. You may know only events, people, language,
 science, books, relationships, and beliefs available by then. You cannot know what happens later in 1816 or
-in any later year. No one present has yet conceived or written the works later associated with this gathering.
+in any later year. At the scene's beginning no one present has yet conceived or written the works later associated
+with this gathering. Manuscripts may develop only through events inside this simulated weekend; their authors still
+cannot know later titles, publication, reception, influence, or any continuation not actually written here.
 
 Never mention or imply future titles, plots, publications, marriages, children, deaths, reputations, literary
 movements, scientific discoveries, political events, or the later cause of this summer's weather. Do not use
@@ -644,6 +646,17 @@ AUTONOMOUS_CUES = (
     "Recall an earlier claim from this cycle and complicate it. Do not summarize the whole evening or address an audience.",
 )
 
+BYRON_FRAGMENT_DIRECTION = (
+    "PRIVATE DIRECTION FOR BYRON'S PRESENT MANUSCRIPT: Develop an untitled first-person eastern travel tale. "
+    "Its young narrator travels with Augustus Darvell, a slightly older, wealthy, secretive companion whose strength "
+    "is failing. Let their unequal intimacy, Darvell's reserve, and the desolate road toward Ephesus gather dread. "
+    "As the leaves advance, move toward a Turkish burial ground, sworn secrecy, a seal ring bearing Arabic characters, "
+    "and a stork holding a serpent. These are events Byron is inventing now, not retrieved knowledge of a future work. "
+    "Keep the manuscript permanently incomplete: never explain Darvell's secret, show what follows the promised errand, "
+    "return him from death, or provide narrative resolution. Do not give the tale a title or assign Darvell a named "
+    "supernatural species, and never mention later publication, influence, or continuation."
+)
+
 DRAFT_STAGES = (
     {
         "id": "saturday",
@@ -662,18 +675,20 @@ DRAFT_STAGES = (
 
 def draft_prompt(faculty_id, stage_id, saturday_text=None):
     display_name = dict(CAST)[faculty_id]
+    character_direction = BYRON_FRAGMENT_DIRECTION if faculty_id == "a.byron" else ""
     if stage_id == "saturday":
         return (
             "Byron issued his challenge last night. Write the first surviving leaves of your own "
             "supernatural tale now, as a member of this company in June 1816. Create a distinct premise, "
             "scene, and source of dread suited to your character, but leave the manuscript productively "
             "unfinished. Do not imitate, predict, name, or foreshadow any work written after this evening."
+            f"\n\n{character_direction}"
         )
     return (
         f"Revise and continue the manuscript you wrote yesterday. Preserve its premise but sharpen its "
         f"human conflict, supernatural uncertainty, and final image. This is {display_name}'s second draft, "
         "not commentary upon it. Do not mention revision, the challenge, an audience, or any future work.\n\n"
-        f"SATURDAY MANUSCRIPT:\n{saturday_text}"
+        f"SATURDAY MANUSCRIPT:\n{saturday_text}\n\n{character_direction}"
     )
 
 

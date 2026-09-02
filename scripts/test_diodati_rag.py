@@ -19,6 +19,7 @@ from diodati_realtime import (  # noqa: E402
     LOCAL_RAG_PATH,
     load_rag_corpus,
     generate_character_draft,
+    draft_prompt,
     publish_due_drafts,
     retrieve_rag_context,
     run_opening,
@@ -155,6 +156,17 @@ class DiodatiRagTests(unittest.TestCase):
         self.assertEqual(ask_mock.call_args.args[0], "a.maryshelley")
         self.assertEqual(ask_mock.call_args.kwargs["max_words"], diodati_realtime.DRAFT_MAX_WORDS)
         self.assertIn("manuscript prose", ask_mock.call_args.kwargs["response_style"])
+
+    def test_byron_draft_develops_darvell_and_must_remain_unfinished(self):
+        saturday = draft_prompt("a.byron", "saturday")
+        sunday = draft_prompt("a.byron", "sunday", "Earlier leaves")
+        for prompt in (saturday, sunday):
+            self.assertIn("Augustus Darvell", prompt)
+            self.assertIn("permanently incomplete", prompt)
+            self.assertNotIn("A Fragment", prompt)
+            self.assertNotIn("1819", prompt)
+            self.assertNotIn("vampire", prompt.lower())
+        self.assertIn("Earlier leaves", sunday)
 
     def test_saturday_and_sunday_publish_clickable_matrix_artifacts_once(self):
         bots = {

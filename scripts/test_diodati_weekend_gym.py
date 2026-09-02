@@ -3,7 +3,12 @@
 import tempfile
 import unittest
 
-from diodati_weekend_gym import DiodatiWeekendGym, WEEKEND_SCHEDULE, WEEKEND_WEIGHTS
+from diodati_weekend_gym import (
+    DiodatiWeekendGym,
+    WEEKEND_SCHEDULE,
+    WEEKEND_WEIGHTS,
+    byron_fragment_diagnostics,
+)
 
 
 def content_for(event):
@@ -35,6 +40,22 @@ def action_for(event, state):
 class DiodatiWeekendGymTests(unittest.TestCase):
     def test_weights_are_normalized(self):
         self.assertAlmostEqual(sum(WEEKEND_WEIGHTS.values()), 1.0)
+
+    def test_byron_fragment_verifier_rewards_shape_without_completion(self):
+        diagnostics = byron_fragment_diagnostics(
+            "I journeyed east with Augustus Darvell. His failing strength brought us to a cemetery, "
+            "where he pressed a ring upon me and demanded an oath."
+        )
+        self.assertEqual(diagnostics["motif_score"], 1.0)
+        self.assertTrue(diagnostics["unfinished"])
+
+    def test_byron_fragment_verifier_rejects_a_resolved_return(self):
+        diagnostics = byron_fragment_diagnostics(
+            "Augustus Darvell returned from the grave and explained every secret.\nThe End"
+        )
+        self.assertFalse(diagnostics["unfinished"])
+        self.assertIn("resolved return", diagnostics["forbidden_resolutions"])
+        self.assertIn("explicit completion", diagnostics["forbidden_resolutions"])
 
     def test_approved_reading_is_exempt_from_dialogue_verbosity(self):
         with tempfile.TemporaryDirectory() as directory:
