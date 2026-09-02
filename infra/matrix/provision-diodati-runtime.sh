@@ -97,6 +97,14 @@ SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KE
 DIODATI_ROOM_ID="${DIODATI_ROOM_ID:?DIODATI_ROOM_ID is required}" \
   "$agent_provisioner"
 
+for legacy_user in \
+  "@g.byron:${matrix_domain}" \
+  "@m.shelley:${matrix_domain}" \
+  "@j.polidori:${matrix_domain}" \
+  "@a.shelley1:${matrix_domain}"; do
+  deactivate_admin "$legacy_user"
+done
+
 encoded_visitor="$(jq -nr --arg value "$visitor_user_id" '$value|@uri')"
 jq -nc --arg password "$visitor_password" \
   '{password:$password,displayname:"Salon RL Visitor",admin:false,deactivated:false,logout_devices:true}' |

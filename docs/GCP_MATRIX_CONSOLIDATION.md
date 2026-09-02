@@ -94,4 +94,6 @@ accounts to `a.byron`, `a.maryshelley`, `a.clairmont`, `a.shelley`, and
 non-admin `salon.rl` observation account. It enables the realtime visitor with
 no policy URL, so its only action is `wait`. The script creates a short-lived
 Synapse administrator from the local shared registration secret and deactivates
-that administrator on exit. It never prints generated passwords or tokens.
+that administrator on exit. Legacy character accounts are deactivated without
+deleting their historical events. The script never prints generated passwords
+or tokens.
