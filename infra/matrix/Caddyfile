@@ -1,0 +1,39 @@
+{
+  email custodian@inquiry.institute
+}
+
+matrix.inquiry.institute {
+  reverse_proxy 127.0.0.1:8008
+}
+
+cal.castalia.institute {
+  reverse_proxy 127.0.0.1:18080
+}
+
+matrix.castalia.institute {
+  @matrix_server path /.well-known/matrix/server
+  header @matrix_server Content-Type application/json
+  respond @matrix_server `{"m.server":"matrix.castalia.institute:443"}` 200
+  reverse_proxy 127.0.0.1:8008
+}
+
+element.castalia.institute {
+  reverse_proxy 127.0.0.1:8080
+}
+
+login.castalia.institute {
+  header Content-Security-Policy "frame-ancestors https://element.castalia.institute"
+  header Access-Control-Allow-Origin "https://element.castalia.institute"
+  header Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+  header Access-Control-Allow-Headers "*"
+  @opt method OPTIONS
+  handle @opt {
+    header Access-Control-Allow-Origin "https://element.castalia.institute"
+    header Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+    header Access-Control-Allow-Headers "*"
+    respond 204
+  }
+  root * /srv/castalia
+  file_server
+  encode gzip
+}

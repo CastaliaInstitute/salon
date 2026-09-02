@@ -9,6 +9,12 @@
 - Runtime service account: `matrix-synapse@inquiry-institute.iam.gserviceaccount.com`
 - Public endpoint: `https://matrix.castalia.institute`
 
+The canonical Caddy configuration is checked in at
+`infra/matrix/Caddyfile`. It serves Matrix client discovery and the standard
+server discovery response `matrix.castalia.institute:443`, keeping federation
+on the public TLS endpoint rather than requiring port 8448. The live endpoint
+and the Matrix federation tester were verified after cutover.
+
 The prior project, `institute-481516`, is not a production target. Its terminated
 `matrix-synapse` VM and disk are rollback-only assets.
 
