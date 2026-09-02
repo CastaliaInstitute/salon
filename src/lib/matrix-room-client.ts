@@ -15,7 +15,7 @@ export interface MatrixMessage {
 }
 
 export interface DiodatiDraft {
-  stage: 'saturday' | 'sunday';
+  stage: 'friday' | 'saturday' | 'sunday';
   revision: number;
   label: string;
   title: string;

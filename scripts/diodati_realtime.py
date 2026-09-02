@@ -26,6 +26,9 @@ OPENING_PAUSE_SECONDS = float(os.environ.get("DIODATI_OPENING_PAUSE_SECONDS", "1
 ROUND_PAUSE_SECONDS = float(os.environ.get("DIODATI_ROUND_PAUSE_SECONDS", "8"))
 MAX_RESPONSE_WORDS = int(os.environ.get("DIODATI_MAX_RESPONSE_WORDS", "70"))
 DRAFT_MAX_WORDS = int(os.environ.get("DIODATI_DRAFT_MAX_WORDS", "450"))
+FRIDAY_DRAFT_OFFSET_SECONDS = int(
+    os.environ.get("DIODATI_FRIDAY_DRAFT_OFFSET_SECONDS", str(4 * 60 * 60))
+)
 SATURDAY_DRAFT_OFFSET_SECONDS = int(
     os.environ.get("DIODATI_SATURDAY_DRAFT_OFFSET_SECONDS", str(24 * 60 * 60))
 )
@@ -657,16 +660,49 @@ BYRON_FRAGMENT_DIRECTION = (
     "supernatural species, and never mention later publication, influence, or continuation."
 )
 
+CHARACTER_STORY_DIRECTIONS = {
+    "a.maryshelley": (
+        "MARY'S PRIVATE STORY DIRECTION: Build a distinct tale around a young woman whose intimate knowledge "
+        "of a household is treated as imagination until an absence, memory, or visitation proves that the "
+        "domestic world has its own moral terrors. Let education, dependence, responsibility, and a woman's "
+        "authority shape the dread. Keep the supernatural uncertain and do not invent any future novel."
+    ),
+    "a.clairmont": (
+        "CLAIRE'S PRIVATE STORY DIRECTION: Build a distinct tale around a woman shut out of a pleasure, room, "
+        "or confidence who discovers that the excluded can see what the privileged cannot. Give it social heat, "
+        "jealousy, music or theatrical illusion, and one startling image at a threshold. Do not make her passive "
+        "and do not borrow any later literary work."
+    ),
+    "a.shelley": (
+        "PERCY'S PRIVATE STORY DIRECTION: Build a distinct philosophical tale in which a beautiful natural scene "
+        "or mountain passage becomes a crisis of identity, sympathy, and the limits of human perception. Let a "
+        "double, echo, dream, or voice trouble the boundary between mind and world without settling the question. "
+        "Use the language of natural philosophy, not later science."
+    ),
+    "a.polidori": (
+        "POLIDORI'S PRIVATE STORY DIRECTION: Build a distinct medical-gothic case observed by a physician: an "
+        "illness, sleep, wound, or inexplicable recovery creates a conflict between bodily evidence and a patient's "
+        "terrifying account. Make professional pride and wounded ambition part of the danger. Do not use a vampire, "
+        "a future tale, or retrospective knowledge of this gathering."
+    ),
+}
+
 DRAFT_STAGES = (
     {
-        "id": "saturday",
+        "id": "friday",
         "revision": 1,
+        "offset_seconds": FRIDAY_DRAFT_OFFSET_SECONDS,
+        "label": "Friday first leaves",
+    },
+    {
+        "id": "saturday",
+        "revision": 2,
         "offset_seconds": SATURDAY_DRAFT_OFFSET_SECONDS,
-        "label": "Saturday leaves",
+        "label": "Saturday revision",
     },
     {
         "id": "sunday",
-        "revision": 2,
+        "revision": 3,
         "offset_seconds": SUNDAY_DRAFT_OFFSET_SECONDS,
         "label": "Sunday revision",
     },
@@ -675,17 +711,17 @@ DRAFT_STAGES = (
 
 def draft_prompt(faculty_id, stage_id, saturday_text=None):
     display_name = dict(CAST)[faculty_id]
-    character_direction = BYRON_FRAGMENT_DIRECTION if faculty_id == "a.byron" else ""
-    if stage_id == "saturday":
+    character_direction = BYRON_FRAGMENT_DIRECTION if faculty_id == "a.byron" else CHARACTER_STORY_DIRECTIONS[faculty_id]
+    if stage_id == "friday":
         return (
-            "Byron issued his challenge last night. Write the first surviving leaves of your own "
+            "Byron has issued his challenge. Write the first surviving leaves of your own "
             "supernatural tale now, as a member of this company in June 1816. Create a distinct premise, "
             "scene, and source of dread suited to your character, but leave the manuscript productively "
             "unfinished. Do not imitate, predict, name, or foreshadow any work written after this evening."
             f"\n\n{character_direction}"
         )
     return (
-        f"Revise and continue the manuscript you wrote yesterday. Preserve its premise but sharpen its "
+        f"Revise and continue the manuscript you wrote in the preceding session. Preserve its premise but sharpen its "
         f"human conflict, supernatural uncertainty, and final image. This is {display_name}'s second draft, "
         "not commentary upon it. Do not mention revision, the challenge, an audience, or any future work.\n\n"
         f"SATURDAY MANUSCRIPT:\n{saturday_text}\n\n{character_direction}"
@@ -716,6 +752,7 @@ def publish_due_drafts(bots, cycle, cycle_path, now=None):
     published = set(cycle.setdefault("published_drafts", []))
     draft_texts = cycle.setdefault("draft_texts", {})
 
+    stage_ids = {candidate["id"] for candidate in DRAFT_STAGES}
     for stage in DRAFT_STAGES:
         if elapsed < stage["offset_seconds"]:
             continue
@@ -724,8 +761,9 @@ def publish_due_drafts(bots, cycle, cycle_path, now=None):
             draft_key = f"{stage['id']}:{faculty_id}"
             if draft_key in published:
                 continue
-            saturday_text = draft_texts.get("saturday", {}).get(faculty_id)
-            if stage["id"] == "sunday" and not saturday_text:
+            previous_stage = {"saturday": "friday", "sunday": "saturday"}.get(stage["id"])
+            prior_text = draft_texts.get(previous_stage, {}).get(faculty_id) if previous_stage else None
+            if previous_stage in stage_ids and not prior_text:
                 continue
             try:
                 manuscript = stage_texts.get(faculty_id)
@@ -733,7 +771,7 @@ def publish_due_drafts(bots, cycle, cycle_path, now=None):
                     manuscript = generate_character_draft(
                         faculty_id,
                         stage["id"],
-                        saturday_text=saturday_text,
+                        saturday_text=prior_text,
                     )
                     # Persist before sending. A crash can then retry the exact
                     # manuscript with the same Matrix transaction id rather

@@ -165,8 +165,32 @@ class DiodatiRagTests(unittest.TestCase):
             self.assertIn("permanently incomplete", prompt)
             self.assertNotIn("A Fragment", prompt)
             self.assertNotIn("1819", prompt)
-            self.assertNotIn("vampire", prompt.lower())
+            self.assertNotIn("the vampyre", prompt.lower())
         self.assertIn("Earlier leaves", sunday)
+
+    def test_each_character_has_a_distinct_period_safe_story_direction(self):
+        prompts = {
+            faculty_id: draft_prompt(faculty_id, "friday")
+            for faculty_id, _ in diodati_realtime.CAST
+        }
+        self.assertEqual(len(set(prompts.values())), len(diodati_realtime.CAST))
+        for faculty_id, prompt in prompts.items():
+            self.assertIn("June 1816", prompt)
+            self.assertIn("distinct", prompt)
+            self.assertNotIn("Frankenstein", prompt)
+            self.assertNotIn("the vampyre", prompt.lower())
+        self.assertIn("Augustus Darvell", prompts["a.byron"])
+        self.assertIn("medical-gothic", prompts["a.polidori"])
+
+    def test_live_draft_arc_starts_friday_and_revises_each_manuscript(self):
+        self.assertEqual(
+            [stage["id"] for stage in diodati_realtime.DRAFT_STAGES],
+            ["friday", "saturday", "sunday"],
+        )
+        self.assertEqual(
+            [stage["revision"] for stage in diodati_realtime.DRAFT_STAGES],
+            [1, 2, 3],
+        )
 
     def test_saturday_and_sunday_publish_clickable_matrix_artifacts_once(self):
         bots = {
