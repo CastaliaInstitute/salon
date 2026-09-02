@@ -590,19 +590,28 @@ export function SalonLiveRoom({
             rows={1}
             className="h-11 min-h-11 flex-1 resize-none rounded-md border border-slate-500/70 bg-slate-950/80 px-3 py-2 text-slate-100 shadow-inner placeholder:text-slate-400 focus:border-amber-400 focus:outline-none"
           />
-          <button
-            type="button"
-            className="h-11 rounded-md bg-amber-500 px-4 font-medium text-slate-950 shadow hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={status !== 'connected' || !input.trim() || (canParticipate && !salonWindow.open)}
-            onClick={() => {
-              if (canParticipate && salonWindow.open) void onSend()
-              else setAuthOpen(true)
-            }}
-          >
-            {canParticipate
-              ? (salonWindow.open ? 'Send' : salonWindow.testMode ? 'Test closed' : 'Next salon')
-              : needsMembership ? 'Join' : 'Register'}
-          </button>
+          {!isSignedIn ? (
+            <a
+              href={MEMBERSHIP_URL}
+              className="flex h-11 shrink-0 items-center rounded-md bg-amber-500 px-4 font-medium text-slate-950 shadow hover:bg-amber-400"
+            >
+              Join to Join
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="h-11 rounded-md bg-amber-500 px-4 font-medium text-slate-950 shadow hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={status !== 'connected' || !input.trim() || (canParticipate && !salonWindow.open)}
+              onClick={() => {
+                if (canParticipate && salonWindow.open) void onSend()
+                else setAuthOpen(true)
+              }}
+            >
+              {canParticipate
+                ? (salonWindow.open ? 'Send' : salonWindow.testMode ? 'Test closed' : 'Next salon')
+                : 'Join'}
+            </button>
+          )}
         </div>
         {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}
       </footer>
