@@ -45,6 +45,28 @@ The live dependency map recorded during that audit is:
 | Storage and identity | Corpora, gazetteer, Ghost/Therapist state, build buckets; legacy service accounts and secrets | Classify ownership, copy data with checksums, rotate secrets, recreate least-privilege IAM, and verify consumers before decommissioning. |
 | Network remnants | `ghost-vpc` plus WorkAdventure/Kubernetes load-balancer artifacts | Identify current DNS consumers and owners; do not delete as part of Matrix cleanup. |
 
+The **2026-09-02 identity parity audit** was performed with the custodial
+operator account and compared names only; no secret values were read. The
+legacy-only Secret Manager names are `AWS_ACCESS_KEY_ID`,
+`AWS_SECRET_ACCESS_KEY`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+`SUPABASE_URL`, `THERAPIST_SUPABASE_RAG_AUTH_KEY`, `THERAPIST_SUPABASE_URL`,
+`db-password`, `directus-castalia-oidc-client-id`,
+`directus-castalia-oidc-client-secret`, `gcs-keyfile`, `mail-password`,
+`mail-user`, `openclaw-gateway-token`, `outline-database-password`,
+`outline-database-url`, `outline-database-url-public`,
+`outline-oidc-client-id`, `outline-oidc-client-secret`, `outline-redis-url`,
+`outline-secret-key`, and `outline-utils-secret`. These require owner and
+consumer mapping, rotation or controlled transfer, and application tests;
+they must not be copied by name alone.
+
+Legacy-only service-account identities include the old project compute,
+Firebase, Gazetteer, Agora, Ghost GCS, Sheet, Calendar, Mynah STT, Therapist,
+Vertex AI, and old project App Engine accounts. Canonical replacements exist
+for some workloads, including `castalia-omnisvg`, `ghost-sa`, and the default
+compute/App Engine identities, but names are not proof of equivalent IAM.
+Each consumer must be rebound to a least-privilege canonical identity and
+verified before its legacy account is disabled.
+
 These resources are not part of the Matrix rollback asset set and have not
 been migrated or decommissioned. The old project therefore cannot be retired
 or disabled wholesale. A full Castalia project consolidation requires a
