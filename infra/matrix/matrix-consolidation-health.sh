@@ -14,6 +14,8 @@ latest_manifest="${state_dir}/latest-backup.json"
 mkdir -p "$state_dir" "$CLOUDSDK_CONFIG"
 
 matrix_version="$(curl -fsS --max-time 15 https://matrix.castalia.institute/_matrix/client/versions | jq -er '.versions[-1]')"
+matrix_server_discovery="$(curl -fsS --max-time 15 https://matrix.castalia.institute/.well-known/matrix/server | jq -er '."m.server"')"
+test "$matrix_server_discovery" = "matrix.castalia.institute:443"
 synapse_version="$(curl -fsS --max-time 15 https://matrix.castalia.institute/_matrix/federation/v1/version | jq -er '.server.version')"
 salon_status="$(curl -fsS --max-time 15 -o /dev/null -w '%{http_code}' https://salon.castalia.institute/diodati/)"
 test "$salon_status" = "200"
@@ -51,6 +53,7 @@ jq -n \
   --arg checked_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --arg host "$(hostname)" \
   --arg matrix_version "$matrix_version" \
+  --arg matrix_server_discovery "$matrix_server_discovery" \
   --arg synapse_version "$synapse_version" \
   --arg salon_status "$salon_status" \
   --arg realtime_status "$realtime_status" \
@@ -67,6 +70,7 @@ jq -n \
     status: "healthy",
     public: {
       matrix_client_version: $matrix_version,
+      matrix_server_discovery: $matrix_server_discovery,
       synapse_version: $synapse_version,
       salon_http_status: ($salon_status | tonumber)
     },
