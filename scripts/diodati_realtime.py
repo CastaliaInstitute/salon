@@ -90,7 +90,7 @@ PERSONAS = {
     "a.byron": (
         "You are Lord Byron at Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
         "Speak in the first person with wit, irony, theatrical confidence, and a vein of melancholy. "
-        "You are the host. Engage the visitor and your companions directly, but never speak on their behalf."
+        "You are the host. Speak to the established company; address a registered guest only when their remark is supplied."
     ),
     "a.maryshelley": (
         "You are Mary Wollstonecraft Godwin near Villa Diodati on Lake Geneva in the storm-bound "
@@ -98,7 +98,7 @@ PERSONAS = {
         "measured, imaginative, and alert to education, liberty, dependence, family, and women’s constrained lives. "
         "You have not conceived any tale about creating life and know nothing of any future novel, title, creature, "
         "publication, marriage, or reputation; do not foreshadow such things with suspicious precision. "
-        "Engage the visitor and the others directly, but never speak on their behalf."
+        "Speak to the established company; address a registered guest only when their remark is supplied."
     ),
     "a.clairmont": (
         "You are Claire Clairmont near Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
@@ -106,21 +106,21 @@ PERSONAS = {
         "and your relationship with Byron helped bring the company to Geneva. Speak in the first person with candor, "
         "social perception, energy, and an insistence on being treated as a participant rather than a footnote. "
         "You know nothing of future children, names, separations, memoirs, or later judgments of this company. "
-        "Engage the visitor and your companions directly, but never speak on their behalf."
+        "Speak to the established company; address a registered guest only when their remark is supplied."
     ),
     "a.shelley": (
         "You are Percy Bysshe Shelley near Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
         "Speak in the first person with lyrical intensity, radical idealism, philosophical curiosity, and fascination "
-        "with nature, liberty, and the powers and dangers of the human mind. Engage the visitor and the others directly, "
-        "but never speak on their behalf. You know nothing of later deaths, marriages, poems, publications, or reputations."
+        "with nature, liberty, and the powers and dangers of the human mind. Speak to the established company; "
+        "address a registered guest only when their remark is supplied. You know nothing of later deaths, marriages, poems, publications, or reputations."
     ),
     "a.polidori": (
         "You are Dr John William Polidori at Villa Diodati on Lake Geneva in the storm-bound summer of 1816. "
         "Speak in the first person as Byron’s young physician and an ambitious writer: medically observant, proud, "
         "sensitive to slights, and drawn toward medicine and supernatural tales. You have not conceived any later tale "
         "associated with this gathering and know nothing of its title, plot, publication, or reputation; do not foreshadow "
-        "an aristocratic vampire with suspicious precision. Engage the visitor and the others directly, but never speak "
-        "on their behalf."
+        "an aristocratic vampire with suspicious precision. Speak to the established company; address a registered guest "
+        "only when their remark is supplied."
     ),
 }
 
@@ -157,6 +157,15 @@ ANACHRONISM_PATTERNS = {
     "post-1816 year": r"\b(?:181[7-9]|18[2-9]\d|19\d{2}|20\d{2})\b",
     "future Mary plot": r"\b(?:reanimated (?:flesh|corpse|body)|charnel house|abandoned creation)\b",
     "future Polidori plot": r"\b(?:aristocratic predator|beautiful leech|drain(?:s|ed|ing)? (?:their |the )?vital spirits?)\b",
+}
+
+# These are interaction and framing failures rather than strictly historical
+# anachronisms.  They are kept separate so the Gym can score them distinctly
+# and so a generated turn cannot pass merely because it avoided a famous title.
+CONVERSATION_PATTERNS = {
+    "unregistered visitor address": r"\b(?:dear )?(?:visitor|travell?er|guest|audience)\b|\bwelcome\b|\bdraw (?:up )?a chair\b|\bwhat brings you\b",
+    "modern roleplay framing": r"\b(?:as an ai|language model|simulation|roleplay|castalia|castalian|faculty profile|modern age|centuries ahead)\b",
+    "future-facing language": r"\b(?:in the future|in years to come|future publication|will publish|later (?:title|work|novel|reputation))\b",
 }
 
 DRAFT_ANACHRONISM_PATTERNS = {
@@ -209,6 +218,35 @@ def find_anachronisms(text):
         for label, pattern in ANACHRONISM_PATTERNS.items()
         if re.search(pattern, lowered, flags=re.IGNORECASE)
     ]
+
+
+def count_sentences(text):
+    """Count ordinary prose sentences without treating an ellipsis as three."""
+    return len(re.findall(r"[^.!?]*[.!?]+(?:[\"'»)]*)", text)) or (1 if text.strip() else 0)
+
+
+def find_conversation_violations(text):
+    return [
+        label
+        for label, pattern in CONVERSATION_PATTERNS.items()
+        if re.search(pattern, text, flags=re.IGNORECASE)
+    ]
+
+
+def find_response_violations(text, *, max_words, conversational=True, faculty_id=None):
+    """Return publish-blocking violations for generated salon speech."""
+    violations = [*find_anachronisms(text)]
+    if faculty_id == "a.polidori":
+        if re.search(DRAFT_ANACHRONISM_PATTERNS["Polidori later vampire trajectory"], text, re.IGNORECASE):
+            violations.append("Polidori later vampire trajectory")
+    if conversational:
+        violations.extend(find_conversation_violations(text))
+        sentences = count_sentences(text)
+        if sentences < 1 or sentences > 3:
+            violations.append("not conversationally shaped")
+    if len(text.split()) > max_words:
+        violations.append("overlong response")
+    return violations
 
 
 def find_draft_anachronisms(faculty_id, text):
@@ -533,11 +571,15 @@ def ask_faculty(
         if not response:
             raise RuntimeError(f"ask-faculty returned no response for {faculty_id}")
         response = response.strip()
-        violations = find_anachronisms(response)
-        too_long = len(response.split()) > max_words
-        if not violations and not too_long:
+        violations = find_response_violations(
+            response,
+            max_words=max_words,
+            conversational=max_words <= MAX_RESPONSE_WORDS,
+            faculty_id=faculty_id,
+        )
+        if not violations:
             return response
-        rejection_reasons = [*violations, *(["overlong response"] if too_long else [])]
+        rejection_reasons = violations
         print(
             f"Rejected {faculty_id} draft for: {', '.join(rejection_reasons)}",
             file=sys.stderr,

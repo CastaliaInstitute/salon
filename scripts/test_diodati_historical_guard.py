@@ -15,6 +15,9 @@ os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-key")
 from diodati_realtime import (  # noqa: E402
     MEMBER_BRIDGE_USER,
     find_anachronisms,
+    find_conversation_violations,
+    find_response_violations,
+    count_sentences,
     is_registered_event,
     redact_future_leaks,
     scheduled_cycle_start,
@@ -23,6 +26,33 @@ import diodati_realtime  # noqa: E402
 
 
 class HistoricalGuardTests(unittest.TestCase):
+    def test_conversational_guard_rejects_visitor_address_and_essay_shape(self):
+        text = "Welcome, dear visitor. " + "This is a long continuation. " * 4
+        violations = find_response_violations(text, max_words=70)
+        self.assertIn("unregistered visitor address", violations)
+        self.assertIn("not conversationally shaped", violations)
+
+    def test_short_period_safe_turn_passes_conversation_guard(self):
+        text = "The lamp gutters, Claire; but the draught has not touched the curtains. What do you see?"
+        self.assertEqual(find_conversation_violations(text), [])
+        self.assertEqual(count_sentences(text), 2)
+        self.assertEqual(find_response_violations(text, max_words=70), [])
+
+    def test_polidori_dialogue_rejects_later_vampire_trajectory(self):
+        violations = find_response_violations(
+            "The vampire waits beyond the door.",
+            max_words=70,
+            faculty_id="a.polidori",
+        )
+        self.assertIn("Polidori later vampire trajectory", violations)
+
+    def test_manuscript_length_does_not_require_dialogue_sentence_shape(self):
+        text = "The candle failed. " * 8
+        self.assertNotIn(
+            "not conversationally shaped",
+            find_response_violations(text, max_words=450, conversational=False),
+        )
+
     def test_period_safe_language_passes(self):
         self.assertEqual(
             find_anachronisms("Mary Godwin discusses natural philosophy in June 1816."),
