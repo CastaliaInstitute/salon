@@ -44,6 +44,13 @@ the only approved old-project retirement candidates are the stopped legacy
 Matrix VM and its disk, and only after the rollback window below plus explicit
 approval.
 
+The checked-in `infra/matrix/retire-legacy-matrix.sh` is the retirement gate
+for those four superseded Matrix assets (VM, disk, static address, and source
+snapshot). It is dry-run by default, refuses to run before the rollback
+deadline, verifies canonical health and DNS, and requires both `--apply` and
+`CONFIRM_LEGACY_MATRIX_RETIREMENT=I_UNDERSTAND` for deletion. It never deletes
+the legacy project or its unrelated workloads.
+
 ## Cutover record and rollback window
 
 The source VM stopped at `2026-09-01T21:08:19Z`. The source snapshot
