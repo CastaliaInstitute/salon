@@ -74,6 +74,14 @@ remaining sync changes. The legacy bucket remains intact and its consumers
 have not yet been rebound, so this is a reversible data copy rather than a
 completed bucket cutover.
 
+The remaining bucket audit found no data objects in
+`castalia-gazetteer-files` or `institute-481516-ghost-content`; the former
+still has an explicit legacy service-account grant and needs identity mapping
+before recreation. `institute-481516-therapist-state` contains 56 objects
+(approximately 2.07 GB) and must be copied only with a Therapist-consistent
+freeze or replication procedure. `institute-481516_cloudbuild` contains
+provider-managed build artifacts and is not a user-data migration candidate.
+
 The first no-traffic staging attempt for `castalia-omnisvg` was rejected by
 Cloud Run because the canonical project has no quota for its one NVIDIA L4
 GPU without zonal redundancy. No canary service was created and the legacy
