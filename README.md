@@ -146,6 +146,20 @@ The optimizer compares conversational, aesthetic, dramatic, and balanced prompt 
 
 The latest reviewed optimization result is stored in `data/diodati_policy_candidate.json`. It remains candidate-only until explicitly promoted to the realtime character prompts.
 
+### Three-day relationship and empathy Gym
+
+`scripts/diodati_weekend_gym.py` models one complete Friday-through-Sunday episode. Friday contains the reading, relationship-driven conversation, and five original stories. On Saturday every character offers criticism of another story before revising their own. Sunday's final versions receive delayed reward for preserving their premise while folding received criticism into scene, motive, or consequence.
+
+Every observation includes bounded affinity, trust, tension, and intellectual-regard parameters for the historical relationships, plus each character's latest emotional prosody: emotion, valence, arousal, intensity, rate, and pause. Targeted actions output a relationship stance and an empathy decision (`attune`, `steady`, or `challenge`). The environment verifies recognition against the target's actual prior affect, realizes bounded relationship deltas, and logs both as immutable outputs.
+
+Generate complete weekends through `ask-faculty` without posting them to Matrix:
+
+```bash
+python3 scripts/diodati_weekend_optimize.py --output-dir weekend-optimization-runs
+```
+
+Mary Godwin and Polidori receive gentle, non-teleological thematic pressures grounded in their 1816 situations. The optimizer forbids naming, predicting, or prescribing their later works.
+
 ### Historical light
 
 The environment begins when natural evening light had effectively gone. The U.S. Naval Observatory calculation for Villa Diodati (46.22° N, 6.18° E) on 15 June 1816 gives sunset at 19:28 UTC and the end of civil twilight at 20:07 UTC. Apparent solar noon was 11:35 UTC, placing Geneva apparent solar time about 25 minutes ahead of UTC: sunset around 19:53 and darkness around **20:32 Geneva apparent solar time**. The simulated clock therefore begins at 20:32 and advances one-for-one with real elapsed time.
