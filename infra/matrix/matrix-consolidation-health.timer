@@ -1,0 +1,12 @@
+[Unit]
+Description=Hourly canonical Matrix consolidation witness
+
+[Timer]
+OnBootSec=5m
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=5m
+Unit=matrix-consolidation-health.service
+
+[Install]
+WantedBy=timers.target

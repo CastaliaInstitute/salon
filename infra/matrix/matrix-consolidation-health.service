@@ -1,0 +1,17 @@
+[Unit]
+Description=Verify canonical Matrix consolidation health
+After=docker.service network-online.target matrix-backup.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+Environment=MATRIX_BACKUP_BUCKET=gs://inquiry-institute-matrix-backups
+ExecStart=/usr/local/sbin/matrix-consolidation-health
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/matrix-consolidation-health
+

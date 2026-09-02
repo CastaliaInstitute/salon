@@ -45,8 +45,12 @@ sudo install -m 0750 infra/matrix/matrix-backup.sh /usr/local/sbin/matrix-backup
 sudo install -m 0750 infra/matrix/validate-matrix-backup.sh /usr/local/sbin/validate-matrix-backup
 sudo install -m 0644 infra/matrix/matrix-backup.service /etc/systemd/system/matrix-backup.service
 sudo install -m 0644 infra/matrix/matrix-backup.timer /etc/systemd/system/matrix-backup.timer
+sudo install -m 0750 infra/matrix/matrix-consolidation-health.sh /usr/local/sbin/matrix-consolidation-health
+sudo install -m 0644 infra/matrix/matrix-consolidation-health.service /etc/systemd/system/matrix-consolidation-health.service
+sudo install -m 0644 infra/matrix/matrix-consolidation-health.timer /etc/systemd/system/matrix-consolidation-health.timer
 sudo systemctl daemon-reload
 sudo systemctl enable --now matrix-backup.timer
+sudo systemctl enable --now matrix-consolidation-health.timer
 sudo systemctl start matrix-backup.service
 sudo /usr/local/sbin/validate-matrix-backup
 ```
@@ -55,6 +59,13 @@ Validation downloads the newest backup, verifies every checksum and both public
 and private archive structures, restores the dump into an isolated temporary
 PostgreSQL 15 container, reports user/room/event counts, and removes the
 validation container. It lists paths only and never prints secret values.
+
+`matrix-consolidation-health.timer` runs hourly throughout the rollback window.
+It verifies the public Matrix client and federation endpoints, the Salon page,
+PostgreSQL readiness, both Diodati services, the backup timer, and a latest
+backup age under 36 hours. Successful non-secret JSON witnesses are retained at
+`gs://inquiry-institute-matrix-backups/health/`; the absence of a witness or a
+failed unit means the window is not yet proven healthy.
 
 ## Rollback procedure
 
