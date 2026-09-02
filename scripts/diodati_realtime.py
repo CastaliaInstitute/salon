@@ -164,8 +164,8 @@ ANACHRONISM_PATTERNS = {
 # and so a generated turn cannot pass merely because it avoided a famous title.
 CONVERSATION_PATTERNS = {
     "unregistered visitor address": r"\b(?:dear )?(?:visitor|travell?er|guest|audience)\b|\bwelcome\b|\bdraw (?:up )?a chair\b|\bwhat brings you\b",
-    "modern roleplay framing": r"\b(?:as an ai|language model|simulation|roleplay|castalia|castalian|faculty profile|modern age|centuries ahead)\b",
-    "future-facing language": r"\b(?:in the future|in years to come|future publication|will publish|later (?:title|work|novel|reputation))\b",
+    "modern roleplay framing": r"\b(?:as an ai|language model|simulation|roleplay|castalia|castalian|faculty profile|modern|centuries)\b",
+    "future-facing language": r"\b(?:future|in years to come|future publication|will publish|later (?:title|work|novel|reputation))\b",
 }
 
 DRAFT_ANACHRONISM_PATTERNS = {

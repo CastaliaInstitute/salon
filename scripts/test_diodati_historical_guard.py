@@ -32,6 +32,14 @@ class HistoricalGuardTests(unittest.TestCase):
         self.assertIn("unregistered visitor address", violations)
         self.assertIn("not conversationally shaped", violations)
 
+    def test_conversational_guard_rejects_isolated_modern_and_future_framing(self):
+        violations = find_response_violations(
+            "The future will judge this modern experiment.",
+            max_words=70,
+        )
+        self.assertIn("modern roleplay framing", violations)
+        self.assertIn("future-facing language", violations)
+
     def test_short_period_safe_turn_passes_conversation_guard(self):
         text = "The lamp gutters, Claire; but the draught has not touched the curtains. What do you see?"
         self.assertEqual(find_conversation_violations(text), [])
