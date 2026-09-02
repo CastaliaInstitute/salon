@@ -522,6 +522,33 @@ class DiodatiWeekendGym:
             for stage in ("friday", "saturday", "sunday")
             if self._state["artifacts"][stage].get("a.byron")
         }
+        story_stages = {}
+        for stage in ("friday", "saturday", "sunday"):
+            manuscripts = self._state["artifacts"][stage]
+            missing = sorted(set(CAST_IDS) - set(manuscripts))
+            manuscript_violations = {
+                speaker: find_anachronisms(text)
+                for speaker, text in manuscripts.items()
+                if find_anachronisms(text)
+            }
+            texts = list(manuscripts.values())
+            pairwise_distinctness = []
+            for index, left in enumerate(texts):
+                for right in texts[index + 1:]:
+                    pairwise_distinctness.append(1.0 - _jaccard(_token_set(left), _token_set(right)))
+            story_stages[stage] = {
+                "present": sorted(manuscripts),
+                "missing": missing,
+                "complete": not missing,
+                "historically_clean": not manuscript_violations,
+                "violations": manuscript_violations,
+                "pairwise_distinctness": round(
+                    sum(pairwise_distinctness) / len(pairwise_distinctness), 6
+                ) if pairwise_distinctness else 0.0,
+            }
+        stories_complete = all(stage["complete"] for stage in story_stages.values())
+        stories_historically_clean = all(stage["historically_clean"] for stage in story_stages.values())
+        stories_distinct = all(stage["pairwise_distinctness"] >= 0.20 for stage in story_stages.values())
         return {
             "schema_version": SCHEMA_VERSION,
             "episode_id": self._state["episode_id"],
@@ -536,6 +563,20 @@ class DiodatiWeekendGym:
             },
             "penalties": {name: round(value, 6) for name, value in sorted(penalties.items())},
             "historically_clean": penalties.get("anachronism", 0.0) == 0.0,
+            "story_quality": {
+                "stages": story_stages,
+                "all_five_characters_complete": stories_complete,
+                "all_stages_historically_clean": stories_historically_clean,
+                "all_stages_materially_distinct": stories_distinct,
+                "a_plus_story_gate": (
+                    self._state["done"]
+                    and stories_complete
+                    and stories_historically_clean
+                    and stories_distinct
+                    and bool(byron_stages)
+                    and all(stage["unfinished"] for stage in byron_stages.values())
+                ),
+            },
             "byron_fragment": {
                 "stages": byron_stages,
                 "trajectory_score": round(

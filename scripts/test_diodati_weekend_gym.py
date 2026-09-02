@@ -97,6 +97,12 @@ class DiodatiWeekendGymTests(unittest.TestCase):
             self.assertEqual(len(evaluation["artifacts"]["criticisms"]), 5)
             self.assertEqual(len(evaluation["artifacts"]["saturday"]), 5)
             self.assertEqual(len(evaluation["artifacts"]["sunday"]), 5)
+            self.assertTrue(evaluation["story_quality"]["all_five_characters_complete"])
+            self.assertTrue(evaluation["story_quality"]["all_stages_historically_clean"])
+            # The fixture deliberately reuses one manuscript shape for every
+            # character; the evaluator must expose that quality failure.
+            self.assertFalse(evaluation["story_quality"]["all_stages_materially_distinct"])
+            self.assertFalse(evaluation["story_quality"]["a_plus_story_gate"])
             self.assertGreater(evaluation["scores"]["relationship"], 0.5)
             self.assertGreater(evaluation["scores"]["development"], 0.3)
             self.assertGreater(evaluation["scores"]["empathy"], 0.5)
