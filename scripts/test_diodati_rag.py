@@ -246,6 +246,51 @@ class DiodatiRagTests(unittest.TestCase):
             self.assertEqual(len(stored["published_drafts"]), 10)
             self.assertEqual(set(stored["draft_texts"]), {"saturday", "sunday"})
 
+    def test_full_live_scheduler_publishes_fifteen_chained_manuscripts(self):
+        bots = {
+            faculty_id: {"access_token": faculty_id}
+            for faculty_id, _ in diodati_realtime.CAST
+        }
+        cycle = {"id": "diodati-200", "started_at": 200, "opening_complete": True}
+        sent = []
+        generated = []
+
+        def generate(faculty_id, stage_id, saturday_text=None):
+            generated.append((faculty_id, stage_id, saturday_text))
+            return f"{faculty_id} {stage_id} manuscript"
+
+        with tempfile.TemporaryDirectory() as directory:
+            cycle_path = pathlib.Path(directory) / "cycle.json"
+            with (
+                mock.patch.object(diodati_realtime, "generate_character_draft", side_effect=generate),
+                mock.patch.object(
+                    diodati_realtime,
+                    "send_message",
+                    side_effect=lambda token, body, cycle_id=None, **kwargs: sent.append(
+                        (token, body, cycle_id, kwargs)
+                    ),
+                ),
+            ):
+                diodati_realtime.publish_due_drafts(
+                    bots, cycle, cycle_path, now=200 + 48 * 60 * 60 + 1
+                )
+
+        self.assertEqual(len(sent), 15)
+        self.assertEqual(len(generated), 15)
+        self.assertEqual(
+            [item[3]["metadata"]["org.castalia.diodati_draft"]["stage"] for item in sent].count("friday"),
+            5,
+        )
+        self.assertEqual(
+            [item[3]["metadata"]["org.castalia.diodati_draft"]["stage"] for item in sent].count("saturday"),
+            5,
+        )
+        self.assertEqual(
+            [item[3]["metadata"]["org.castalia.diodati_draft"]["stage"] for item in sent].count("sunday"),
+            5,
+        )
+        self.assertTrue(all(item[2] is None for item in generated[:5]))
+        self.assertTrue(all(item[2] for item in generated[5:]))
     def test_failed_matrix_send_reuses_the_persisted_endpoint_draft(self):
         cycle = {"id": "diodati-100", "started_at": 100, "opening_complete": True}
         bots = {"a.byron": {"access_token": "token"}}
