@@ -14,4 +14,3 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
 ReadWritePaths=/var/lib/matrix-consolidation-health
-
