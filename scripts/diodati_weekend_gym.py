@@ -547,8 +547,12 @@ class DiodatiWeekendGym:
                 ) if pairwise_distinctness else 0.0,
             }
         stories_complete = all(stage["complete"] for stage in story_stages.values())
-        stories_historically_clean = all(stage["historically_clean"] for stage in story_stages.values())
-        stories_distinct = all(stage["pairwise_distinctness"] >= 0.20 for stage in story_stages.values())
+        stories_historically_clean = stories_complete and all(
+            stage["historically_clean"] for stage in story_stages.values()
+        )
+        stories_distinct = stories_complete and all(
+            stage["pairwise_distinctness"] >= 0.20 for stage in story_stages.values()
+        )
         return {
             "schema_version": SCHEMA_VERSION,
             "episode_id": self._state["episode_id"],

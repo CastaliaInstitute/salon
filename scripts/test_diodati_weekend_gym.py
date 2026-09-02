@@ -107,6 +107,17 @@ class DiodatiWeekendGymTests(unittest.TestCase):
             self.assertGreater(evaluation["scores"]["development"], 0.3)
             self.assertGreater(evaluation["scores"]["empathy"], 0.5)
 
+    def test_empty_episode_cannot_report_clean_story_quality(self):
+        with tempfile.TemporaryDirectory() as directory:
+            gym = DiodatiWeekendGym(directory)
+            gym.reset()
+            quality = gym.evaluate_episode()["story_quality"]
+            self.assertFalse(quality["all_five_characters_complete"])
+            self.assertFalse(quality["all_stages_historically_clean"])
+            self.assertFalse(quality["all_stages_materially_distinct"])
+            self.assertFalse(quality["a_plus_story_gate"])
+            gym.close()
+
 
 if __name__ == "__main__":
     unittest.main()
