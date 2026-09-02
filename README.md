@@ -166,6 +166,11 @@ The environment begins when natural evening light had effectively gone. The U.S.
 
 ### Matrix-backed salon URLs (`/live/`)
 
+Production Matrix runs only in the canonical `inquiry-institute` Google Cloud
+project. Backup, restore-validation, rollback-window, and old-project retirement
+instructions are recorded in
+[`docs/GCP_MATRIX_CONSOLIDATION.md`](docs/GCP_MATRIX_CONSOLIDATION.md).
+
 Salon evenings map to **Matrix rooms**. This repo serves **static GitHub Pages**; dynamic URLs use **client-side routing** plus a **`404.html`** copy of the `/live/` shell so deep links load correctly.
 
 - **`/live/`** — overview (no room selected).

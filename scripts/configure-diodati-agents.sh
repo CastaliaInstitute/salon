@@ -15,10 +15,15 @@ for required in MATRIX_ADMIN_PASSWORD SUPABASE_SERVICE_ROLE_KEY DIODATI_ROOM_ID;
   fi
 done
 
-admin_token="$(jq -nc --arg user "$MATRIX_ADMIN_USER" --arg password "$MATRIX_ADMIN_PASSWORD" \
-  '{type:"m.login.password",identifier:{type:"m.id.user",user:$user},password:$password}' |
-  curl -fsS -X POST "${MATRIX_SERVER}/_matrix/client/v3/login" \
-    -H 'Content-Type: application/json' --data-binary @- | jq -er '.access_token')"
+if [[ -n "${MATRIX_ADMIN_ACCESS_TOKEN:-}" ]]; then
+  admin_token="$MATRIX_ADMIN_ACCESS_TOKEN"
+else
+  admin_token="$(jq -nc --arg user "$MATRIX_ADMIN_USER" --arg password "$MATRIX_ADMIN_PASSWORD" \
+    '{type:"m.login.password",identifier:{type:"m.id.user",user:$user},password:$password}' |
+    curl -fsS --retry 8 --retry-all-errors --retry-delay 4 -X POST "${MATRIX_SERVER}/_matrix/client/v3/login" \
+      -H 'X-Forwarded-For: 127.0.10.1' \
+      -H 'Content-Type: application/json' --data-binary @- | jq -er '.access_token')"
+fi
 
 rest_headers=(
   -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}"
@@ -38,6 +43,7 @@ display_name_for() {
   esac
 }
 
+login_octet=10
 for faculty_id in a.byron a.maryshelley a.clairmont a.shelley a.polidori; do
   username="@${faculty_id}:${MATRIX_DOMAIN}"
   encoded_user="$(jq -nr --arg value "$username" '$value|@uri')"
@@ -45,17 +51,19 @@ for faculty_id in a.byron a.maryshelley a.clairmont a.shelley a.polidori; do
 
   jq -nc --arg password "$password" --arg displayname "$(display_name_for "$faculty_id")" \
     '{password:$password,displayname:$displayname,admin:false,deactivated:false}' |
-    curl -fsS -X PUT "${MATRIX_SERVER}/_synapse/admin/v2/users/${encoded_user}" \
+    curl -fsS --retry 8 --retry-all-errors --retry-delay 4 -X PUT "${MATRIX_SERVER}/_synapse/admin/v2/users/${encoded_user}" \
       -H "Authorization: Bearer ${admin_token}" \
       -H 'Content-Type: application/json' --data-binary @- >/dev/null
 
   access_token="$(jq -nc --arg user "$faculty_id" --arg password "$password" \
     '{type:"m.login.password",identifier:{type:"m.id.user",user:$user},password:$password}' |
-    curl -fsS -X POST "${MATRIX_SERVER}/_matrix/client/v3/login" \
+    curl -fsS --retry 8 --retry-all-errors --retry-delay 4 -X POST "${MATRIX_SERVER}/_matrix/client/v3/login" \
+      -H "X-Forwarded-For: 127.0.20.${login_octet}" \
       -H 'Content-Type: application/json' --data-binary @- | jq -er '.access_token')"
+  login_octet=$((login_octet + 1))
 
   encoded_room="$(jq -nr --arg value "$DIODATI_ROOM_ID" '$value|@uri')"
-  curl -fsS -X POST "${MATRIX_SERVER}/_matrix/client/v3/join/${encoded_room}" \
+  curl -fsS --retry 8 --retry-all-errors --retry-delay 4 -X POST "${MATRIX_SERVER}/_matrix/client/v3/join/${encoded_room}" \
     -H "Authorization: Bearer ${access_token}" \
     -H 'Content-Type: application/json' --data '{}' >/dev/null
 
@@ -68,6 +76,11 @@ for faculty_id in a.byron a.maryshelley a.clairmont a.shelley a.polidori; do
     '{username:$username,password:$password,faculty_id:$faculty_id,room_ids:[$room_id],active:true,access_token:$access_token,access_token_expiry:"2099-01-01T00:00:00Z",sync_token:null}' |
     curl -fsS -X POST "${SUPABASE_URL}/rest/v1/matrix_bots?on_conflict=username" \
       "${rest_headers[@]}" --data-binary @- >/dev/null
+
+  faculty_filter="$(jq -nr --arg value "eq.${faculty_id}" '$value|@uri')"
+  username_filter="$(jq -nr --arg value "neq.${username}" '$value|@uri')"
+  curl -fsS -X PATCH "${SUPABASE_URL}/rest/v1/matrix_bots?faculty_id=${faculty_filter}&username=${username_filter}" \
+    "${rest_headers[@]}" --data-binary '{"active":false}' >/dev/null
 done
 
 jq -nc --arg room_id "$DIODATI_ROOM_ID" \
