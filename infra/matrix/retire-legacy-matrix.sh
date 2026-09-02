@@ -12,6 +12,8 @@ disk="${LEGACY_MATRIX_DISK:-matrix-synapse}"
 address="${LEGACY_MATRIX_ADDRESS:-matrix-ip-central}"
 snapshot="${LEGACY_MATRIX_SNAPSHOT:-matrix-synapse-pre-consolidation-20260901}"
 rollback_deadline="${MATRIX_ROLLBACK_DEADLINE:-2026-09-22T21:08:19Z}"
+backup_bucket="${MATRIX_BACKUP_BUCKET:-gs://inquiry-institute-matrix-backups}"
+target_snapshot="${TARGET_MATRIX_SNAPSHOT:-matrix-synapse-post-consolidation-20260901}"
 old_ip="34.172.124.225"
 apply=false
 
@@ -38,6 +40,7 @@ fi
 
 canonical_status="$(gcloud compute instances describe matrix-synapse --project="$canonical_project" --zone=us-central1-b --format='value(status)')"
 test "$canonical_status" = "RUNNING"
+test "$(gcloud compute snapshots describe "$target_snapshot" --project="$canonical_project" --format='value(status)')" = "READY"
 curl -fsS https://matrix.castalia.institute/_matrix/client/versions >/dev/null
 test "$(curl -fsS https://matrix.castalia.institute/.well-known/matrix/server | jq -er '."m.server"')" = "matrix.castalia.institute:443"
 test "$(dig +short A matrix.castalia.institute | grep -Fx 136.64.21.139)" = "136.64.21.139"
@@ -45,6 +48,21 @@ if dig +short A matrix.castalia.institute | grep -Fx "$old_ip" >/dev/null; then
   echo "Public Matrix DNS still points at the legacy address ${old_ip}" >&2
   exit 1
 fi
+
+latest_health="$(gcloud storage ls "${backup_bucket}/health/*.json" | sort | tail -n 1)"
+test -n "$latest_health"
+health_created_at="$(gcloud storage cat "$latest_health" | jq -er '.checked_at')"
+health_age_seconds="$(python3 - "$health_created_at" <<'PY'
+import datetime
+import sys
+
+checked = datetime.datetime.fromisoformat(sys.argv[1].replace("Z", "+00:00"))
+now = datetime.datetime.now(datetime.timezone.utc)
+print(max(0, int((now - checked).total_seconds())))
+PY
+)"
+test "$health_age_seconds" -le 129600
+test "$(gcloud storage cat "$latest_health" | jq -er '.status')" = "healthy"
 
 legacy_status="$(gcloud compute instances describe "$instance" --project="$legacy_project" --zone="$zone" --format='value(status)')"
 test "$legacy_status" = "TERMINATED"
@@ -56,6 +74,7 @@ echo "  ${legacy_project}/${zone}/instances/${instance}"
 echo "  ${legacy_project}/${zone}/disks/${disk}"
 echo "  ${legacy_project}/${region}/addresses/${address} (${old_ip})"
 echo "  ${legacy_project}/global/snapshots/${snapshot}"
+echo "  latest canonical health witness: ${latest_health} (${health_age_seconds}s old)"
 
 if ! "$apply"; then
   echo "Dry run only. Pass --apply after reviewing the verified rollback evidence."
