@@ -21,12 +21,23 @@ backup_prefix="${latest_object%/manifest.json}"
 
 "$gcloud_bin" storage cp "${backup_prefix}/synapse.dump" "$validation_root/"
 "$gcloud_bin" storage cp "${backup_prefix}/matrix-config-media.tar.gz" "$validation_root/"
+"$gcloud_bin" storage cp "${backup_prefix}/private-runtime.tar.gz" "$validation_root/"
 "$gcloud_bin" storage cp "${backup_prefix}/SHA256SUMS" "$validation_root/"
 
 (
   cd "$validation_root"
   sha256sum --check SHA256SUMS
   tar --list --gzip --file matrix-config-media.tar.gz >/dev/null
+  private_listing="$(tar --list --gzip --file private-runtime.tar.gz)"
+  for required in \
+    opt/matrix/.env \
+    opt/matrix/diodati-accounts.env \
+    etc/diodati-realtime.env \
+    opt/diodati-realtime/ \
+    var/lib/diodati-realtime/ \
+    var/lib/diodati-visitor-rl/; do
+    grep -Fxq "$required" <<<"$private_listing"
+  done
 )
 
 validation_password="$(openssl rand -hex 24)"

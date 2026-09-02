@@ -32,7 +32,9 @@ Two independent layers protect Matrix:
 1. A daily Compute Engine snapshot schedule retains 21 days of boot-disk
    snapshots.
 2. `matrix-backup.timer` makes a PostgreSQL custom-format dump and archives the
-   Matrix configuration and media store to
+   Matrix configuration and media store. A separate private archive preserves
+   the Matrix Docker environment, Diodati environment, agent credentials,
+   deployed runtime, cycle state, and RL trajectory state. All artifacts go to
    `gs://inquiry-institute-matrix-backups`. The bucket has uniform access,
    object versioning, and a 21-day retention policy.
 
@@ -49,9 +51,10 @@ sudo systemctl start matrix-backup.service
 sudo /usr/local/sbin/validate-matrix-backup
 ```
 
-Validation downloads the newest backup, verifies both checksums and archive
-structure, restores the dump into an isolated temporary PostgreSQL 15 container,
-reports user/room/event counts, and removes the validation container.
+Validation downloads the newest backup, verifies every checksum and both public
+and private archive structures, restores the dump into an isolated temporary
+PostgreSQL 15 container, reports user/room/event counts, and removes the
+validation container. It lists paths only and never prints secret values.
 
 ## Rollback procedure
 

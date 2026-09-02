@@ -38,9 +38,18 @@ tar --create --gzip --file "${staging}/matrix-config-media.tar.gz" \
   docker-compose.yml \
   matrix-data
 
+tar --create --gzip --file "${staging}/private-runtime.tar.gz" \
+  --directory / \
+  opt/matrix/.env \
+  opt/matrix/diodati-accounts.env \
+  etc/diodati-realtime.env \
+  opt/diodati-realtime \
+  var/lib/diodati-realtime \
+  var/lib/diodati-visitor-rl
+
 (
   cd "$staging"
-  sha256sum synapse.dump matrix-config-media.tar.gz >SHA256SUMS
+  sha256sum synapse.dump matrix-config-media.tar.gz private-runtime.tar.gz >SHA256SUMS
 )
 
 cat >"${staging}/manifest.json" <<EOF
@@ -50,7 +59,8 @@ cat >"${staging}/manifest.json" <<EOF
   "database_container": "matrix-postgres",
   "database_format": "postgres-custom",
   "host": "$(hostname)",
-  "matrix_root": "${matrix_root}"
+  "matrix_root": "${matrix_root}",
+  "includes_private_runtime": true
 }
 EOF
 
