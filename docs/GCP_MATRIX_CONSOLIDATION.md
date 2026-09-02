@@ -67,6 +67,13 @@ compute/App Engine identities, but names are not proof of equivalent IAM.
 Each consumer must be rebound to a least-privilege canonical identity and
 verified before its legacy account is disabled.
 
+The first no-traffic staging attempt for `castalia-omnisvg` was rejected by
+Cloud Run because the canonical project has no quota for its one NVIDIA L4
+GPU without zonal redundancy. No canary service was created and the legacy
+service received no traffic change. A GPU quota decision and cost/availability
+review are required before staging that workload; quota has not been
+requested automatically.
+
 These resources are not part of the Matrix rollback asset set and have not
 been migrated or decommissioned. The old project therefore cannot be retired
 or disabled wholesale. A full Castalia project consolidation requires a
