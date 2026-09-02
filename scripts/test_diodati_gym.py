@@ -6,10 +6,13 @@ import stat
 import tempfile
 import unittest
 
-from diodati_gym import DiodatiSalonGym, _demo, evaluate_transcript, verify_trajectory
+from diodati_gym import DiodatiSalonGym, WEIGHTS, _demo, evaluate_transcript, verify_trajectory
 
 
 class DiodatiSalonGymTests(unittest.TestCase):
+    def test_reward_weights_remain_normalized(self):
+        self.assertAlmostEqual(sum(WEIGHTS.values()), 1.0)
+
     def test_reset_is_reproducible_and_contains_full_environment_state(self):
         with tempfile.TemporaryDirectory() as left, tempfile.TemporaryDirectory() as right:
             first = DiodatiSalonGym(left, prompt_version="test-v1")
@@ -103,6 +106,49 @@ class DiodatiSalonGymTests(unittest.TestCase):
             self.assertEqual(diagnostics["diagnostics"]["invalid_evidence_ids"], ["future-web-page"])
             environment.close()
 
+    def test_aesthetic_and_dramatic_criteria_are_separate_and_explainable(self):
+        with tempfile.TemporaryDirectory() as rich_dir, tempfile.TemporaryDirectory() as flat_dir:
+            rich = DiodatiSalonGym(rich_dir)
+            flat = DiodatiSalonGym(flat_dir)
+            rich.reset()
+            flat.reset()
+            _state, _reward, _done, rich_diagnostics = rich.step(
+                {
+                    "type": "respond",
+                    "speaker": "a.byron",
+                    "content": "The rain claws at the black glass; yet you smile. Will you dare open the volume?",
+                }
+            )
+            _state, _reward, _done, flat_diagnostics = flat.step(
+                {
+                    "type": "respond",
+                    "speaker": "a.byron",
+                    "content": "I have a thought about the book.",
+                }
+            )
+
+            self.assertGreater(rich_diagnostics["scores"]["aesthetic"], flat_diagnostics["scores"]["aesthetic"])
+            self.assertGreater(rich_diagnostics["scores"]["dramatic"], flat_diagnostics["scores"]["dramatic"])
+            features = rich_diagnostics["diagnostics"]["style_features"]
+            self.assertIn("rain", features["sensory_markers"])
+            self.assertTrue(features["invitation_or_challenge"])
+            rich.close()
+            flat.close()
+
+    def test_ornamental_verbosity_cannot_reward_hack_style_scores(self):
+        with tempfile.TemporaryDirectory() as directory:
+            environment = DiodatiSalonGym(directory)
+            environment.reset()
+            content = " ".join(["rain shadow thunder candle ghost danger dare open"] * 30)
+            _state, reward, _done, diagnostics = environment.step(
+                {"type": "respond", "speaker": "a.byron", "content": content}
+            )
+
+            self.assertGreater(diagnostics["scores"]["aesthetic"], 0.5)
+            self.assertGreater(diagnostics["penalties"]["verbosity"], 2.0)
+            self.assertLess(reward, 0.0)
+            environment.close()
+
     def test_invalid_evidence_shape_cannot_advance_schedule(self):
         with tempfile.TemporaryDirectory() as directory:
             environment = DiodatiSalonGym(directory)
@@ -133,6 +179,8 @@ class DiodatiSalonGymTests(unittest.TestCase):
         self.assertEqual(json.dumps(events, sort_keys=True), before)
         self.assertTrue(evaluation["history"]["clean"])
         self.assertEqual(evaluation["events"], 2)
+        self.assertIn("aesthetic", evaluation["conversation"])
+        self.assertIn("dramatic", evaluation["conversation"])
 
 
 if __name__ == "__main__":

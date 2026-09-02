@@ -40,7 +40,7 @@ from diodati_realtime import (  # noqa: E402
 )
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_START = "1816-06-15T20:32:00Z"
 DEFAULT_MAX_TURNS = 36
 DEFAULT_TURN_SECONDS = 120
@@ -105,12 +105,35 @@ ACTION_TYPES = {
 }
 
 WEIGHTS = {
-    "voice": 0.20,
-    "history": 0.25,
-    "flow": 0.20,
-    "participation": 0.15,
-    "creative_payoff": 0.10,
+    "voice": 0.16,
+    "history": 0.24,
+    "flow": 0.14,
+    "participation": 0.10,
+    "creative_payoff": 0.08,
+    "aesthetic": 0.08,
+    "dramatic": 0.10,
     "safety": 0.10,
+}
+
+AESTHETIC_SENSORY_MARKERS = {
+    "black", "bright", "candle", "cold", "dark", "flame", "glass", "hear", "lake",
+    "light", "lightning", "music", "rain", "shadow", "silence", "storm", "thunder",
+    "voice", "wind",
+}
+
+AESTHETIC_IMAGE_MARKERS = {
+    "apparition", "chamber", "dream", "ghost", "image", "moon", "nerve", "night",
+    "orchestra", "pulse", "spirit", "star", "trembling",
+}
+
+DRAMATIC_TENSION_MARKERS = {
+    "challenge", "danger", "dare", "devil", "fear", "fate", "ghost", "refuse", "risk",
+    "secret", "terror", "threat", "tyranny",
+}
+
+DRAMATIC_ACTION_MARKERS = {
+    "answer", "close", "discover", "enter", "open", "prove", "read", "rise", "speak",
+    "tell", "turn", "write",
 }
 
 DRIFT_PATTERNS = (
@@ -155,6 +178,59 @@ def _jaccard(left, right):
 
 def _clamp(value, low=0.0, high=1.0):
     return max(low, min(high, value))
+
+
+def _aesthetic_and_dramatic_scores(content, previous=""):
+    """Return transparent style scores without rewarding length by itself."""
+    tokens = _token_set(content)
+    lower = content.lower()
+    word_count = len(_words(content))
+    sensory = sorted(tokens & AESTHETIC_SENSORY_MARKERS)
+    images = sorted(tokens & AESTHETIC_IMAGE_MARKERS)
+    figurative = bool(re.search(r"\b(?:as if|as though|like a|like the)\b", lower))
+    contrast = bool(re.search(r"\b(?:but|yet|though|still|unless)\b", lower))
+    cadence = bool(re.search(r"[;:—]", content)) or ("," in content and word_count <= MAX_WORDS)
+    lexical_economy = len(tokens) / max(1, word_count)
+    aesthetic = _clamp(
+        0.10
+        + (0.25 if sensory else 0.0)
+        + (0.20 if images else 0.0)
+        + (0.15 if figurative else 0.0)
+        + (0.10 if contrast else 0.0)
+        + (0.10 if cadence else 0.0)
+        + (0.10 * min(1.0, lexical_economy / 0.70))
+    )
+
+    tension = sorted(tokens & DRAMATIC_TENSION_MARKERS)
+    action = sorted(tokens & DRAMATIC_ACTION_MARKERS)
+    direct_engagement = bool(re.search(r"\b(?:you|your|we|our|us)\b", lower))
+    invitation = bool(re.search(r"\b(?:will you|shall we|let us|answer me|tell me)\b", lower))
+    responsive_overlap = _jaccard(tokens, _token_set(previous)) if previous else 0.0
+    dramatic = _clamp(
+        0.10
+        + (0.20 if tension else 0.0)
+        + (0.15 if action else 0.0)
+        + (0.15 if direct_engagement else 0.0)
+        + (0.15 if "?" in content else 0.0)
+        + (0.10 if contrast else 0.0)
+        + (0.10 if invitation else 0.0)
+        + (0.05 if responsive_overlap >= 0.08 else 0.0)
+    )
+    return {
+        "aesthetic": aesthetic,
+        "dramatic": dramatic,
+        "features": {
+            "sensory_markers": sensory,
+            "image_markers": images,
+            "figurative_language": figurative,
+            "cadence": cadence,
+            "contrast_or_reversal": contrast,
+            "tension_markers": tension,
+            "action_markers": action,
+            "direct_engagement": direct_engagement,
+            "invitation_or_challenge": invitation,
+        },
+    }
 
 
 class ImmutableEpisodeLog:
@@ -411,6 +487,7 @@ class DiodatiSalonGym:
         novelty = len(tokens - prior_tokens) / max(1, len(tokens))
         imagery = bool(tokens & {"rain", "lake", "lightning", "candle", "shadow", "storm", "ghost", "dream"})
         creative = _clamp(0.20 + (0.35 if "?" in content else 0.0) + (0.30 * novelty) + (0.15 if imagery else 0.0))
+        style = _aesthetic_and_dramatic_scores(content, previous)
 
         counts_after = dict(self._state["participation"])
         counts_after[speaker] += 1
@@ -421,6 +498,8 @@ class DiodatiSalonGym:
             "flow": _clamp(flow),
             "participation": _clamp(participation),
             "creative_payoff": _clamp(creative),
+            "aesthetic": style["aesthetic"],
+            "dramatic": style["dramatic"],
             "safety": 0.0 if any(re.search(pattern, lower) for pattern in SAFETY_PATTERNS) else 1.0,
         }
 
@@ -452,6 +531,7 @@ class DiodatiSalonGym:
                 "schedule_matched": schedule_matched,
                 "evidence_ids": sorted(set(evidence_ids)),
                 "invalid_evidence_ids": invalid_evidence,
+                "style_features": style["features"],
             },
         }
 
@@ -520,6 +600,8 @@ class DiodatiSalonGym:
                     "flow": 0.5 if not premature else 0.0,
                     "participation": self._participation_score(),
                     "creative_payoff": 0.25 if not premature else 0.0,
+                    "aesthetic": 0.0,
+                    "dramatic": 0.0,
                     "safety": 1.0,
                 },
                 "penalties": {"premature_ending": 1.0 if premature else 0.0},
@@ -662,7 +744,10 @@ def evaluate_transcript(events):
     violations = []
     word_counts = []
     repetitions = []
+    aesthetic_scores = []
+    dramatic_scores = []
     previous_tokens = set()
+    previous_content = ""
     for event in events:
         raw_speaker = str(event.get("speaker", ""))
         localpart = raw_speaker.lstrip("@").split(":", 1)[0].lower()
@@ -678,9 +763,13 @@ def evaluate_transcript(events):
         violations.extend(find_anachronisms(content))
         word_counts.append(len(_words(content)))
         tokens = _token_set(content)
+        style = _aesthetic_and_dramatic_scores(content, previous_content)
+        aesthetic_scores.append(style["aesthetic"])
+        dramatic_scores.append(style["dramatic"])
         if previous_tokens:
             repetitions.append(_jaccard(previous_tokens, tokens))
         previous_tokens = tokens
+        previous_content = content
     total = sum(counts.values())
     probabilities = [counts[faculty_id] / total for faculty_id in CAST_IDS if counts[faculty_id]] if total else []
     participation = (
@@ -700,6 +789,8 @@ def evaluate_transcript(events):
             "mean_words": round(sum(word_counts) / len(word_counts), 6) if word_counts else 0.0,
             "max_words": max(word_counts, default=0),
             "mean_adjacent_overlap": round(sum(repetitions) / len(repetitions), 6) if repetitions else 0.0,
+            "aesthetic": round(sum(aesthetic_scores) / len(aesthetic_scores), 6) if aesthetic_scores else 0.0,
+            "dramatic": round(sum(dramatic_scores) / len(dramatic_scores), 6) if dramatic_scores else 0.0,
         },
     }
 

@@ -123,7 +123,9 @@ gym.close()
 
 RL episodes use an accelerated clock by default: **720x realtime**, so each two-minute simulated turn has a nominal wall-clock duration of one-sixth of a second. Gym steps are unpaced by default and therefore run as quickly as the policy and evaluator can supply them. Pass `pace=True` or `--pace` when a controlled accelerated experience is useful. The public Matrix salon remains strictly realtime and is never fed these training trajectories.
 
-Each transition returns a decomposed reward for voice, history, flow, participation, creative payoff, and safety, plus explicit penalties for anachronisms, unsupported evidence, repetition, character drift, schedule errors, premature endings, unsafe prompt manipulation, and overlong generated replies. Approved readings are source-grounded and exempt from conversational word limits; generated speech is not.
+Each transition returns a decomposed reward for voice, history, flow, participation, creative payoff, **aesthetic quality**, **dramatic force**, and safety. Aesthetic diagnostics look for economical sensory detail, imagery, figurative language, cadence, and contrast. Dramatic diagnostics look for tension, consequential action, direct engagement, reversals, questions, and invitations or challenges. These remain separate from historical accuracy and expose their matched features in every transition.
+
+Explicit penalties cover anachronisms, unsupported evidence, repetition, character drift, schedule errors, premature endings, unsafe prompt manipulation, and overlong generated replies. Style scores never cancel penalties, so piling up atmospheric or dramatic keywords cannot reward-hack verbosity. Approved readings are source-grounded and exempt from conversational word limits; generated speech is not.
 
 Episode identity is derived from the seed, prompt version, simulated start, turn timing, turn limit, and exact RAG hash. Every episode is written as create-only, SHA-256 hash-chained JSONL and made read-only when finalized. Re-running the same configuration produces the same state and transitions; a collision refuses to overwrite the prior episode.
 
