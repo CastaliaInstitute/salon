@@ -703,7 +703,11 @@ def recent_salon_context(observer_token, cycle_id, limit=10):
         if content.get("org.castalia.diodati_draft"):
             continue
         event_cycle = content.get("org.castalia.salon_cycle")
-        if event_cycle and event_cycle != cycle_id:
+        # Bot messages must belong to this exact cycle. Registered guest
+        # remarks are allowed to arrive without a cycle tag because the send
+        # edge function adds the active access metadata, but legacy/untagged
+        # bot history must never become generation context.
+        if (not cycle_id or event_cycle != cycle_id) and not is_registered_event(event):
             continue
         sender = event.get("sender", "")
         localpart = sender.split(":", 1)[0].lstrip("@")

@@ -20,6 +20,7 @@ from diodati_realtime import (  # noqa: E402
     count_sentences,
     is_registered_event,
     redact_future_leaks,
+    recent_salon_context,
     scheduled_cycle_start,
 )
 import diodati_realtime  # noqa: E402
@@ -97,6 +98,40 @@ class HistoricalGuardTests(unittest.TestCase):
         }
         self.assertTrue(is_registered_event(verified))
         self.assertFalse(is_registered_event(unverified))
+
+    def test_context_excludes_untagged_legacy_bot_history(self):
+        events = [
+            {
+                "type": "m.room.message",
+                "sender": "@a.byron:matrix.castalia.institute",
+                "content": {"msgtype": "m.text", "body": "A future memory."},
+            },
+            {
+                "type": "m.room.message",
+                "sender": "@a.byron:matrix.castalia.institute",
+                "content": {
+                    "msgtype": "m.text", "body": "The rain answers us.",
+                    "org.castalia.salon_cycle": "diodati-42",
+                },
+            },
+            {
+                "type": "m.room.message",
+                "sender": MEMBER_BRIDGE_USER,
+                "content": {
+                    "msgtype": "m.text", "body": "I have entered quietly.",
+                    "org.castalia.registration_verified": True,
+                    "org.castalia.member_user_id": "registered-id",
+                },
+            },
+        ]
+        # The Matrix backwards pagination response is newest-first.
+        events.reverse()
+        with mock.patch.object(diodati_realtime, "request_json", return_value={"chunk": events}):
+            context = recent_salon_context("observer-token", "diodati-42")
+        self.assertEqual(
+            context,
+            [("Lord Byron", "The rain answers us."), ("A registered guest", "I have entered quietly.")],
+        )
 
     def test_registration_verified_preview_event_counts_as_registered(self):
         preview = {
