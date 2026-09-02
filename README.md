@@ -136,6 +136,16 @@ python3 scripts/diodati_gym.py --episodes-dir gym-episodes --clock-rate 720 --de
 python3 -m unittest discover -s scripts -p 'test_diodati*.py'
 ```
 
+Run constrained offline prompt-policy search through the authenticated `ask-faculty` endpoint:
+
+```bash
+python3 scripts/diodati_optimize.py --output-dir optimization-runs --episodes-per-policy 2
+```
+
+The optimizer compares conversational, aesthetic, dramatic, and balanced prompt policies. Every generated episode is immutable and separately scored. A policy must pass every historical, safety, character-drift, and opening-completion constraint before it is eligible; eligible policies are ranked by mean reward with a variance penalty. The resulting report recommends a prompt but never edits the live agents or posts training dialogue to Matrix.
+
+The latest reviewed optimization result is stored in `data/diodati_policy_candidate.json`. It remains candidate-only until explicitly promoted to the realtime character prompts.
+
 ### Historical light
 
 The environment begins when natural evening light had effectively gone. The U.S. Naval Observatory calculation for Villa Diodati (46.22° N, 6.18° E) on 15 June 1816 gives sunset at 19:28 UTC and the end of civil twilight at 20:07 UTC. Apparent solar noon was 11:35 UTC, placing Geneva apparent solar time about 25 minutes ahead of UTC: sunset around 19:53 and darkness around **20:32 Geneva apparent solar time**. The simulated clock therefore begins at 20:32 and advances one-for-one with real elapsed time.
