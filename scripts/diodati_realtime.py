@@ -26,6 +26,7 @@ OPENING_PAUSE_SECONDS = float(os.environ.get("DIODATI_OPENING_PAUSE_SECONDS", "1
 ROUND_PAUSE_SECONDS = float(os.environ.get("DIODATI_ROUND_PAUSE_SECONDS", "8"))
 MAX_RESPONSE_WORDS = int(os.environ.get("DIODATI_MAX_RESPONSE_WORDS", "70"))
 DRAFT_MAX_WORDS = int(os.environ.get("DIODATI_DRAFT_MAX_WORDS", "450"))
+DRAFT_MIN_DISTINCTNESS = float(os.environ.get("DIODATI_DRAFT_MIN_DISTINCTNESS", "0.20"))
 FRIDAY_DRAFT_OFFSET_SECONDS = int(
     os.environ.get("DIODATI_FRIDAY_DRAFT_OFFSET_SECONDS", str(4 * 60 * 60))
 )
@@ -263,6 +264,19 @@ def find_draft_anachronisms(faculty_id, text):
         if re.search(pattern, text, re.IGNORECASE) and name not in violations:
             violations.append(name)
     return violations
+
+
+def manuscript_distinctness(text, other_texts):
+    """Return the lowest 1-Jaccard distance from the other stage manuscripts."""
+    tokens = set(re.findall(r"[a-z0-9']+", text.lower()))
+    if not tokens or not other_texts:
+        return 1.0
+    distances = []
+    for other in other_texts:
+        other_tokens = set(re.findall(r"[a-z0-9']+", other.lower()))
+        union = tokens | other_tokens
+        distances.append(1.0 - (len(tokens & other_tokens) / len(union) if union else 1.0))
+    return min(distances)
 
 
 def redact_future_leaks(text):
@@ -930,6 +944,15 @@ def publish_due_drafts(bots, cycle, cycle_path, now=None):
                         stage["id"],
                         **draft_kwargs,
                     )
+                    distinctness = manuscript_distinctness(
+                        manuscript,
+                        stage_texts.values(),
+                    )
+                    if distinctness < DRAFT_MIN_DISTINCTNESS:
+                        raise RuntimeError(
+                            f"manuscript too similar to another {stage['id']} story "
+                            f"({distinctness:.3f} < {DRAFT_MIN_DISTINCTNESS:.3f})"
+                        )
                     # Persist before sending. A crash can then retry the exact
                     # manuscript with the same Matrix transaction id rather
                     # than generating divergent text.

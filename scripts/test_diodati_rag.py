@@ -18,6 +18,7 @@ import diodati_realtime  # noqa: E402
 from diodati_realtime import (  # noqa: E402
     LOCAL_RAG_PATH,
     load_rag_corpus,
+    manuscript_distinctness,
     generate_character_draft,
     find_draft_anachronisms,
     draft_prompt,
@@ -175,6 +176,53 @@ class DiodatiRagTests(unittest.TestCase):
             "post-1816 manuscript framing",
             find_draft_anachronisms("a.clairmont", "A modern voice promised the future would remember her."),
         )
+
+    def test_manuscript_distinctness_fails_for_near_duplicates(self):
+        self.assertLess(
+            manuscript_distinctness(
+                "The candle burned in the room and the hidden pulse answered.",
+                ["The candle burned in the room and the hidden pulse answered again."],
+            ),
+            diodati_realtime.DRAFT_MIN_DISTINCTNESS,
+        )
+        self.assertGreaterEqual(
+            manuscript_distinctness(
+                "A physician charts the patient's fever by the lake.",
+                ["A woman hears music beyond a locked theatre door."],
+            ),
+            diodati_realtime.DRAFT_MIN_DISTINCTNESS,
+        )
+
+    def test_runtime_draft_publisher_does_not_publish_near_duplicate_story(self):
+        bots = {
+            "a.byron": {"access_token": "byron-token"},
+            "a.maryshelley": {"access_token": "mary-token"},
+        }
+        cycle = {"id": "diodati-400", "started_at": 400, "opening_complete": True}
+        sent = []
+        with tempfile.TemporaryDirectory() as directory:
+            cycle_path = pathlib.Path(directory) / "cycle.json"
+            with (
+                mock.patch.object(diodati_realtime, "CAST", [("a.byron", "Lord Byron"), ("a.maryshelley", "Mary Godwin")]),
+                mock.patch.object(
+                    diodati_realtime,
+                    "DRAFT_STAGES",
+                    ({"id": "friday", "revision": 1, "offset_seconds": 10, "label": "Friday leaves"},),
+                ),
+                mock.patch.object(
+                    diodati_realtime,
+                    "generate_character_draft",
+                    return_value="The candle burned in the room and the hidden pulse answered.",
+                ),
+                mock.patch.object(
+                    diodati_realtime,
+                    "send_message",
+                    side_effect=lambda token, body, cycle_id=None, **kwargs: sent.append(token),
+                ),
+            ):
+                diodati_realtime.publish_due_drafts(bots, cycle, cycle_path, now=411)
+            self.assertEqual(sent, ["byron-token"])
+            self.assertEqual(cycle["published_drafts"], ["friday:a.byron"])
 
     def test_byron_draft_develops_darvell_and_must_remain_unfinished(self):
         saturday = draft_prompt("a.byron", "saturday")
