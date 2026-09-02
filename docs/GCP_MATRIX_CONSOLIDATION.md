@@ -67,6 +67,13 @@ compute/App Engine identities, but names are not proof of equivalent IAM.
 Each consumer must be rebound to a least-privilege canonical identity and
 verified before its legacy account is disabled.
 
+The `inquiry-castalia-corpora` bucket has been staged as
+`inquiry-institute-castalia-corpora` in the canonical project. A checksum-only
+verification found 49 objects and 7,699,333 bytes on each side, with no
+remaining sync changes. The legacy bucket remains intact and its consumers
+have not yet been rebound, so this is a reversible data copy rather than a
+completed bucket cutover.
+
 The first no-traffic staging attempt for `castalia-omnisvg` was rejected by
 Cloud Run because the canonical project has no quota for its one NVIDIA L4
 GPU without zonal redundancy. No canary service was created and the legacy
