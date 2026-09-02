@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 
 import unittest
+from pathlib import Path
 
 from diodati_weekend_optimize import CHARACTER_NUDGES, director_controls, generation_prompt
 from diodati_weekend_gym import DiodatiWeekendGym
 
 
 class WeekendOptimizerTests(unittest.TestCase):
+    def test_optimizer_requires_the_a_plus_story_gate(self):
+        import diodati_weekend_optimize
+
+        source = Path(diodati_weekend_optimize.__file__).read_text(encoding="utf-8")
+        self.assertIn('item["evaluation"]["story_quality"]["a_plus_story_gate"]', source)
+
     def test_gentle_nudges_for_mary_godwin_and_polidori_are_non_teleological(self):
         mary = CHARACTER_NUDGES["a.maryshelley"]
         polidori = CHARACTER_NUDGES["a.polidori"]

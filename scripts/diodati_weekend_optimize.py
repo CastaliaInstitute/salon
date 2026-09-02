@@ -197,6 +197,7 @@ def main():
         if item["evaluation"]["weekend_completed"]
         and item["evaluation"]["historically_clean"]
         and item["evaluation"]["byron_fragment"]["unfinished"]
+        and item["evaluation"]["story_quality"]["a_plus_story_gate"]
     ]
     winner = max(eligible, key=lambda item: item["evaluation"]["reward_mean"])["policy"] if eligible else None
     report = {"schema_version": 1, "run_id": run_id, "winner": winner, "results": results}
