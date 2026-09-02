@@ -163,6 +163,11 @@ function formatOpening(start?: number): string {
   }).format(new Date(start))
 }
 
+function activeCycleIds(window: SalonWindow): Set<string> {
+  const epochSeconds = Math.floor(window.start / 1000)
+  return new Set([`diodati-${epochSeconds}`])
+}
+
 function isLegacyTravellerExchange(message: MatrixMessage): boolean {
   if (message.cycleId) return false
   const localpart = message.sender.replace(/^@/, '').split(':', 1)[0].toLowerCase()
@@ -282,15 +287,11 @@ export function SalonLiveRoom({
 
   const visibleMessages = useMemo(() => {
     if (!salonWindow.open) return []
-    const latestCycleId = messages.findLast((message) => message.cycleId)?.cycleId
-    const taggedCycleMessages = latestCycleId
-      ? messages.filter((message) => message.cycleId === latestCycleId)
-      : []
-    const cycleStart = taggedCycleMessages.length
-      ? Math.max(salonWindow.start, Math.min(...taggedCycleMessages.map((message) => message.timestamp)))
-      : salonWindow.start
+    const cycleIds = activeCycleIds(salonWindow)
     return messages.filter(
-      (message) => message.timestamp >= cycleStart
+      (message) => message.cycleId !== undefined
+        && cycleIds.has(message.cycleId)
+        && message.timestamp >= salonWindow.start
         && message.timestamp < salonWindow.start + THREE_DAYS_MS
         && !isLegacyTravellerExchange(message),
     )
@@ -367,10 +368,10 @@ export function SalonLiveRoom({
           // Matrix for audit. Weekend manuscript artifacts remain available,
           // while ordinary conversation is never machine-replayed.
           const safe = initial.filter((message) => !isLegacyTravellerExchange(message))
-          const latestCycleId = safe.findLast((message) => message.cycleId)?.cycleId
-          const currentCycle = latestCycleId
-            ? safe.filter((message) => message.cycleId === latestCycleId)
-            : safe
+          const cycleIds = activeCycleIds(salonWindow)
+          const currentCycle = safe.filter(
+            (message) => message.cycleId !== undefined && cycleIds.has(message.cycleId),
+          )
           const drafts = currentCycle.filter((message) => message.draft)
           const presentTurn = currentCycle.filter((message) => !message.draft).slice(-1)
           setMessages([...drafts, ...presentTurn].sort((left, right) => left.timestamp - right.timestamp))
