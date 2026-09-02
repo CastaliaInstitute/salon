@@ -66,6 +66,25 @@ PostgreSQL readiness, both Diodati services, the backup timer, and a latest
 backup age under 36 hours. Successful non-secret JSON witnesses are retained at
 `gs://inquiry-institute-matrix-backups/health/`; the absence of a witness or a
 failed unit means the window is not yet proven healthy.
+Each successful witness also writes the boolean metric
+`custom.googleapis.com/castalia/matrix_consolidation_healthy`. Cloud Monitoring
+opens an incident if that metric is absent for two hours. The public Salon has
+its own regional uptime check and two-minute outage policy alongside Matrix.
+These policies intentionally have no notification destination until an approved
+email, webhook, PagerDuty, Pub/Sub, Slack, or SMS channel is configured.
+
+Configure or reconcile the checks and policies from an authenticated operator
+workstation. The script is idempotent and refuses a noncanonical project:
+
+```bash
+./infra/matrix/configure-consolidation-monitoring.sh
+```
+
+As of September 2, 2026, the enabled policies are `Matrix Synapse production
+unavailable`, `Villa Diodati Salon unavailable`, and `Matrix consolidation
+witness missing`. Before production paging can be claimed, an owner must choose
+and verify a notification channel, attach it to all three policies, and test a
+notification. Console-visible incidents alone are not paging.
 
 ## Rollback procedure
 

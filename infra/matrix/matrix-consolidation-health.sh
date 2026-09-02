@@ -87,6 +87,29 @@ jq -n \
   }' >"$report"
 
 "$gcloud_bin" storage cp "$report" "${backup_bucket}/health/${timestamp}.json" >/dev/null
+
+metadata_url='http://metadata.google.internal/computeMetadata/v1'
+metadata_header='Metadata-Flavor: Google'
+project_id="$(curl -fsS -H "$metadata_header" "${metadata_url}/project/project-id")"
+instance_id="$(curl -fsS -H "$metadata_header" "${metadata_url}/instance/id")"
+zone="$(curl -fsS -H "$metadata_header" "${metadata_url}/instance/zone" | sed 's#.*/##')"
+monitoring_token="$(curl -fsS -H "$metadata_header" "${metadata_url}/instance/service-accounts/default/token" | jq -er .access_token)"
+metric_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+metric_payload="$(jq -nc \
+  --arg project_id "$project_id" \
+  --arg instance_id "$instance_id" \
+  --arg zone "$zone" \
+  --arg metric_time "$metric_time" \
+  '{timeSeries:[{
+    metric:{type:"custom.googleapis.com/castalia/matrix_consolidation_healthy"},
+    resource:{type:"gce_instance",labels:{project_id:$project_id,instance_id:$instance_id,zone:$zone}},
+    points:[{interval:{endTime:$metric_time},value:{boolValue:true}}]
+  }]}')"
+curl -fsS -X POST "https://monitoring.googleapis.com/v3/projects/${project_id}/timeSeries" \
+  -H "Authorization: Bearer ${monitoring_token}" \
+  -H 'Content-Type: application/json' \
+  --data-binary "$metric_payload" >/dev/null
+
 ln -sfn "$(basename "$report")" "${state_dir}/latest.json"
 find "$state_dir" -maxdepth 1 -type f -name '*.json' -mtime +22 -delete
 
