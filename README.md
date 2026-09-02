@@ -195,6 +195,10 @@ Reading messages uses the Matrix Client-Server API (polling). **Sending** messag
 3. Push to **`main`** (the workflow uploads **`dist/`**, including **`404.html`**).
 4. **Cloudflare DNS** + **GitHub custom domain** (below).
 
+Every push also runs `.github/workflows/quality.yml`, which executes the full
+historical, realtime, Gym, manuscript, and production-build checks before the
+change is considered ready for the salon.
+
 ### Cloudflare DNS (`salon.castalia.institute` → GitHub Pages)
 
 Production DNS for **`castalia.institute`** is in **Cloudflare** (same idea as [Castalia GitHub Pages setup](https://github.com/CastaliaInstitute/castalia.institute/blob/main/docs/CASTALIA_GITHUB_PAGES_SETUP.md)).
