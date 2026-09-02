@@ -9,6 +9,7 @@ project="${DIODATI_GCP_PROJECT:-inquiry-institute}"
 zone="${DIODATI_GCP_ZONE:-us-central1-b}"
 instance="${DIODATI_GCP_INSTANCE:-matrix-synapse}"
 remote_root="${DIODATI_REMOTE_ROOT:-/opt/diodati-realtime}"
+tunnel_through_iap="${DIODATI_TUNNEL_THROUGH_IAP:-false}"
 apply=false
 
 usage() {
@@ -20,7 +21,7 @@ RAG corpus, and systemd unit files on the canonical Matrix VM, then restart
 diodati-realtime.service and diodati-visitor-rl.service.
 
 Environment overrides: DIODATI_GCP_PROJECT, DIODATI_GCP_ZONE,
-DIODATI_GCP_INSTANCE, DIODATI_REMOTE_ROOT.
+DIODATI_GCP_INSTANCE, DIODATI_REMOTE_ROOT, DIODATI_TUNNEL_THROUGH_IAP.
 EOF
 }
 
@@ -51,6 +52,9 @@ install -m 0644 \
 
 target="${instance}:${remote_root}"
 gcloud_args=(--project="$project" --zone="$zone")
+if [[ "$tunnel_through_iap" == true ]]; then
+  gcloud_args+=(--tunnel-through-iap)
+fi
 remote_release="/tmp/diodati-runtime-release-$$"
 
 echo "Target: ${instance} (${project}/${zone})"
