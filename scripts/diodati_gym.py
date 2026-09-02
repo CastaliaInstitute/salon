@@ -19,6 +19,7 @@ import os
 import pathlib
 import re
 import stat
+import time
 import uuid
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -43,6 +44,7 @@ SCHEMA_VERSION = 1
 DEFAULT_START = "1816-06-15T20:32:00Z"
 DEFAULT_MAX_TURNS = 36
 DEFAULT_TURN_SECONDS = 120
+DEFAULT_CLOCK_RATE = 720.0
 MAX_WORDS = 70
 
 CAST_IDS = tuple(faculty_id for faculty_id, _name in CAST)
@@ -217,12 +219,19 @@ class DiodatiSalonGym:
         prompt_version="diodati-v1",
         max_turns=DEFAULT_MAX_TURNS,
         turn_seconds=DEFAULT_TURN_SECONDS,
+        clock_rate=DEFAULT_CLOCK_RATE,
+        pace=False,
         rag_path=None,
     ):
         self.episodes_dir = pathlib.Path(episodes_dir)
         self.prompt_version = prompt_version
         self.max_turns = int(max_turns)
         self.turn_seconds = int(turn_seconds)
+        self.clock_rate = float(clock_rate)
+        if not math.isfinite(self.clock_rate) or self.clock_rate <= 1:
+            raise ValueError("clock_rate must be finite and greater than realtime (1x)")
+        self.pace = bool(pace)
+        self.wall_seconds_per_step = self.turn_seconds / self.clock_rate
         self.rag_path = pathlib.Path(
             rag_path or (LOCAL_RAG_PATH if LOCAL_RAG_PATH.exists() else DEFAULT_RAG_PATH)
         )
@@ -254,6 +263,8 @@ class DiodatiSalonGym:
                 start_simulated_at,
                 self.max_turns,
                 self.turn_seconds,
+                self.clock_rate,
+                self.pace,
                 self.rag_sha256,
             )
         )
@@ -264,6 +275,13 @@ class DiodatiSalonGym:
             "seed": int(seed),
             "prompt_version": self.prompt_version,
             "simulated_at": start_simulated_at,
+            "clock": {
+                "mode": "accelerated",
+                "rate": self.clock_rate,
+                "simulated_seconds_per_step": self.turn_seconds,
+                "wall_seconds_per_step": self.wall_seconds_per_step,
+                "paced": self.pace,
+            },
             "schedule_index": 0,
             "current_schedule_event": copy.deepcopy(OPENING_SCHEDULE[0]),
             "selected_speaker": None,
@@ -289,6 +307,8 @@ class DiodatiSalonGym:
                     "start_simulated_at": start_simulated_at,
                     "max_turns": self.max_turns,
                     "turn_seconds": self.turn_seconds,
+                    "clock_rate": self.clock_rate,
+                    "paced": self.pace,
                     "rag_sha256": self.rag_sha256,
                 },
                 "state": self.state(),
@@ -461,6 +481,8 @@ class DiodatiSalonGym:
             raise RuntimeError("Call reset() before step()")
         if self._state["done"]:
             raise RuntimeError("Episode is complete")
+        if self.pace:
+            time.sleep(self.wall_seconds_per_step)
         if not isinstance(action, dict):
             return self._invalid_transition({"value": repr(action)}, "action-must-be-object")
 
@@ -706,12 +728,25 @@ def main():
     parser.add_argument("--episodes-dir", default="gym-episodes")
     parser.add_argument("--seed", type=int, default=1816)
     parser.add_argument("--prompt-version", default="diodati-v1")
+    parser.add_argument(
+        "--clock-rate",
+        type=float,
+        default=DEFAULT_CLOCK_RATE,
+        help="simulated seconds per wall second; must be greater than 1 (default: 720x)",
+    )
+    parser.add_argument(
+        "--pace",
+        action="store_true",
+        help="enforce the selected accelerated wall-clock pace; otherwise run as fast as actions arrive",
+    )
     parser.add_argument("--demo", action="store_true")
     args = parser.parse_args()
 
     environment = DiodatiSalonGym(
         args.episodes_dir,
         prompt_version=args.prompt_version,
+        clock_rate=args.clock_rate,
+        pace=args.pace,
     )
     state = environment.reset(seed=args.seed)
     if args.demo:

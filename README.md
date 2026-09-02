@@ -108,7 +108,7 @@ DIODATI_RL_STATE_DIR=/var/lib/diodati-visitor-rl
 ```python
 from diodati_gym import DiodatiSalonGym
 
-gym = DiodatiSalonGym("gym-episodes", prompt_version="diodati-v1")
+gym = DiodatiSalonGym("gym-episodes", prompt_version="diodati-v1", clock_rate=720)
 state = gym.reset(seed=1816)
 state, reward, done, diagnostics = gym.step({
     "type": "introduce_reading",
@@ -121,6 +121,8 @@ gym.close()
 
 `reset()` returns the transcript, simulated clock, current schedule event, canonical personas and relationships, prompt version, participation counts, and reward history. `step()` accepts `select_speaker`, `respond`/`generate_response`, `ask_question`, `introduce_reading`, `redirect`, `wait`, or `end_scene`. The opening schedule requires the approved *Fantasmagoriana* passages and the cast's interruptions before free conversation.
 
+RL episodes use an accelerated clock by default: **720x realtime**, so each two-minute simulated turn has a nominal wall-clock duration of one-sixth of a second. Gym steps are unpaced by default and therefore run as quickly as the policy and evaluator can supply them. Pass `pace=True` or `--pace` when a controlled accelerated experience is useful. The public Matrix salon remains strictly realtime and is never fed these training trajectories.
+
 Each transition returns a decomposed reward for voice, history, flow, participation, creative payoff, and safety, plus explicit penalties for anachronisms, unsupported evidence, repetition, character drift, schedule errors, premature endings, unsafe prompt manipulation, and overlong generated replies. Approved readings are source-grounded and exempt from conversational word limits; generated speech is not.
 
 Episode identity is derived from the seed, prompt version, simulated start, turn timing, turn limit, and exact RAG hash. Every episode is written as create-only, SHA-256 hash-chained JSONL and made read-only when finalized. Re-running the same configuration produces the same state and transitions; a collision refuses to overwrite the prior episode.
@@ -128,7 +130,7 @@ Episode identity is derived from the seed, prompt version, simulated start, turn
 Run the reference policy and verify the full opening trajectory:
 
 ```bash
-python3 scripts/diodati_gym.py --episodes-dir gym-episodes --demo
+python3 scripts/diodati_gym.py --episodes-dir gym-episodes --clock-rate 720 --demo
 python3 -m unittest discover -s scripts -p 'test_diodati*.py'
 ```
 

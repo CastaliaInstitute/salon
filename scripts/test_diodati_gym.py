@@ -22,8 +22,18 @@ class DiodatiSalonGymTests(unittest.TestCase):
             self.assertEqual(first_state["current_schedule_event"]["id"], "reading-1")
             self.assertEqual(first_state["personas"]["a.maryshelley"]["name"], "Mary Godwin")
             self.assertEqual(len(first_state["relationships"]), 5)
+            self.assertEqual(first_state["clock"]["mode"], "accelerated")
+            self.assertEqual(first_state["clock"]["rate"], 720.0)
+            self.assertAlmostEqual(first_state["clock"]["wall_seconds_per_step"], 1 / 6)
             first.close()
             second.close()
+
+    def test_realtime_or_invalid_clock_rates_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for rate in (1, 0, float("inf")):
+                with self.subTest(rate=rate):
+                    with self.assertRaises(ValueError):
+                        DiodatiSalonGym(directory, clock_rate=rate)
 
     def test_demo_completes_opening_and_finalizes_immutable_trajectory(self):
         with tempfile.TemporaryDirectory() as directory:
