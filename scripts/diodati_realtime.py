@@ -30,7 +30,10 @@ FRIDAY_DRAFT_OFFSET_SECONDS = int(
     os.environ.get("DIODATI_FRIDAY_DRAFT_OFFSET_SECONDS", str(4 * 60 * 60))
 )
 SATURDAY_DRAFT_OFFSET_SECONDS = int(
-    os.environ.get("DIODATI_SATURDAY_DRAFT_OFFSET_SECONDS", str(24 * 60 * 60))
+    os.environ.get("DIODATI_SATURDAY_DRAFT_OFFSET_SECONDS", str(26 * 60 * 60))
+)
+CRITICISM_OFFSET_SECONDS = int(
+    os.environ.get("DIODATI_CRITICISM_OFFSET_SECONDS", str(24 * 60 * 60))
 )
 SUNDAY_DRAFT_OFFSET_SECONDS = int(
     os.environ.get("DIODATI_SUNDAY_DRAFT_OFFSET_SECONDS", str(48 * 60 * 60))
@@ -75,6 +78,13 @@ CAST = [
     ("a.shelley", "Percy Bysshe Shelley"),
     ("a.polidori", "John Polidori"),
 ]
+CRITIQUE_PAIRS = (
+    ("a.byron", "a.clairmont"),
+    ("a.polidori", "a.byron"),
+    ("a.clairmont", "a.maryshelley"),
+    ("a.maryshelley", "a.shelley"),
+    ("a.shelley", "a.polidori"),
+)
 
 PERSONAS = {
     "a.byron": (
@@ -731,7 +741,7 @@ DRAFT_STAGES = (
 )
 
 
-def draft_prompt(faculty_id, stage_id, saturday_text=None):
+def draft_prompt(faculty_id, stage_id, saturday_text=None, criticism_text=None):
     display_name = dict(CAST)[faculty_id]
     character_direction = BYRON_FRAGMENT_DIRECTION if faculty_id == "a.byron" else CHARACTER_STORY_DIRECTIONS[faculty_id]
     if stage_id == "friday":
@@ -742,19 +752,22 @@ def draft_prompt(faculty_id, stage_id, saturday_text=None):
             "unfinished. Do not imitate, predict, name, or foreshadow any work written after this evening."
             f"\n\n{character_direction}"
         )
+    criticism = criticism_text or "No criticism was received; revise in response to the company's pressure."
     return (
         f"Revise and continue the manuscript you wrote in the preceding session. Preserve its premise but sharpen its "
         f"human conflict, supernatural uncertainty, and final image. This is {display_name}'s second draft, "
         "not commentary upon it. Do not mention revision, the challenge, an audience, or any future work.\n\n"
-        f"SATURDAY MANUSCRIPT:\n{saturday_text}\n\n{character_direction}"
+        f"SATURDAY MANUSCRIPT:\n{saturday_text}\n\nSATURDAY CRITICISM:\n{criticism}\n\n{character_direction}"
     )
 
 
-def generate_character_draft(faculty_id, stage_id, saturday_text=None):
-    prior = [("Your Saturday manuscript", saturday_text)] if saturday_text else []
+def generate_character_draft(faculty_id, stage_id, saturday_text=None, criticism_text=None):
+    prior = [("Your preceding manuscript", saturday_text)] if saturday_text else []
+    if criticism_text:
+        prior.append(("Saturday criticism", criticism_text))
     manuscript = ask_faculty(
         faculty_id,
-        draft_prompt(faculty_id, stage_id, saturday_text),
+        draft_prompt(faculty_id, stage_id, saturday_text, criticism_text),
         prior,
         response_style=(
             f"Write only the manuscript prose, without a title, preface, explanation, or modern framing. "
@@ -769,6 +782,72 @@ def generate_character_draft(faculty_id, stage_id, saturday_text=None):
             f"manuscript boundary failed for {faculty_id}: {', '.join(violations)}"
         )
     return manuscript
+
+
+def criticism_prompt(speaker_id, target_id, friday_text):
+    speaker_name = dict(CAST)[speaker_id]
+    target_name = dict(CAST)[target_id]
+    return (
+        f"As {speaker_name}, interrupt the Saturday salon with useful criticism of {target_name}'s first "
+        "manuscript. Name one vivid strength and one precise pressure point: a motive, human consequence, "
+        "or unanswered detail that the writer should confront. Speak directly to the company in no more than "
+        "70 words. Do not rewrite the story, address a visitor, mention later works, or use modern framing.\n\n"
+        f"{target_name.upper()}'S FRIDAY MANUSCRIPT:\n{friday_text}"
+    )
+
+
+def publish_due_criticisms(bots, cycle, cycle_path, now=None):
+    """Publish one useful Saturday criticism for each scheduled story target."""
+    if not cycle.get("opening_complete") or not cycle.get("id"):
+        return cycle
+    now = int(time.time()) if now is None else int(now)
+    elapsed = max(0, now - int(cycle["started_at"]))
+    if elapsed < CRITICISM_OFFSET_SECONDS:
+        return cycle
+    draft_texts = cycle.setdefault("draft_texts", {})
+    friday_texts = draft_texts.get("friday", {})
+    criticisms = cycle.setdefault("criticisms", {})
+    published = set(cycle.setdefault("published_criticisms", []))
+    for speaker_id, target_id in CRITIQUE_PAIRS:
+        criticism_key = target_id
+        if criticism_key in published or not friday_texts.get(target_id):
+            continue
+        try:
+            criticism = criticisms.get(criticism_key)
+            if not criticism:
+                criticism = ask_faculty(
+                    speaker_id,
+                    criticism_prompt(speaker_id, target_id, friday_texts[target_id]),
+                    [(dict(CAST)[target_id], friday_texts[target_id])],
+                    response_style="One or two direct, conversational sentences; no more than 70 words.",
+                    max_words=70,
+                )
+                criticisms[criticism_key] = criticism
+                save_json(cycle_path, cycle)
+            metadata = {
+                "org.castalia.diodati_criticism": {
+                    "target_faculty_id": target_id,
+                    "generated_by": "ask-faculty",
+                }
+            }
+            send_message(
+                bots[speaker_id]["access_token"],
+                criticism,
+                cycle["id"],
+                metadata=metadata,
+                transaction_id=f"diodati-criticism-{cycle['started_at']}-{target_id}",
+            )
+            published.add(criticism_key)
+            cycle["published_criticisms"] = sorted(published)
+            save_json(cycle_path, cycle)
+            print(f"Published Saturday criticism for {dict(CAST)[target_id]}", flush=True)
+        except Exception as error:
+            print(
+                f"Criticism for {dict(CAST)[target_id]} failed: {error}",
+                file=sys.stderr,
+                flush=True,
+            )
+    return cycle
 
 
 def publish_due_drafts(bots, cycle, cycle_path, now=None):
@@ -796,10 +875,13 @@ def publish_due_drafts(bots, cycle, cycle_path, now=None):
             try:
                 manuscript = stage_texts.get(faculty_id)
                 if not manuscript:
+                    draft_kwargs = {"saturday_text": prior_text}
+                    if stage["id"] == "sunday" and cycle.get("criticisms", {}).get(faculty_id):
+                        draft_kwargs["criticism_text"] = cycle["criticisms"][faculty_id]
                     manuscript = generate_character_draft(
                         faculty_id,
                         stage["id"],
-                        saturday_text=prior_text,
+                        **draft_kwargs,
                     )
                     # Persist before sending. A crash can then retry the exact
                     # manuscript with the same Matrix transaction id rather
@@ -946,6 +1028,7 @@ def sync(bots):
 
     while True:
         cycle = ensure_cycle(bots, cycle_path)
+        publish_due_criticisms(bots, cycle, cycle_path)
         publish_due_drafts(bots, cycle, cycle_path)
         if cycle.get("opening_complete") and int(time.time()) >= int(cycle.get("next_turn_at", 0)):
             run_autonomous_turn(bots, cycle)

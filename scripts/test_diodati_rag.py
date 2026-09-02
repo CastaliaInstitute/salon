@@ -21,6 +21,8 @@ from diodati_realtime import (  # noqa: E402
     generate_character_draft,
     find_draft_anachronisms,
     draft_prompt,
+    criticism_prompt,
+    publish_due_criticisms,
     publish_due_drafts,
     retrieve_rag_context,
     run_opening,
@@ -178,6 +180,7 @@ class DiodatiRagTests(unittest.TestCase):
             self.assertNotIn("1819", prompt)
             self.assertNotIn("the vampyre", prompt.lower())
         self.assertIn("Earlier leaves", sunday)
+        self.assertIn("Criticism received", draft_prompt("a.byron", "sunday", "Earlier leaves", "Criticism received"))
 
     def test_each_character_has_a_distinct_period_safe_story_direction(self):
         prompts = {
@@ -302,6 +305,35 @@ class DiodatiRagTests(unittest.TestCase):
         )
         self.assertTrue(all(item[2] is None for item in generated[:5]))
         self.assertTrue(all(item[2] for item in generated[5:]))
+
+    def test_saturday_criticism_publishes_once_for_each_target(self):
+        bots = {faculty_id: {"access_token": faculty_id} for faculty_id, _ in diodati_realtime.CAST}
+        cycle = {
+            "id": "diodati-300", "started_at": 300, "opening_complete": True,
+            "draft_texts": {"friday": {faculty_id: f"{faculty_id} story" for faculty_id, _ in diodati_realtime.CAST}},
+        }
+        sent = []
+        with tempfile.TemporaryDirectory() as directory:
+            cycle_path = pathlib.Path(directory) / "cycle.json"
+            with (
+                mock.patch.object(diodati_realtime, "ask_faculty", return_value="A strength, but the motive needs pressure."),
+                mock.patch.object(
+                    diodati_realtime,
+                    "send_message",
+                    side_effect=lambda token, body, cycle_id=None, **kwargs: sent.append((token, body, cycle_id, kwargs)),
+                ),
+            ):
+                publish_due_criticisms(
+                    bots, cycle, cycle_path,
+                    now=300 + diodati_realtime.CRITICISM_OFFSET_SECONDS,
+                )
+                publish_due_criticisms(
+                    bots, cycle, cycle_path,
+                    now=300 + diodati_realtime.CRITICISM_OFFSET_SECONDS + 1,
+                )
+            self.assertEqual(len(sent), 5)
+            self.assertEqual(len(cycle["published_criticisms"]), 5)
+            self.assertTrue(all(item[3]["metadata"]["org.castalia.diodati_criticism"]["generated_by"] == "ask-faculty" for item in sent))
     def test_failed_matrix_send_reuses_the_persisted_endpoint_draft(self):
         cycle = {"id": "diodati-100", "started_at": 100, "opening_complete": True}
         bots = {"a.byron": {"access_token": "token"}}
