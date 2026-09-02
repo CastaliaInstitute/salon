@@ -12,6 +12,32 @@
 The prior project, `institute-481516`, is not a production target. Its terminated
 `matrix-synapse` VM and disk are rollback-only assets.
 
+### Legacy-project inventory and retirement boundary
+
+An audit on **2026-09-02** found that `institute-481516` is not an empty or
+Matrix-only project. It still contains active workloads that must not be
+deleted as part of the Matrix rollback-window procedure:
+
+- Cloud Run services including `castalia-face-api`, `castalia-omnisvg`,
+  `castalia-tournament-api`, `codex`, `commonplace-directus`, `ghost`,
+  `outline`, `talkie-*`, `therapist-*`, and `zonetrip-processor`.
+- Runnable Cloud SQL instances `outline-db` and `ghost-db-instance`, plus
+  the `outline-redis` Memorystore instance.
+- Running Compute Engine instances `gotosocial-vm` and `lms-moodle`.
+- Production or build buckets, including `inquiry-castalia-corpora`,
+  `castalia-gazetteer-files`, Ghost/Therapist state, and Cloud Build buckets.
+- Legacy service accounts and Secret Manager entries used by those workloads.
+
+These resources are not part of the Matrix rollback asset set and have not
+been migrated or decommissioned. The old project therefore cannot be retired
+or disabled wholesale. A full Castalia project consolidation requires a
+separate service-by-service migration plan covering image provenance,
+database exports and restores, DNS/custom domains, secret rotation, IAM
+replacement, and application-level cutover tests. Until that plan is complete,
+the only approved old-project retirement candidates are the stopped legacy
+Matrix VM and its disk, and only after the rollback window below plus explicit
+approval.
+
 ## Cutover record and rollback window
 
 The source VM stopped at `2026-09-01T21:08:19Z`. The source snapshot
