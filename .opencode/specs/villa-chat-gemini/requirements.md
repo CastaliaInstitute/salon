@@ -15,7 +15,12 @@ Member chat must be answered by Google AI Studio so its credits pay for the salo
 #### Scenario: Persona turn
 
 - WHEN `villa-diodati-chat` requests a persona reply, THE SYSTEM SHALL call Google AI Studio's OpenAI-compatible Gemini endpoint with the `gemini-3.1-pro-preview` model id, passing the persona prompt and conversation history unchanged from the current edge function behavior
-- WHEN a gateway request omits a model, THE SYSTEM SHALL default to `gemini-3.1-pro-preview`
+
+#### Scenario: Default model
+
+- WHILE `villa-diodati-chat` builds its request, THE SYSTEM SHALL send the explicit model id `gemini-3.1-pro-preview`
+- IF `LLM_GATEWAY_DEFAULT_PROVIDER=gemini` is set as a gateway environment toggle, THE SYSTEM SHALL default modelless requests to `gemini-3.1-pro-preview`
+- OTHERWISE, WHEN a modelless request arrives at the shared gateway, THE SYSTEM SHALL keep the pre-existing default so other institute consumers (faculty chat, tournaments) are unaffected
 
 ### Requirement: OpenAI-compatible surface preserved
 
