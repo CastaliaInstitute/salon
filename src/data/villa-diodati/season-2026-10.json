@@ -1,0 +1,16 @@
+{
+  "season": "October 2026",
+  "timezone": "Europe/Zurich",
+  "replayDayMapping": {
+    "Friday": "day-1",
+    "Saturday": "day-2",
+    "Sunday": "day-3"
+  },
+  "windows": [
+    { "id": "w1", "start": "2026-10-02", "end": "2026-10-04" },
+    { "id": "w2", "start": "2026-10-09", "end": "2026-10-11" },
+    { "id": "w3", "start": "2026-10-16", "end": "2026-10-18" },
+    { "id": "w4", "start": "2026-10-23", "end": "2026-10-25" },
+    { "id": "w5", "start": "2026-10-30", "end": "2026-11-01" }
+  ]
+}

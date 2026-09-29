@@ -2,6 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import threeDays from '../../data/villa-diodati/three-days.json';
 import capsule from '../../data/villa-diodati/capsule.json';
+import season from '../../data/villa-diodati/season-2026-10.json';
+import { evaluate, nowInZurich, badgeLabel } from '../../scripts/salon-schedule/engine.mjs';
 import '../../styles/villa.css';
 
 interface Scene {
@@ -64,6 +66,10 @@ function resolvePersona(characterName: string): Persona | null {
 }
 
 const { location, dateRange } = villa.meta;
+const buildNow = nowInZurich(new Date());
+const seasonState = evaluate(season.windows, season.replayDayMapping, buildNow);
+const dayNumber = seasonState.replayDayId ? Number(seasonState.replayDayId.slice(-1)) : null;
+const buildBadge = badgeLabel(seasonState, { dayNumber, nextWindowStartDate: seasonState.nextWindowStartDate });
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 function prettyDate(isoDate: string): string {
   const [year, month, day] = isoDate.split('-').map(Number);
@@ -87,7 +93,10 @@ const personae = [...new Set(villa.days.flatMap((day) => day.scenes.flatMap((sce
   <div class="villa-replay">
     <div class="villa-content">
       <header>
-        <p class="villa-kicker">Static replay · {historicLabel} · three days</p>
+        <p class="villa-kicker">
+          Static replay · {historicLabel} · three days
+          <span class="villa-season-badge" data-season-badge data-plays={seasonState.state}>{buildBadge}</span>
+        </p>
         <h1>Villa Diodati</h1>
         <p class="villa-subtitle">{location} — the weekend <em>Frankenstein</em> began, minute by minute. Read the motion of the house: each scene opens what happened, who was present, and what their journals say.</p>
       </header>
@@ -177,3 +186,21 @@ const personae = [...new Set(villa.days.flatMap((day) => day.scenes.flatMap((sce
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  import season from '../../data/villa-diodati/season-2026-10.json';
+  import { evaluate, nowInZurich, badgeLabel } from '../../scripts/salon-schedule/engine.mjs';
+
+  const badge = document.querySelector('[data-season-badge]');
+  if (badge) {
+    try {
+      const nowInfo = nowInZurich(new Date());
+      const state = evaluate(season.windows, season.replayDayMapping, nowInfo);
+      const dayNumber = state.replayDayId ? Number(state.replayDayId.slice(-1)) : null;
+      badge.textContent = badgeLabel(state, { dayNumber, nextWindowStartDate: state.nextWindowStartDate });
+      badge.dataset.plays = state.state;
+    } catch {
+      badge.textContent = 'October Fri–Sun season';
+    }
+  }
+</script>

@@ -1,8 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import season from '../data/villa-diodati/season-2026-10.json';
+import { evaluate, nowInZurich, badgeLabel } from '../scripts/salon-schedule/engine.mjs';
 
 const villaDiodatiHref = '/villa/';
 const villaLiveHref = 'https://castalia.institute/salon/villa.diodati';
+const buildNow = nowInZurich(new Date());
+const seasonState = evaluate(season.windows, season.replayDayMapping, buildNow);
+const dayNumber = seasonState.replayDayId ? Number(seasonState.replayDayId.slice(-1)) : null;
+const buildBadge = badgeLabel(seasonState, { dayNumber, nextWindowStartDate: seasonState.nextWindowStartDate });
 ---
 
 <BaseLayout title="Home">
@@ -44,6 +50,7 @@ const villaLiveHref = 'https://castalia.institute/salon/villa.diodati';
       <div class="salon-card-mark" aria-hidden="true">🏛️</div>
       <div class="salon-card-content">
         <h3>Villa Diodati</h3>
+        <span class="salon-season-badge" data-season-badge data-plays={seasonState.state}>{buildBadge}</span>
         <p class="salon-card-subtitle">Lake Geneva, summer 1816 — the canonical salon</p>
         <p class="salon-card-desc">
           Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori—the circle where <em>Frankenstein</em> was conceived.
@@ -58,6 +65,20 @@ const villaLiveHref = 'https://castalia.institute/salon/villa.diodati';
     <p class="salon-card-members">
       <a href={villaLiveHref}>Members: open the live simulation →</a>
     </p>
+
+    <script>
+      import season from '../data/villa-diodati/season-2026-10.json';
+      import { evaluate, nowInZurich, badgeLabel } from '../scripts/salon-schedule/engine.mjs';
+
+      const badge = document.querySelector('[data-season-badge]');
+      if (badge) {
+        const nowInfo = nowInZurich(new Date());
+        const state = evaluate(season.windows, season.replayDayMapping, nowInfo);
+        const dayNumber = state.replayDayId ? Number(state.replayDayId.slice(-1)) : null;
+        badge.textContent = badgeLabel(state, { dayNumber, nextWindowStartDate: state.nextWindowStartDate });
+        badge.dataset.plays = state.state;
+      }
+    </script>
   </section>
 
   <section class="principles container">

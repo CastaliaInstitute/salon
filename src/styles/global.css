@@ -139,3 +139,18 @@ a:hover {
 .safe-top {
   padding-top: max(env(safe-area-inset-top), var(--space-2, 8px));
 }
+
+/* Salon season badges (salon-weekend-schedule) */
+.salon-season-badge {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0.15rem 0.6rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+  background: #1e1a16;
+  color: #d9a441;
+  border: 1px solid rgba(217, 164, 65, 0.45);
+  vertical-align: middle;
+  white-space: nowrap;
+}
