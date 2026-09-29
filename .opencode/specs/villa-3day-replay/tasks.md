@@ -18,4 +18,4 @@
 - [x] 3.1 Run npm run build + astro check: green CI build proves static render of all three days (R1, R5)
 - [x] 3.2 Manual device pass on npm run preview at 320px and 430px: no horizontal scroll, ≥44px targets, villa palette; record evidence in spec (R3)
 - [x] 3.3 Confirm the /villa/ route ships zero client framework JS bundles in dist (R5)
-- [ ] 3.4 Add /villa/ + data to the shell precache contract (sw.js precache list lands in salon-pwa-shell; record the manifest that route uses) (R4)
+- [x] 3.4 Add /villa/ + data to the shell precache contract (sw.js precache list lands in salon-pwa-shell; record the manifest that route uses) (R4)
