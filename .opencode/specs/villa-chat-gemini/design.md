@@ -37,7 +37,7 @@ flowchart LR
 
 ### Deployment (supabase CLI)
 
-- Responsibilities: `supabase functions deploy llm-gateway, villa-diodati-chat` (project `xougqdomkoisrxdnagcj`) and `supabase secrets set GEMINI_API_KEY=<key>`; verify via hosted URL probes.
+- Responsibilities: `supabase functions deploy llm-gateway, villa-diodati-chat` (project ref `pilmscrodlitdrygabvo` — the live `NEXT_PUBLIC_SUPABASE_URL` project; the prior `xougqdomkoisrxdnagcj` ref in older docs is stale) and `supabase secrets set GEMINI_API_KEY=<key>`; verify via hosted URL probes.
 - Serves: R4, R5 verification.
 
 ## Data models
