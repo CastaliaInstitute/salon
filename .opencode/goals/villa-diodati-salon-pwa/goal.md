@@ -33,5 +33,14 @@ Make the Villa Diodati salon an installable, mobile-friendly PWA at salon.castal
 - villa-chat-gemini
 - salon-pwa-shell
 - salon-weekend-schedule (depends: villa-3day-replay)
-- member-salon-entry (depends: villa-chat-gemini, salon-weekend-schedule)
-- villa-pwa-launch (depends: salon-pwa-shell, salon-weekend-schedule, member-salon-entry)
+- member-salon-entry (depends: salon-weekend-schedule)
+- villa-pwa-launch (depends: salon-pwa-shell, salon-weekend-schedule, member-salon-entry, villa-chat-gemini)
+
+<!-- Plan revision 2026-09-29: member-salon-entry's original dependency on
+     villa-chat-gemini gated its authoring gates while the Supabase deploy is
+     blocked on operator credentials. Authoring (requirements/design/tasks) no
+     longer depends on it; real implementation still does — member-salon-entry's
+     own tasks.md pins an integration gate: chat-dependent tasks remain undone
+     until villa-chat-gemini completes. villa-pwa-launch now carries the
+     villa-chat-gemini dependency so final verification still requires a live
+     Gemini-backed chat. -->
