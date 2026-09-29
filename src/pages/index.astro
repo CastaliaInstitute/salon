@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const villaDiodatiHref = '/diodati';
+const villaDiodatiHref = '/villa/';
+const villaLiveHref = 'https://castalia.institute/salon/villa.diodati';
 ---
 
 <BaseLayout title="Home">
@@ -45,15 +46,18 @@ const villaDiodatiHref = '/diodati';
         <h3>Villa Diodati</h3>
         <p class="salon-card-subtitle">Lake Geneva, summer 1816 — the canonical salon</p>
         <p class="salon-card-desc">
-          Lord Byron hosts Mary Godwin, Claire Clairmont, Percy Shelley, and John Polidori—the circle where <em>Frankenstein</em> was conceived.
+          Lord Byron hosts Percy Shelley, Mary Shelley, and John Polidori—the circle where <em>Frankenstein</em> was conceived.
         </p>
         <div class="salon-card-roles">
           <span><strong>Host:</strong> Byron</span>
-          <span><strong>Guests:</strong> Mary Godwin, Claire Clairmont, Percy Shelley, Polidori</span>
+          <span><strong>Guests:</strong> Percy Shelley, Mary Shelley, Polidori</span>
         </div>
         <p class="salon-card-cta">Open the simulation →</p>
       </div>
-    </a>
+      </a>
+    <p class="salon-card-members">
+      <a href={villaLiveHref}>Members: open the live simulation →</a>
+    </p>
   </section>
 
   <section class="principles container">
@@ -195,6 +199,11 @@ const villaDiodatiHref = '/diodati';
 
   .villa-theme {
     border-left: 4px solid #8b6914;
+  }
+
+  .salon-card-members {
+    font-size: 0.85rem;
+    margin: calc(var(--space-2) * -1) 0 var(--space-4);
   }
 
   .principles {

@@ -1,0 +1,113 @@
+{
+  "personas": [
+    {
+      "name": "Mary Wollstonecraft Godwin (Shelley)",
+      "voiceTone": "quietly analytical, compassionate, introspective",
+      "themes": [
+        "creation",
+        "life and death",
+        "dream imagery",
+        "moral responsibility"
+      ],
+      "motifs": [
+        "stormlight",
+        "sleep and waking",
+        "spark of life",
+        "isolation"
+      ],
+      "quotes": [
+        "We talked of the experiments of Dr. Darwin, who preserved a piece of vermicelli in a glass case till by some extraordinary means it began to move.",
+        "When I placed my head on my pillow, I did not sleep, nor could I be said to think; my imagination, unbidden, possessed and guided me.",
+        "I saw the pale student of unhallowed arts kneeling beside the thing he had put together."
+      ],
+      "journalNotes": "Records storm, readings of Fantasmagoriana, Byron's story challenge, her own 'waking dream.'"
+    },
+    {
+      "name": "Percy Bysshe Shelley",
+      "voiceTone": "ethereal, excitable, philosophical, occasionally anxious",
+      "themes": [
+        "idealism",
+        "mind and nature",
+        "electricity as spirit",
+        "imagination"
+      ],
+      "motifs": [
+        "lightning",
+        "mind-mirror",
+        "inspiration",
+        "freedom"
+      ],
+      "quotes": [
+        "The thunderstorm was terrific... The lake was lit up, the pines on Jura made distinct, and the streams of rain seemed like silver wires.",
+        "The mind in creation is as a fading coal, which some invisible influence, like an inconstant wind, awakens to transitory brightness."
+      ],
+      "journalNotes": "No diary; letters describe storms and philosophical reflections, affection for Mary, respect for Byron."
+    },
+    {
+      "name": "Lord Byron",
+      "voiceTone": "witty, sardonic, restless, performative",
+      "themes": [
+        "fame",
+        "sin and guilt",
+        "freedom",
+        "the supernatural"
+      ],
+      "motifs": [
+        "mirror",
+        "lightning on lake",
+        "fallen angel",
+        "exile"
+      ],
+      "quotes": [
+        "Three days of rain confined us to the house.",
+        "I am as melancholy as a cat in a strange garret.",
+        "There are things which neither poetry nor philosophy can define — but we may attempt them still."
+      ],
+      "journalNotes": "Letters to Augusta Leigh and publisher Murray; alternates between boredom, flirtation, and brilliance."
+    },
+    {
+      "name": "John William Polidori",
+      "voiceTone": "precise, defensive, yearning for validation",
+      "themes": [
+        "scientific curiosity",
+        "ambition",
+        "jealousy",
+        "mortality"
+      ],
+      "motifs": [
+        "blood",
+        "mirror of class",
+        "disease",
+        "parasitism"
+      ],
+      "quotes": [
+        "Proposed that each should write a tale of terror.",
+        "Began my story — the nobleman who destroys by fascination.",
+        "Byron is capricious; he treats me as a servant, though I am a doctor."
+      ],
+      "journalNotes": "The only continuous day-by-day record; factual, emotional undertone of envy and fascination."
+    },
+    {
+      "name": "Claire Clairmont",
+      "voiceTone": "romantic, impulsive, self-dramatic, sensitive",
+      "themes": [
+        "love and rejection",
+        "youth",
+        "ambition",
+        "artistic longing"
+      ],
+      "motifs": [
+        "music",
+        "flame",
+        "lake reflections",
+        "dreams of fame"
+      ],
+      "quotes": [
+        "He will not look at me, yet I am ever near him.",
+        "How glorious it is to be among those who make verses and defy the dull world!",
+        "If only the storm would clear, perhaps he would see me."
+      ],
+      "journalNotes": "No direct diary for this period; later letters recall jealousy, admiration, and fascination with Byron."
+    }
+  ]
+}

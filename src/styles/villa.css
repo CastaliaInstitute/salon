@@ -1,0 +1,342 @@
+/*
+ * Villa Diodati replay — public static replay at /villa/
+ * Warm umber palette matching the index .villa-theme card; zero JS.
+ */
+
+.villa-replay {
+  --villa-bg: #1e1a16;
+  --villa-surface: #2d2520;
+  --villa-surface-raised: #37302a;
+  --villa-text: #faf8f5;
+  --villa-text-muted: rgba(250, 248, 245, 0.68);
+  --villa-accent: #8b6914;
+  --villa-accent-soft: #b08a2e;
+  --villa-border: rgba(250, 248, 245, 0.14);
+  --villa-chip-bg: rgba(139, 105, 20, 0.18);
+
+  --villa-fluid: clamp(1rem, 0.92rem + 0.4vw, 1.125rem);
+  --villa-time-max: 70ch;
+
+  background: var(--villa-bg);
+  color: var(--villa-text);
+  font-size: var(--villa-fluid);
+  padding: var(--space-7) 0 var(--space-8);
+}
+
+.villa-content {
+  max-width: calc(var(--villa-time-max) + 2.5rem);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+/* Header ---------------------------------------------------------------- */
+
+.villa-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--villa-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.villa-replay h1 {
+  color: var(--villa-text);
+  font-weight: 300;
+  margin-bottom: var(--space-2);
+}
+
+.villa-subtitle {
+  color: var(--villa-text-muted);
+  margin-bottom: 0;
+}
+
+/* Sticky compact day navigation ----------------------------------------- */
+
+.villa-day-nav {
+  position: sticky;
+  /* platform shell header: 82px (mobile row + drawer slot), 73px on lg+ */
+  top: 82px;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  margin: var(--space-4) 0 var(--space-5);
+  background: rgba(30, 26, 22, 0.97);
+  border-top: 1px solid var(--villa-border);
+  border-bottom: 1px solid var(--villa-border);
+}
+
+@media (min-width: 1024px) {
+  .villa-day-nav {
+    top: 73px;
+  }
+}
+
+.villa-day-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--villa-text-muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.villa-day-link span {
+  font-size: 0.72rem;
+}
+
+.villa-day-link strong {
+  color: var(--villa-text);
+  font-weight: 500;
+}
+
+.villa-day-link:hover,
+.villa-day-link:focus-visible {
+  color: var(--villa-accent-soft);
+  border-bottom-color: var(--villa-accent);
+}
+
+.villa-day-link:hover strong,
+.villa-day-link:focus-visible strong {
+  color: var(--villa-accent-soft);
+}
+
+/* Day sections ----------------------------------------------------------- */
+
+.villa-day {
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--villa-border);
+  padding-top: var(--space-4);
+  /* account for the shell header + sticky day nav when jumping to #day anchors */
+  scroll-margin-top: 144px;
+}
+
+@media (min-width: 1024px) {
+  .villa-day {
+    scroll-margin-top: 135px;
+  }
+}
+
+.villa-day-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.villa-day-heading h2 {
+  display: block;
+  margin-bottom: 0;
+  color: var(--villa-text);
+  font-weight: 300;
+}
+
+.villa-day-dates {
+  color: var(--villa-accent-soft);
+  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scene cards ------------------------------------------------------------ */
+
+.villa-scene {
+  max-width: var(--villa-time-max);
+  margin-bottom: var(--space-3);
+  background: var(--villa-surface);
+  border: 1px solid var(--villa-border);
+  border-left: 3px solid var(--villa-accent);
+  border-radius: 4px;
+}
+
+.villa-scene[open] {
+  border-left-color: var(--villa-accent-soft);
+  background: var(--villa-surface-raised);
+}
+
+.villa-scene summary {
+  list-style: none;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.villa-scene summary::-webkit-details-marker,
+.villa-scene summary::marker {
+  display: none;
+  content: '';
+}
+
+.villa-scene summary:focus-visible {
+  outline: 2px solid var(--villa-accent-soft);
+  outline-offset: -2px;
+}
+
+.villa-scene[open] summary {
+  border-bottom: 1px solid var(--villa-border);
+}
+
+.villa-scene-summary-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.villa-scene-summary-marker {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.villa-marker {
+  color: var(--villa-accent-soft);
+}
+
+.villa-marker.on {
+  display: none;
+}
+
+.villa-scene[open] .villa-marker.on {
+  display: inline;
+}
+
+.villa-scene[open] .villa-marker.off {
+  display: none;
+}
+
+.villa-scene-time {
+  color: var(--villa-accent-soft);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.villa-scene-title {
+  margin-bottom: 0;
+  color: var(--villa-text);
+  font-size: 1.08rem;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.villa-scene-people {
+  display: block;
+  margin-top: var(--space-1);
+  margin-bottom: 0;
+  color: var(--villa-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Scene body ------------------------------------------------------------- */
+
+.villa-scene-body {
+  padding: var(--space-3);
+}
+
+.villa-scene-text {
+  max-width: var(--villa-time-max);
+  color: var(--villa-text);
+  margin-bottom: var(--space-3);
+}
+
+.villa-mood {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--villa-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+/* Character chips --------------------------------------------------------- */
+
+.villa-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.villa-chip {
+  background: var(--villa-chip-bg);
+  color: #d9c7a0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+}
+
+/* Journal voice notes ------------------------------------------------------ */
+
+.villa-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.villa-quote {
+  max-width: var(--villa-time-max);
+  margin-bottom: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid rgba(176, 138, 46, 0.55);
+}
+
+.villa-quote p {
+  margin-bottom: var(--space-1);
+  color: var(--villa-text);
+  font-style: italic;
+}
+
+.villa-quote-attr {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--villa-accent-soft);
+}
+
+.villa-journal-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--villa-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.villa-journal {
+  max-width: var(--villa-time-max);
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 2px solid rgba(176, 138, 46, 0.55);
+}
+
+.villa-journal p {
+  margin: 0;
+  color: var(--villa-text-muted);
+  font-size: 0.95rem;
+}
+
+.villa-journal strong {
+  color: var(--villa-text);
+}
+
+/* Footer note --------------------------------------------------------------- */
+
+.villa-note-block {
+  margin-top: var(--space-6);
+  color: var(--villa-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.8;
+}
+
+.villa-note-block p {
+  margin: 0;
+}

@@ -1,0 +1,179 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import threeDays from '../../data/villa-diodati/three-days.json';
+import capsule from '../../data/villa-diodati/capsule.json';
+import '../../styles/villa.css';
+
+interface Scene {
+  time: string;
+  title: string;
+  text: string;
+  mood: string;
+  characters: string[];
+  quotes: { character: string; quote: string }[];
+}
+
+interface Day {
+  id: string;
+  historicDate: string;
+  weekday: string;
+  scenes: Scene[];
+}
+
+interface VillaData {
+  meta: { location: string; dateRange: string };
+  days: Day[];
+}
+
+interface Persona {
+  name: string;
+  voiceTone: string;
+  themes: string[];
+  motifs: string[];
+  quotes: string[];
+  journalNotes: string;
+}
+
+const villa = threeDays as VillaData;
+const personas = (capsule as { personas: Persona[] }).personas;
+
+/*
+ * Map agenda display names (e.g. "Mary Godwin") to capsule personae
+ * ("Mary Wollstonecraft Godwin (Shelley)").
+ * Token-overlap scoring: names like "Percy Shelley" must prefer
+ * "Percy Bysshe Shelley" over "(Shelley)"-bearing sibling personae.
+ */
+const personaByCharacter = new Map<string, Persona>();
+
+function resolvePersona(characterName: string): Persona | null {
+  const cached = personaByCharacter.get(characterName);
+  if (cached) return cached;
+  const tokens = characterName.toLowerCase().split(/\s+/);
+  let best: Persona | undefined;
+  let bestScore = 0;
+  for (const persona of personas) {
+    const personaName = persona.name.toLowerCase();
+    const score = tokens.reduce((acc, token) => acc + (personaName.includes(token) ? 1 : 0), 0);
+    if (score > bestScore) {
+      best = persona;
+      bestScore = score;
+    }
+  }
+  if (best) personaByCharacter.set(characterName, best);
+  return best ?? null;
+}
+
+const { location, dateRange } = villa.meta;
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function prettyDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return `${MONTHS[month - 1]} ${day}, ${year}`;
+}
+const first = villa.days[0].historicDate;
+const last = villa.days[villa.days.length - 1].historicDate;
+const historicLabel =
+  first.slice(0, 7) === last.slice(0, 7)
+    ? `${MONTHS[Number(first.slice(5, 7)) - 1]} ${Number(first.slice(8, 10))}–${Number(last.slice(8, 10))}, 1816`
+    : `${prettyDate(first)}–${prettyDate(last)}`;
+const personae = [...new Set(villa.days.flatMap((day) => day.scenes.flatMap((scene) => scene.characters)))]
+  .map((name) => resolvePersona(name))
+  .filter((persona): persona is Persona => persona !== null);
+---
+
+<BaseLayout
+  title="Villa Diodati — Replay"
+  description="A static replay of the Villa Diodati salon weekend of June 1816: three days of timed scenes, voices from the journal capsule."
+>
+  <div class="villa-replay">
+    <div class="villa-content">
+      <header>
+        <p class="villa-kicker">Static replay · {historicLabel} · three days</p>
+        <h1>Villa Diodati</h1>
+        <p class="villa-subtitle">{location} — the weekend <em>Frankenstein</em> began, minute by minute. Read the motion of the house: each scene opens what happened, who was present, and what their journals say.</p>
+      </header>
+    </div>
+
+    <nav class="villa-day-nav" aria-label="Replay day navigation">
+      {villa.days.map((day, i) => (
+        <a class="villa-day-link" href={`#${day.id}`}>
+          <strong>Day {i + 1}</strong>
+          <span>&nbsp;· {day.weekday.slice(0, 3)}</span>
+        </a>
+      ))}
+    </nav>
+
+    <div class="villa-content">
+      {villa.days.map((day) => (
+        <section class="villa-day" id={day.id}>
+          <header class="villa-day-heading">
+            <h2>{day.weekday}, {prettyDate(day.historicDate)}</h2>
+            <span class="villa-day-dates">{day.scenes.length} scenes</span>
+          </header>
+
+          {day.scenes.map((scene) => (
+            <details class="villa-scene">
+              <summary>
+                <span class="villa-scene-summary-row">
+                  <span class="villa-scene-time">{scene.time}</span>
+                  <span class="villa-scene-title">{scene.title}</span>
+                  <span class="villa-scene-summary-marker" aria-hidden="true">
+                    <span class="villa-marker off">▸</span>
+                    <span class="villa-marker on">▾</span>
+                  </span>
+                </span>
+                <span class="villa-scene-people">Present: {scene.characters.join(', ')}</span>
+              </summary>
+              <div class="villa-scene-body">
+                <p class="villa-scene-text">{scene.text}</p>
+                <p class="villa-mood">Mood: {scene.mood}</p>
+                <div class="villa-chips">
+                  {scene.characters.map((character) => (
+                    <span class="villa-chip">{character}</span>
+                  ))}
+                </div>
+                {scene.quotes.length > 0 && (
+                  <div class="villa-quotes">
+                    {scene.quotes.map((quote) => (
+                      <blockquote class="villa-quote">
+                        <p>“{quote.quote}”</p>
+                        <cite class="villa-quote-attr">— {quote.character}, June 1816</cite>
+                      </blockquote>
+                    ))}
+                  </div>
+                )}
+                <div class="villa-notes">
+                  <p class="villa-journal-title">From the journals</p>
+                  {scene.characters.map((character) => {
+                    const persona = resolvePersona(character);
+                    if (!persona) return null;
+                    return (
+                      <div class="villa-journal">
+                        <p>
+                          <strong>{character}</strong> — {persona.journalNotes}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
+          ))}
+        </section>
+      ))}
+
+      <div class="villa-note-block">
+        <p>
+          <strong>Voices of the circle:</strong>
+          {personae.map((persona) => persona.name).join(' · ')}.
+          Speakings-with drawn from the journal capsule: authentic quotations and day-notes
+          from Mary Shelley's journals, Shelley's letters, Byron's letters, Polidori's diary,
+          and Claire Clairmont's correspondence.
+        </p>
+        <p>
+          This is the archived replay. Members can enter the live simulation at
+          <a href="https://castalia.institute/salon/villa.diodati">castalia.institute/salon/villa.diodati</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

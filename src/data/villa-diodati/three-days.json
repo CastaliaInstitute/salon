@@ -1,0 +1,414 @@
+{
+  "meta": {
+    "location": "Villa Diodati, Cologny, Lake Geneva",
+    "dateRange": "1816-06-15 to 1816-06-17"
+  },
+  "days": [
+    {
+      "id": "day-1",
+      "historicDate": "1816-06-15",
+      "weekday": "Saturday",
+      "scenes": [
+        {
+          "time": "09:00",
+          "title": "Breakfast at Villa Diodati",
+          "text": "Breakfast at Villa Diodati; Byron and Polidori talk over news and weather. Stormy period begins over Lake Geneva.",
+          "mood": "overcast, cool (~12C), indoors, morning light",
+          "characters": [
+            "Byron",
+            "Polidori"
+          ],
+          "quotes": [
+            {
+              "character": "Byron",
+              "quote": "Three days of rain confined us to the house."
+            }
+          ]
+        },
+        {
+          "time": "12:00",
+          "title": "Shelley, Mary, and Claire come over from nearby lodging to visit Byron",
+          "text": "Shelley, Mary, and Claire come over from nearby lodging to visit Byron. They were staying at Maison Chapuis and visited often.",
+          "mood": "drizzle, low clouds over lake",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "14:00",
+          "title": "Conversation on poetry and nature",
+          "text": "Conversation on poetry and nature; Percy may recite; everyone staying indoors. Plausible reconstruction.",
+          "mood": "thunder in distance, dim afternoon",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "16:00",
+          "title": "Rain intensifies",
+          "text": "Rain intensifies; candles lit early; they stay in the salon. Bad weather is well-attested for this period.",
+          "mood": "torrential rain, lightning, enclosed interior",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "18:00",
+          "title": "Dinner together",
+          "text": "Dinner together; lively talk about travels and letters from England. Shared meals at Diodati are consistent with accounts.",
+          "mood": "storm outside, warm candlelight inside",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "20:00",
+          "title": "They bring out a volume of ghost/fantastic stories (Fantasmagoriana)…",
+          "text": "They bring out a volume of ghost/fantastic stories (Fantasmagoriana) and begin reading. Sets up the later challenge.",
+          "mood": "heavy rain, thunder close, candlelit reading",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": [
+            {
+              "character": "Mary Godwin",
+              "quote": "We talked of the experiments of Dr. Darwin, who preserved a piece of vermicelli in a glass case till by some extraordinary means it began to move."
+            }
+          ]
+        },
+        {
+          "time": "21:00",
+          "title": "Byron reads aloud",
+          "text": "Byron reads aloud; Mary listens intently; Polidori watches everyone's reactions. Evening storytelling is widely cited.",
+          "mood": "dim, storm lashing shutters, slightly theatrical",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Mary Godwin",
+            "Percy Shelley",
+            "Claire Clairmont"
+          ],
+          "quotes": [
+            {
+              "character": "Byron",
+              "quote": "I am as melancholy as a cat in a strange garret."
+            }
+          ]
+        },
+        {
+          "time": "22:30",
+          "title": "The storm peaks",
+          "text": "The storm peaks; they break up for the night, minds excited by the tales. End of first storm night.",
+          "mood": "loud thunder, flickering candles, night over lake",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    {
+      "id": "day-2",
+      "historicDate": "1816-06-16",
+      "weekday": "Sunday",
+      "scenes": [
+        {
+          "time": "09:00",
+          "title": "Late breakfast",
+          "text": "Late breakfast; they talk about last night's German ghost stories. Polidori diary confirms bad weather and reading.",
+          "mood": "steady rain, grey morning, indoors",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "11:00",
+          "title": "Byron proposes: each of us should write a tale of terror",
+          "text": "Byron proposes: each of us should write a tale of terror. Polidori diary 16 June: 'Proposed that each should write a tale of terror.'",
+          "mood": "rain on windows, charged, playful but competitive",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": [
+            {
+              "character": "Polidori",
+              "quote": "Proposed that each should write a tale of terror."
+            }
+          ]
+        },
+        {
+          "time": "13:00",
+          "title": "Shelley and Byron drift into talk of science, Darwin, galvanism",
+          "text": "Shelley and Byron drift into talk of science, Darwin, galvanism; Mary listens. This conversation is what Mary later said lodged in her mind.",
+          "mood": "brief lull in rain, overcast light",
+          "characters": [
+            "Byron",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Polidori"
+          ],
+          "quotes": [
+            {
+              "character": "Mary Godwin",
+              "quote": "We talked of the experiments of Dr. Darwin, who preserved a piece of vermicelli in a glass case till by some extraordinary means it began to move."
+            }
+          ]
+        },
+        {
+          "time": "15:00",
+          "title": "Everyone attempts to start a story",
+          "text": "Everyone attempts to start a story; Mary struggles to find an idea; Polidori drafts something light. Mary in 1831 preface: she 'had thought more, and written less.'",
+          "mood": "rain resumes, studious, everyone at tables or writing-desks",
+          "characters": [
+            "Mary Godwin",
+            "Polidori",
+            "Byron",
+            "Percy Shelley",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "17:00",
+          "title": "Tea and philosophy: life, death, creation, can life be reanimated?",
+          "text": "Tea and philosophy: life, death, creation, can life be reanimated? This is the exact thematic soil for Frankenstein.",
+          "mood": "wind rising, intermittent thunder, intellectual",
+          "characters": [
+            "Byron",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Polidori",
+            "Claire Clairmont"
+          ],
+          "quotes": [
+            {
+              "character": "Percy Shelley",
+              "quote": "The mind in creation is as a fading coal, which some invisible influence, like an inconstant wind, awakens to transitory brightness."
+            }
+          ]
+        },
+        {
+          "time": "19:00",
+          "title": "Dinner",
+          "text": "Dinner; Claire tries to engage Byron; social undercurrents present. Claire's pursuit of Byron is historically attested.",
+          "mood": "stormy evening, candles, slightly tense",
+          "characters": [
+            "Byron",
+            "Claire Clairmont",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Polidori"
+          ],
+          "quotes": [
+            {
+              "character": "Claire Clairmont",
+              "quote": "He will not look at me, yet I am ever near him."
+            }
+          ]
+        },
+        {
+          "time": "20:30",
+          "title": "They regroup in the salon",
+          "text": "They regroup in the salon; thunderstorm flares again over the lake. Set the scene explicitly in prompts for ambience.",
+          "mood": "dramatic lightning, good for horror mood",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "21:00",
+          "title": "They begin to share or describe the stories they have in mind",
+          "text": "They begin to share or describe the stories they have in mind; Byron sketches his Eastern fragment. Byron's fragment later influences Polidori's Vampyre.",
+          "mood": "candlelit, performative, competitive creativity",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Mary Godwin",
+            "Percy Shelley"
+          ],
+          "quotes": [
+            {
+              "character": "Polidori",
+              "quote": "Began my story — the nobleman who destroys by fascination."
+            }
+          ]
+        },
+        {
+          "time": "23:30",
+          "title": "Night winds down",
+          "text": "Night winds down; Mary is still without a fully formed story but is agitated by the talk. This sets up Mary's 'waking dream' on the 17th.",
+          "mood": "late-night storm, candles low, introspective",
+          "characters": [
+            "Mary Godwin",
+            "Percy Shelley"
+          ],
+          "quotes": [
+            {
+              "character": "Mary Godwin",
+              "quote": "When I placed my head on my pillow, I did not sleep, nor could I be said to think; my imagination, unbidden, possessed and guided me."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day-3",
+      "historicDate": "1816-06-17",
+      "weekday": "Monday",
+      "scenes": [
+        {
+          "time": "09:00",
+          "title": "Mary is thoughtful and quiet at breakfast",
+          "text": "Mary is thoughtful and quiet at breakfast; Percy attentive. Mary later dates the key image to the night/morning after the challenge.",
+          "mood": "grey drizzle, restful morning",
+          "characters": [
+            "Mary Godwin",
+            "Percy Shelley",
+            "Byron",
+            "Polidori",
+            "Claire Clairmont"
+          ],
+          "quotes": [
+            {
+              "character": "Percy Shelley",
+              "quote": "The thunderstorm was terrific... The lake was lit up, the pines on Jura made distinct, and the streams of rain seemed like silver wires."
+            }
+          ]
+        },
+        {
+          "time": "11:00",
+          "title": "Byron writes letters",
+          "text": "Byron writes letters; Polidori works up his own material; others read. Polidori diary mentions writing.",
+          "mood": "intermittent rain, housebound",
+          "characters": [
+            "Byron",
+            "Polidori"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "13:00",
+          "title": "Mary articulates the vision that came to her: a 'pale student of…",
+          "text": "Mary articulates the vision that came to her: a 'pale student of unhallowed arts' animating a creature. From Mary Shelley's 1831 preface.",
+          "mood": "faint daylight, contemplative, intimate conversation",
+          "characters": [
+            "Mary Godwin",
+            "Percy Shelley"
+          ],
+          "quotes": [
+            {
+              "character": "Mary Godwin",
+              "quote": "I saw the pale student of unhallowed arts kneeling beside the thing he had put together."
+            },
+            {
+              "character": "Percy Shelley",
+              "quote": "The mind in creation is as a fading coal, which some invisible influence, like an inconstant wind, awakens to transitory brightness."
+            }
+          ]
+        },
+        {
+          "time": "15:00",
+          "title": "Byron and Shelley walk briefly by the lake despite weather, speaking of…",
+          "text": "Byron and Shelley walk briefly by the lake despite weather, speaking of Prometheus and creation. Promethean themes connect to Shelley's interests.",
+          "mood": "cloudy, mist on lake, short outdoor interlude",
+          "characters": [
+            "Byron",
+            "Percy Shelley"
+          ],
+          "quotes": [
+            {
+              "character": "Byron",
+              "quote": "There are things which neither poetry nor philosophy can define — but we may attempt them still."
+            }
+          ]
+        },
+        {
+          "time": "18:00",
+          "title": "Quieter dinner",
+          "text": "Quieter dinner; everyone returns to the ghost-story task. Tension has cooled into work.",
+          "mood": "rain again, interior warm",
+          "characters": [
+            "Byron",
+            "Polidori",
+            "Percy Shelley",
+            "Mary Godwin",
+            "Claire Clairmont"
+          ],
+          "quotes": []
+        },
+        {
+          "time": "20:30",
+          "title": "Evening writing session",
+          "text": "Evening writing session; Mary begins shaping her narrative; Polidori refines his vampire material. This is where your sim can branch into the famous works.",
+          "mood": "candlelit, distant thunder, studious",
+          "characters": [
+            "Mary Godwin",
+            "Polidori",
+            "Byron",
+            "Percy Shelley"
+          ],
+          "quotes": [
+            {
+              "character": "Polidori",
+              "quote": "Began my story — the nobleman who destroys by fascination."
+            }
+          ]
+        },
+        {
+          "time": "22:00",
+          "title": "Late-night vigil",
+          "text": "Late-night vigil; each is absorbed in their own tale. End of the 3-day arc.",
+          "mood": "very quiet, lake dark, occasional rain",
+          "characters": [
+            "Mary Godwin",
+            "Polidori",
+            "Byron"
+          ],
+          "quotes": []
+        }
+      ]
+    }
+  ]
+}
