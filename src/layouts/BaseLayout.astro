@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import CastaliaShell from '../components/CastaliaShell.tsx';
+import SalonSWRegistry from '../components/SalonSWRegistry.astro';
 import { pageContractForSitePath, pageMetaFromContract, normalizeSitePath } from '@castalia/platform';
 
 interface Props {
@@ -29,11 +30,17 @@ const isHomePage = normalizeSitePath(path) === '/';
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content={description}>
   <meta name="robots" content={meta.robots} />
   <title>{pageTitle}</title>
   <link rel="icon" type="image/svg+xml" href={`${baseWithSlash}favicon.svg`}>
+  <link rel="manifest" href={`${baseWithSlash}manifest.webmanifest`}>
+  <meta name="theme-color" content="#1e1a16">
+  <link rel="apple-touch-icon" href={`${baseWithSlash}icons/icon-192.png`}>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Salon">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
   <CastaliaShell client:load isHomePage={isHomePage}>
@@ -48,5 +55,6 @@ const isHomePage = normalizeSitePath(path) === '/';
       </footer>
     </div>
   </CastaliaShell>
+  <SalonSWRegistry />
 </body>
 </html>

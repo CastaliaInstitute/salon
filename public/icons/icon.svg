@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Castalia Salon">
+  <!-- Villa-dark tile with a simple candle silhouette (flame + wick + candle + holder) -->
+  <rect width="512" height="512" rx="88" fill="#1e1a16"/>
+  <g fill="#d9a441">
+    <!-- flame -->
+    <path d="M256 80c18 34 34 60 34 92 0 28-15 48-34 48s-34-20-34-48c0-32 16-58 34-92z"/>
+    <!-- wick -->
+    <rect x="252.5" y="216" width="7" height="30" rx="3.5"/>
+    <!-- candle -->
+    <rect x="208" y="244" width="96" height="186" rx="14"/>
+    <!-- holder -->
+    <rect x="172" y="426" width="168" height="20" rx="10"/>
+  </g>
+</svg>

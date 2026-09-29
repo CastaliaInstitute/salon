@@ -126,3 +126,16 @@ a:hover {
     font-size: 2rem;
   }
 }
+
+/*
+ * Safe-area utilities for display cutouts and the home indicator bar
+ * (for fixed/sticky elements; pairs with viewport-fit=cover).
+ */
+.safe-bleed {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), var(--space-2, 8px));
+}

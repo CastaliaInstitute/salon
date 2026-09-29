@@ -1,0 +1,22 @@
+---
+/**
+ * Registers /sw.js after window load, production only.
+ *
+ * is:inline keeps this off the bundler graph, so import.meta.env.DEV is not
+ * available here — the URL check below (https + non-localhost) is the dev gate.
+ */
+---
+
+<script is:inline>
+  (function () {
+    if (!('serviceWorker' in navigator)) return;
+    var host = location.hostname;
+    var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host.endsWith('.localhost');
+    if (isLocal || location.protocol !== 'https:') return;
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').catch(function (error) {
+        console.warn('salon: service worker registration failed', error);
+      });
+    });
+  })();
+</script>
