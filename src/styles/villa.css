@@ -354,3 +354,372 @@
   vertical-align: middle;
   white-space: nowrap;
 }
+
+/* Member salon entry (/villa/enter/) --------------------------------------
+   Mobile-first: every interactive target is ≥44px, cards stack at 320px. */
+
+.villa-enter {
+  min-height: 100dvh;
+}
+
+.villa-enter-card {
+  max-width: var(--villa-time-max);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-3);
+  background: var(--villa-surface);
+  border: 1px solid var(--villa-border);
+  border-left: 3px solid var(--villa-accent);
+  border-radius: 4px;
+}
+
+.villa-enter-card h2 {
+  color: var(--villa-text);
+  font-weight: 300;
+  margin-bottom: var(--space-2);
+}
+
+.villa-enter-card p {
+  color: var(--villa-text-muted);
+}
+
+.villa-enter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.villa-enter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--villa-text);
+  background: var(--villa-surface-raised);
+  border: 1px solid var(--villa-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.villa-enter-button:hover,
+.villa-enter-button:focus-visible {
+  border-color: var(--villa-accent-soft);
+  color: var(--villa-accent-soft);
+  outline: none;
+}
+
+.villa-enter-error {
+  border-left-color: #a4553e;
+}
+
+.villa-enter-season-copy {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--villa-accent-soft);
+}
+
+.villa-enter-backlink {
+  font-size: 0.9rem;
+}
+
+.villa-enter-unconfigured code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--villa-accent-soft);
+  background: var(--villa-chip-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+/* Member surface: roster, thread, composer */
+
+.villa-member-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.villa-member-header h2 {
+  margin-bottom: var(--space-1);
+}
+
+.villa-member-sub {
+  margin-bottom: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.villa-enter-signout {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--villa-text-muted);
+  background: transparent;
+  border: 1px solid var(--villa-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.villa-enter-signout:hover,
+.villa-enter-signout:focus-visible {
+  color: var(--villa-accent-soft);
+  border-color: var(--villa-accent-soft);
+  outline: none;
+}
+
+.villa-enter-roster {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .villa-enter-roster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .villa-enter-roster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.villa-persona-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.1rem;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  background: var(--villa-surface-raised);
+  border: 1px solid var(--villa-border);
+  border-left: 3px solid var(--villa-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.villa-persona-card strong {
+  color: var(--villa-text);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.villa-persona-card span {
+  color: var(--villa-text-muted);
+  font-size: 0.82rem;
+}
+
+.villa-persona-card:hover,
+.villa-persona-card:focus-visible {
+  border-color: var(--villa-accent-soft);
+  outline: none;
+}
+
+.villa-persona-card.is-active {
+  border-color: var(--villa-accent-soft);
+  border-left-color: var(--villa-accent-soft);
+  background: var(--villa-chip-bg);
+}
+
+/* Chat thread + composer */
+
+.villa-enter-thread {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-2);
+}
+
+.villa-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: min(60dvh, 560px);
+  overflow-y: auto;
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+  background: rgba(30, 26, 22, 0.6);
+  border: 1px solid var(--villa-border);
+  border-radius: 4px;
+  scroll-behavior: smooth;
+}
+
+.villa-chat-bubble {
+  max-width: 85%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 4px;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.villa-chat-bubble p {
+  margin: 0 0 var(--space-1);
+}
+
+.villa-chat-bubble p:last-of-type {
+  margin-bottom: 0;
+}
+
+.villa-chat-bubble--character {
+  align-self: flex-start;
+  background: var(--villa-surface-raised);
+  border: 1px solid var(--villa-border);
+  border-left: 3px solid var(--villa-accent-soft);
+}
+
+.villa-chat-bubble--member {
+  align-self: flex-end;
+  background: var(--villa-chip-bg);
+  border: 1px solid var(--villa-border);
+  color: var(--villa-text);
+}
+
+.villa-chat-name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--villa-accent-soft);
+  margin-bottom: var(--space-1);
+}
+
+.villa-chat-pause {
+  display: block;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--villa-text-muted);
+}
+
+.villa-chat-emotion {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--villa-text-muted);
+}
+
+/* Sticky composer rides above the home-indicator safe area */
+.villa-composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin: 0 calc(-1 * var(--space-3));
+  padding: var(--space-2) var(--space-3);
+  padding-bottom: max(env(safe-area-inset-bottom), var(--space-2));
+  background: rgba(45, 37, 32, 0.98);
+  border-top: 1px solid var(--villa-border);
+}
+
+.villa-composer-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--villa-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.villa-composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.villa-composer-input {
+  flex: 1;
+  min-height: 44px;
+  max-height: 160px;
+  padding: 0.55rem var(--space-2);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--villa-text);
+  background: var(--villa-surface-raised);
+  border: 1px solid var(--villa-border);
+  border-radius: 4px;
+  resize: none;
+}
+
+.villa-composer-input:focus-visible {
+  border-color: var(--villa-accent-soft);
+  outline: none;
+}
+
+.villa-composer-send {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #1e1a16;
+  background: var(--villa-accent-soft);
+  border: 1px solid var(--villa-accent);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.villa-composer-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.villa-composer-send:not(:disabled):hover,
+.villa-composer-send:not(:disabled):focus-visible {
+  outline: none;
+  background: var(--villa-accent);
+  color: var(--villa-text);
+}
+
+.villa-chat-status {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--villa-accent-soft);
+}
+
+.villa-chat-status:empty {
+  display: none;
+}
+
+/* Locked composer while the season is not playing */
+
+.villa-enter-locked {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--villa-border);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.villa-enter-locked p {
+  margin-bottom: 0;
+}
+
+.villa-enter-muted {
+  color: var(--villa-text-muted);
+  font-size: 0.85rem;
+}
+
+/* Enter-the-Salon link in the /villa/ archive note */
+
+.villa-enter-link {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--villa-accent-soft);
+  border-bottom: 1px solid rgba(176, 138, 46, 0.55);
+}

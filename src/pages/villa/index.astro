@@ -178,9 +178,13 @@ const personae = [...new Set(villa.days.flatMap((day) => day.scenes.flatMap((sce
           from Mary Shelley's journals, Shelley's letters, Byron's letters, Polidori's diary,
           and Claire Clairmont's correspondence.
         </p>
-        <p>
-          This is the archived replay. Members can enter the live simulation at
-          <a href="https://castalia.institute/salon/villa.diodati">castalia.institute/salon/villa.diodati</a>.
+        <p data-salon-entry-cta hidden={seasonState.state !== 'playing'}>
+          <a class="villa-enter-link" href="enter/">Enter the Salon</a> — members can join the
+          circle and speak with the five companions while the season plays.
+        </p>
+        <p data-salon-entry-unavailable hidden={seasonState.state === 'playing'}>
+          The salon is not playing now — {buildBadge}. Members can enter during each Fri–Sun
+          window of {season.season}.
         </p>
       </div>
     </div>
@@ -197,8 +201,21 @@ const personae = [...new Set(villa.days.flatMap((day) => day.scenes.flatMap((sce
       const nowInfo = nowInZurich(new Date());
       const state = evaluate(season.windows, season.replayDayMapping, nowInfo);
       const dayNumber = state.replayDayId ? Number(state.replayDayId.slice(-1)) : null;
-      badge.textContent = badgeLabel(state, { dayNumber, nextWindowStartDate: state.nextWindowStartDate });
+      const copy = badgeLabel(state, { dayNumber, nextWindowStartDate: state.nextWindowStartDate });
+      badge.textContent = copy;
       badge.dataset.plays = state.state;
+
+      // Entry note (R2): recompute at view time; the static build only hints.
+      const cta = document.querySelector('[data-salon-entry-cta]');
+      const unavailable = document.querySelector('[data-salon-entry-unavailable]');
+      if (cta && unavailable) {
+        const playing = state.state === 'playing';
+        cta.hidden = !playing;
+        unavailable.hidden = playing;
+        if (!playing) {
+          unavailable.textContent = `The salon is not playing now — ${copy}. Members can enter during each Fri–Sun window of ${season.season}.`;
+        }
+      }
     } catch {
       badge.textContent = 'October Fri–Sun season';
     }

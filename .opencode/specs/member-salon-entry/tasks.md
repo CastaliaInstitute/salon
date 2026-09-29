@@ -4,16 +4,16 @@
 
 ## 1. Salon-side auth and entry (no backend needed)
 
-- [ ] 1.1 Add env contract + src/lib/salon-supabase.ts (PUBLIC_SUPABASE_URL/PUBLIC_SUPABASE_ANON_KEY via build env; no service keys) and env.d.ts types (R1)
-- [ ] 1.2 Build /villa/enter/: entry view states (signed-out card with Google/GitHub sign-in; signed-in roster view; error/retry card) mirroring the main site's OAuth helpers (R1)
-- [ ] 1.3 Wire playing-window entry to the shared salon-schedule engine: Enter opens only while playing; upcoming shows "Opens Fri M/D"; archived shows "Season closed" (R2)
+- [x] 1.1 Add env contract + src/lib/salon-supabase.ts (PUBLIC_SUPABASE_URL/PUBLIC_SUPABASE_ANON_KEY via build env; no service keys) and env.d.ts types (R1)
+- [x] 1.2 Build /villa/enter/: entry view states (signed-out card with Google/GitHub sign-in; signed-in roster view; error/retry card) mirroring the main site's OAuth helpers (R1)
+- [x] 1.3 Wire playing-window entry to the shared salon-schedule engine: Enter opens only while playing; upcoming shows "Opens Fri M/D"; archived shows "Season closed" (R2)
 
 ## 2. Salon-side chat surface (UI ready pre-deploy)
 
-- [ ] 2.1 Build the persona chooser (five characters in villa cards) and chat surface with localStorage per-user/per-season transcript (R3)
-- [ ] 2.2 Implement salon-member/chat-client.mjs sendTurn with JWT auth header + 401/403/429/timeout mapping to friendly states and draft preservation (R3, R4-aware)
-- [ ] 2.3 Mobile ergonomics: keyboard-aware composer, 44px targets, newest turn in view (R6)
-- [ ] 2.4 Local E2E at 320/430px: mock the three states, transcript restore, badge-gated entry (R2, R3, R6)
+- [x] 2.1 Build the persona chooser (five characters in villa cards) and chat surface with localStorage per-user/per-season transcript (R3)
+- [x] 2.2 Implement salon-member/chat-client.mjs sendTurn with JWT auth header + 401/403/429/timeout mapping to friendly states and draft preservation (R3, R4-aware)
+- [x] 2.3 Mobile ergonomics: keyboard-aware composer, 44px targets, newest turn in view (R6)
+- [x] 2.4 Local E2E at 320/430px: mock the three states, transcript restore, badge-gated entry (R2, R3, R6)
 
 ## 3. Server-side gate (INTEGRATION GATE: after villa-chat-gemini)
 

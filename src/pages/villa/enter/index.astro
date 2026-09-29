@@ -1,0 +1,533 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import season from '../../../data/villa-diodati/season-2026-10.json';
+import { evaluate, nowInZurich, badgeLabel } from '../../../scripts/salon-schedule/engine.mjs';
+import '../../../styles/villa.css';
+
+/*
+ * /villa/enter/ — member salon entry (R1) + playing gate (R2) + chat surface (R3, R6).
+ * The playing gate is recomputed in the browser script at view time; the static
+ * build only contributes badge copy and data attributes.
+ */
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+const buildNow = nowInZurich(new Date());
+const seasonState = evaluate(season.windows, season.replayDayMapping, buildNow);
+const dayNumber = seasonState.replayDayId ? Number(seasonState.replayDayId.slice(-1)) : null;
+const buildBadge = badgeLabel(seasonState, { dayNumber, nextWindowStartDate: seasonState.nextWindowStartDate });
+
+/*
+ * Persona roster: ids from the villa-diodati-chat edge function
+ * (PROMPTS_CONFIG.participants), display names from the /villa/ replay
+ * (three-days.json scene characters).
+ */
+const PERSONAS = [
+  { id: 'lord-byron', name: 'Byron', epithet: 'the host' },
+  { id: 'mary-shelley', name: 'Mary Godwin', epithet: 'the dreamer' },
+  { id: 'percy-shelley', name: 'Percy Shelley', epithet: 'the poet' },
+  { id: 'john-polidori', name: 'Polidori', epithet: 'the physician' },
+  { id: 'claire-clairmont', name: 'Claire Clairmont', epithet: 'the stepsister' },
+];
+---
+
+<BaseLayout
+  title="Enter the Salon — Villa Diodati"
+  description="Members enter the live Villa Diodati salon while the October season plays: sign in with your Castalia account and speak with the circle."
+>
+  <div class="villa-replay villa-enter">
+    <div class="villa-content">
+      <header>
+        <p class="villa-kicker">
+          Member salon · {season.season}
+          <span class="villa-season-badge" data-season-badge data-plays={seasonState.state}>{buildBadge}</span>
+        </p>
+        <h1>Enter the Salon</h1>
+        <p class="villa-subtitle">While the season plays, members of Castalia join the circle at Villa Diodati and speak with the five companions of June 1816.</p>
+      </header>
+
+      {
+        supabaseConfigured ? (
+          <div class="villa-enter-states" data-salon-enter data-season-id={season.season}>
+            <section class="villa-enter-card" data-salon-state="signed-out">
+              <h2>Members sign in here</h2>
+              <p>
+                Salon membership is your Castalia account — the same Google or GitHub sign-in
+                the main site uses. No new credentials live here.
+              </p>
+              <div class="villa-enter-actions">
+                <button type="button" class="villa-enter-button" data-salon-signin="google">
+                  Continue with Google
+                </button>
+                <button type="button" class="villa-enter-button" data-salon-signin="github">
+                  Continue with GitHub
+                </button>
+              </div>
+              <p class="villa-enter-season-copy" data-salon-season-note hidden></p>
+              <p><a class="villa-enter-backlink" href="/villa/">← Back to the archived replay</a></p>
+            </section>
+
+            <section class="villa-enter-card villa-enter-error" data-salon-state="error" hidden>
+              <h2>The door stuck</h2>
+              <p data-salon-error-text></p>
+              <div class="villa-enter-actions">
+                <button type="button" class="villa-enter-button" data-salon-signin="google">
+                  Try Google again
+                </button>
+                <button type="button" class="villa-enter-button" data-salon-signin="github">
+                  Try GitHub again
+                </button>
+              </div>
+              <p><a class="villa-enter-backlink" href="/villa/">← Back to the archived replay</a></p>
+            </section>
+
+            <section class="villa-enter-card" data-salon-state="member" hidden>
+              <header class="villa-member-header">
+                <div>
+                  <h2>The circle is gathered</h2>
+                  <p class="villa-member-sub" data-salon-member-label></p>
+                </div>
+                <button type="button" class="villa-enter-signout" data-salon-signout>Sign out</button>
+              </header>
+
+              <div class="villa-enter-roster" role="group" aria-label="Choose a companion">
+                {PERSONAS.map((persona) => (
+                  <button
+                    type="button"
+                    class="villa-persona-card"
+                    data-persona-id={persona.id}
+                    data-persona-name={persona.name}
+                  >
+                    <strong>{persona.name}</strong>
+                    <span>{persona.epithet}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div class="villa-enter-thread" data-salon-thread hidden>
+                <div class="villa-chat-log" data-salon-log aria-live="polite"></div>
+                <form class="villa-composer" data-salon-composer>
+                  <label class="villa-composer-label" for="villa-message">
+                    Speak with <span data-salon-thread-name>the circle</span>
+                  </label>
+                  <div class="villa-composer-row">
+                    <textarea
+                      id="villa-message"
+                      class="villa-composer-input"
+                      data-salon-input
+                      rows="1"
+                      maxlength="2000"
+                      placeholder="Address the circle…"
+                    ></textarea>
+                    <button type="submit" class="villa-composer-send" data-salon-send disabled>Send</button>
+                  </div>
+                  <p class="villa-chat-status" data-salon-status></p>
+                </form>
+              </div>
+
+              <div class="villa-enter-locked" data-salon-locked hidden>
+                <p class="villa-enter-season-copy" data-salon-locked-copy></p>
+                <p class="villa-enter-muted">The composer opens with the window. The circle will be here.</p>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <div class="villa-enter-card villa-enter-unconfigured">
+            <h2>Salon entry is not configured</h2>
+            <p>
+              This build was made without <code>PUBLIC_SUPABASE_URL</code> and
+              <code>PUBLIC_SUPABASE_ANON_KEY</code>, so member sign-in and conversation cannot
+              run here. The archived replay at <a href="/villa/">/villa/</a> still works.
+            </p>
+            <p><a class="villa-enter-backlink" href="/villa/">← Back to the archived replay</a></p>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import season from '../../../data/villa-diodati/season-2026-10.json';
+  import { evaluate, nowInZurich, badgeLabel } from '../../../scripts/salon-schedule/engine.mjs';
+  import { salonSupabaseConfig } from '../../../lib/salon-supabase';
+  import {
+    completeOAuthRedirect,
+    restoreSession,
+    signInWith,
+    signOut,
+    clearSession,
+    memberLabel,
+    userIdOf,
+  } from '../../../scripts/salon-member/salon-auth.mjs';
+  import { chatEndpoint, sendTurn, formatSpeech } from '../../../scripts/salon-member/chat-client.mjs';
+  import {
+    transcriptKey,
+    draftKey,
+    loadTranscript,
+    makeTurn,
+    threadFor,
+    latestPersona,
+    saveTranscript,
+  } from '../../../scripts/salon-member/transcript.mjs';
+
+  const config = salonSupabaseConfig();
+  const root = document.querySelector('[data-salon-enter]');
+
+  const badge = document.querySelector('[data-season-badge]');
+  function paintBadge() {
+    if (!badge) return;
+    try {
+      const nowInfo = nowInZurich(new Date());
+      const state = evaluate(season.windows, season.replayDayMapping, nowInfo);
+      const dayNumber = state.replayDayId ? Number(state.replayDayId.slice(-1)) : null;
+      badge.textContent = badgeLabel(state, { dayNumber, nextWindowStartDate: state.nextWindowStartDate });
+      badge.dataset.plays = state.state;
+      return state;
+    } catch {
+      badge.textContent = 'October Fri–Sun season';
+      return null;
+    }
+  }
+
+  if (!config.configured || !root) {
+    paintBadge();
+  } else {
+    init(root);
+  }
+
+  function init(root) {
+    const seasonId = root.dataset.seasonId || season.season;
+    const cards = {
+      'signed-out': root.querySelector('[data-salon-state="signed-out"]'),
+      error: root.querySelector('[data-salon-state="error"]'),
+      member: root.querySelector('[data-salon-state="member"]'),
+    };
+    const errorText = root.querySelector('[data-salon-error-text]');
+    const seasonNote = root.querySelector('[data-salon-season-note]');
+    const lockedPanel = root.querySelector('[data-salon-locked]');
+    const lockedCopy = root.querySelector('[data-salon-locked-copy]');
+    const threadPanel = root.querySelector('[data-salon-thread]');
+    const log = root.querySelector('[data-salon-log]');
+    const composer = root.querySelector('[data-salon-composer]');
+    const input = root.querySelector('[data-salon-input]');
+    const sendButton = root.querySelector('[data-salon-send]');
+    const statusLine = root.querySelector('[data-salon-status]');
+    const threadName = root.querySelector('[data-salon-thread-name]');
+    const memberLabelEl = root.querySelector('[data-salon-member-label]');
+    const personaCards = [...root.querySelectorAll('[data-persona-id]')];
+    const nameById = new Map(personaCards.map((card) => [card.dataset.personaId, card.dataset.personaName]));
+
+    let session = null;
+    let turns = [];
+    let currentPersona = null;
+    let pending = false;
+
+    function seasonNow() {
+      const nowInfo = nowInZurich(new Date());
+      try {
+        const state = evaluate(season.windows, season.replayDayMapping, nowInfo);
+        const dayNumber = state.replayDayId ? Number(state.replayDayId.slice(-1)) : null;
+        return {
+          state: state.state,
+          copy: badgeLabel(state, { dayNumber, nextWindowStartDate: state.nextWindowStartDate }),
+        };
+      } catch {
+        return { state: 'archived', copy: 'Season closed' };
+      }
+    }
+
+    function unavailableCopy() {
+      const { copy } = seasonNow();
+      return `The circle gathers only while the season plays — ${copy}.`;
+    }
+
+    function show(name) {
+      for (const [key, card] of Object.entries(cards)) {
+        if (card) card.hidden = key !== name;
+      }
+    }
+
+    function showSeasonNote(where) {
+      if (!seasonNote) return;
+      const { state } = seasonNow();
+      if (state === 'playing') {
+        seasonNote.hidden = true;
+        return;
+      }
+      seasonNote.hidden = where !== 'signed-out';
+      seasonNote.textContent = unavailableCopy();
+    }
+
+    function showError(message) {
+      if (errorText) errorText.textContent = message;
+      show('error');
+    }
+
+    function personaName(id) {
+      return nameById.get(id) || 'The circle';
+    }
+
+    function selectPersona(id) {
+      currentPersona = id;
+      for (const card of personaCards) {
+        const active = card.dataset.personaId === id;
+        card.classList.toggle('is-active', active);
+        card.setAttribute('aria-pressed', String(active));
+      }
+      if (threadName) threadName.textContent = personaName(id);
+      renderThread();
+      restoreDraft();
+      scrollLog();
+    }
+
+    function bubble(turn) {
+      const bubbleEl = document.createElement('div');
+      bubbleEl.className = `villa-chat-bubble villa-chat-bubble--${turn.role}`;
+      if (turn.role === 'character') {
+        const nameEl = document.createElement('span');
+        nameEl.className = 'villa-chat-name';
+        nameEl.textContent = personaName(turn.personaId);
+        bubbleEl.appendChild(nameEl);
+        const { beats, emotion } = formatSpeech(turn.text);
+        beats.forEach((beat, index) => {
+          const p = document.createElement('p');
+          p.textContent = beat;
+          bubbleEl.appendChild(p);
+          if (index < beats.length - 1) {
+            const pause = document.createElement('span');
+            pause.className = 'villa-chat-pause';
+            pause.setAttribute('aria-hidden', 'true');
+            pause.textContent = '· · ·';
+            bubbleEl.appendChild(pause);
+          }
+        });
+        if (emotion) {
+          const emotionEl = document.createElement('span');
+          emotionEl.className = 'villa-chat-emotion';
+          emotionEl.textContent = `— ${emotion}`;
+          bubbleEl.appendChild(emotionEl);
+        }
+      } else {
+        const p = document.createElement('p');
+        p.textContent = turn.text;
+        bubbleEl.appendChild(p);
+      }
+      return bubbleEl;
+    }
+
+    function renderThread() {
+      if (!log || !currentPersona) return;
+      log.replaceChildren(...threadFor(turns, currentPersona).map(bubble));
+    }
+
+    function appendAndRender(turn) {
+      turns.push(turn);
+      saveTranscript(transcriptKey(userIdOf(session), seasonId), turns);
+      if (turn.personaId === currentPersona && log) {
+        log.appendChild(bubble(turn));
+        scrollLog();
+      }
+    }
+
+    /** An undelivered turn leaves the transcript; its text stays as the composer draft. */
+    function removeLastTurn() {
+      if (!turns.length) return;
+      turns.pop();
+      saveTranscript(transcriptKey(userIdOf(session), seasonId), turns);
+      renderThread();
+    }
+
+    function scrollLog() {
+      if (log) log.scrollTop = log.scrollHeight;
+    }
+
+    function setStatus(text) {
+      if (statusLine) statusLine.textContent = text;
+    }
+
+    function setPending(value) {
+      pending = value;
+      if (sendButton) sendButton.disabled = value;
+      if (log) log.setAttribute('aria-busy', String(value));
+    }
+
+    function restoreDraft() {
+      if (!input || !session) return;
+      input.value = localStorage.getItem(draftKey(userIdOf(session), seasonId)) ?? '';
+      autoGrow();
+    }
+
+    function autoGrow() {
+      if (!input) return;
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 160)}px`;
+    }
+
+    function showMember() {
+      show('member');
+      if (memberLabelEl) {
+        memberLabelEl.textContent =
+          session.user.fullName || session.user.email || `Member ${session.user.id.slice(0, 8)}`;
+      }
+      const { state } = seasonNow();
+      const playing = state === 'playing';
+      if (threadPanel) threadPanel.hidden = !playing;
+      if (lockedPanel) lockedPanel.hidden = playing;
+      if (!playing && lockedCopy) lockedCopy.textContent = unavailableCopy();
+      if (!playing) return;
+
+      turns = loadTranscript(transcriptKey(userIdOf(session), seasonId));
+      const resume = latestPersona(turns);
+      selectPersona(resume && nameById.has(resume) ? resume : 'lord-byron');
+      setPending(false);
+      setStatus('');
+    }
+
+    function backToSignedOut(notice) {
+      session = null;
+      turns = [];
+      currentPersona = null;
+      show('signed-out');
+      showSeasonNote('signed-out');
+      if (notice && seasonNote) {
+        seasonNote.hidden = false;
+        seasonNote.textContent = notice;
+      }
+    }
+
+    for (const card of personaCards) {
+      card.addEventListener('click', () => selectPersona(card.dataset.personaId));
+    }
+
+    root.querySelectorAll('[data-salon-signin]').forEach((button) => {
+      button.addEventListener('click', () => {
+        try {
+          signInWith(button.dataset.salonSignin, `${window.location.origin}/villa/enter/`);
+        } catch {
+          showError('Sign-in is not configured on this build.');
+        }
+      });
+    });
+
+    const signOutButton = root.querySelector('[data-salon-signout]');
+    if (signOutButton) {
+      signOutButton.addEventListener('click', async () => {
+        await signOut();
+        backToSignedOut();
+      });
+    }
+
+    if (input) {
+      input.addEventListener('input', () => {
+        autoGrow();
+        if (session) {
+          localStorage.setItem(draftKey(userIdOf(session), seasonId), input.value);
+        }
+      });
+    }
+
+    if (composer) {
+      composer.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const text = (input?.value ?? '').trim();
+        if (!text || pending || !session || !currentPersona) return;
+        const personaId = currentPersona;
+        const label = memberLabel(session);
+        const history = threadFor(turns, personaId)
+          .slice(-16)
+          .map((turn) => ({
+            speaker: turn.role === 'member' ? label : personaName(turn.personaId),
+            content: turn.text,
+          }));
+
+        appendAndRender(makeTurn({ personaId, role: 'member', text }));
+        setPending(true);
+        setStatus(`${personaName(personaId)} is considering your words…`);
+
+        const result = await sendTurn({
+          endpoint: chatEndpoint(config),
+          jwt: session.access_token,
+          anonKey: config.anonKey,
+          personaId,
+          history,
+          text,
+          memberLabel: label,
+        });
+
+        setPending(false);
+
+        if (result.ok) {
+          appendAndRender(makeTurn({ personaId, role: 'character', text: result.message }));
+          setStatus('');
+          if (input) {
+            input.value = '';
+            localStorage.removeItem(draftKey(userIdOf(session), seasonId));
+            autoGrow();
+          }
+          return;
+        }
+
+        removeLastTurn();
+
+        switch (result.reason) {
+          case 'auth':
+            clearSession();
+            backToSignedOut('Your session expired — sign in again to keep your place at the table.');
+            break;
+          case 'window': {
+            const { copy } = seasonNow();
+            showMember();
+            setStatus(result.detail || `The salon is not playing now — ${copy}.`);
+            break;
+          }
+          case 'cadence':
+            setStatus('Pace yourself — the circle hears one turn every few seconds. Give it a breath and send again.');
+            break;
+          case 'network':
+            setStatus('The connection dropped or timed out. Your message is still here — send it again.');
+            break;
+          default:
+            setStatus('The house failed to answer. Try again in a moment.');
+        }
+      });
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', scrollLog);
+    }
+
+    (async () => {
+      paintBadge();
+      showSeasonNote('signed-out');
+
+      const oauth = await completeOAuthRedirect();
+      if (oauth.kind === 'error') {
+        showError(
+          `Sign-in did not complete${oauth.description ? `: ${oauth.description}` : ` (${oauth.reason})`}. Try again.`,
+        );
+        return;
+      }
+      if (oauth.kind === 'pkce-code') {
+        // TODO(supabase-js): PKCE ?code= returns need @supabase/supabase-js to exchange.
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        showError('This sign-in returned an authorization code the salon cannot exchange yet. Try signing in again.');
+        return;
+      }
+
+      if (oauth.kind === 'session') {
+        session = oauth.session;
+      } else {
+        const restored = await restoreSession();
+        session = restored.session;
+        if (!session && restored.reason === 'refresh-failed') {
+          showError('Your session expired and could not be renewed. Sign in again to enter the salon.');
+          return;
+        }
+      }
+
+      if (session) showMember();
+    })();
+  }
+</script>
