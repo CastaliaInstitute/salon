@@ -14,8 +14,8 @@
 
 ## 3. Deploy and verify (hosted)
 
-- [ ] 3.1 Set GEMINI_API_KEY as an edge secret on the linked project (ref pilmscrodlitdrygabvo — corrected from the stale xougqdomkoisrxdnagcj doc) via supabase secrets set (R4)
-- [ ] 3.2 Deploy llm-gateway and villa-diodati-chat to the hosted project (R2)
-- [ ] 3.3 Hosted probe: scripted curl session — all five personas return first-person replies via gemini-3.1-pro-preview; response contract unchanged (R2, R6)
-- [ ] 3.4 Hosted probe: assert zero openrouter.ai / key-service requests occur during the salon run; verify error-path honesty with a deliberately bad key in a staging secret check (R3, R5)
+- [x] 3.1 Set GEMINI_API_KEY as an edge secret on the linked project (ref pilmscrodlitdrygabvo — corrected from the stale xougqdomkoisrxdnagcj doc) via supabase secrets set (R4)
+- [x] 3.2 Deploy llm-gateway and villa-diodati-chat to the hosted project (R2)
+- [x] 3.3 Hosted probe: scripted curl session — all five personas return first-person replies via gemini-3.1-pro-preview; response contract unchanged (R2, R6)
+- [x] 3.4 Hosted probe: assert zero openrouter.ai / key-service requests occur during the salon run; verify error-path honesty with a deliberately bad key in a staging secret check (R3, R5)
 - [x] 3.5 Document the new model id + LLM_GATEWAY_MODELS env in the gateway README for future id bumps (R1)

@@ -1,0 +1,44 @@
+{
+  "statement": "Make the Villa Diodati salon production-ready: members sign in and converse with the Gemini-powered characters, each member gets their own Matrix room for the interaction, and everything is deployed and verified for the October Fri–Sun windows.",
+  "status": "active",
+  "auto": true,
+  "plan": [
+    {
+      "id": "1",
+      "title": "Close villa-chat-gemini: mark hosted-probe evidence done (gemini-3.1-pro-preview live, 5 personas, zero OpenRouter), commit",
+      "done": false
+    },
+    {
+      "id": "2",
+      "title": "Deploy member edge gate to villa-diodati-chat (JWT auth → window gate → cadence cap) and run hosted 401/403/429 verify",
+      "done": false
+    },
+    {
+      "id": "3",
+      "title": "Add salon.castalia.institute to Supabase auth redirect allow-list (Management API, non-destructive append)",
+      "done": false
+    },
+    {
+      "id": "4",
+      "title": "Revise member-salon-entry spec: members get their own Matrix room (ensure-member-salon-room edge fn + chat client posts to member room)",
+      "done": false
+    },
+    {
+      "id": "5",
+      "title": "Implement per-member Matrix room flow end-to-end and verify a member turn lands in their room",
+      "done": false
+    },
+    {
+      "id": "6",
+      "title": "Author villa-pwa-launch spec (requirements/design/tasks) and run production verification: GH Pages deploy green, Lighthouse PWA installable, member E2E on 320px, Oct-2 runbook",
+      "done": false
+    }
+  ],
+  "log": [
+    {
+      "time": "2026-09-29T19:34:49.726Z",
+      "status": "active",
+      "message": "goal set (auto): Make the Villa Diodati salon production-ready: members sign in and converse with the Gemini-powered characters, each member gets their own Matrix room for the interaction, and everything is deployed and verified for the October Fri–Sun windows."
+    }
+  ]
+}
