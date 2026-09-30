@@ -6,7 +6,7 @@
     {
       "id": "1",
       "title": "Close villa-chat-gemini: mark hosted-probe evidence done (gemini-3.1-pro-preview live, 5 personas, zero OpenRouter), commit",
-      "done": false
+      "done": true
     },
     {
       "id": "2",
@@ -39,6 +39,11 @@
       "time": "2026-09-29T19:34:49.726Z",
       "status": "active",
       "message": "goal set (auto): Make the Villa Diodati salon production-ready: members sign in and converse with the Gemini-powered characters, each member gets their own Matrix room for the interaction, and everything is deployed and verified for the October Fri–Sun windows."
+    },
+    {
+      "time": "2026-09-30T01:57:50.488Z",
+      "status": "active",
+      "message": "step 1 done: Close villa-chat-gemini: mark hosted-probe evidence done (gemini-3.1-pro-preview live, 5 personas, zero OpenRouter), commit"
     }
   ]
 }

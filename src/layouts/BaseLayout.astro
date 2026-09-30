@@ -19,7 +19,7 @@ const contract = pageContractForSitePath(path, {
   title: pageTitle,
   isPublic: (p) => {
     const n = normalizeSitePath(p);
-    return n === '/' || n.startsWith('/villa') || n.startsWith('/live');
+    return n === '/' || n.startsWith('/diodati') || n.startsWith('/live');
   },
 });
 const meta = pageMetaFromContract(contract, path);

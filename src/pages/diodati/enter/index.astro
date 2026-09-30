@@ -5,7 +5,7 @@ import { evaluate, nowInZurich, badgeLabel } from '../../../scripts/salon-schedu
 import '../../../styles/villa.css';
 
 /*
- * /villa/enter/ — member salon entry (R1) + playing gate (R2) + chat surface (R3, R6).
+ * /diodati/enter/ — member salon entry (R1) + playing gate (R2) + chat surface (R3, R6).
  * The playing gate is recomputed in the browser script at view time; the static
  * build only contributes badge copy and data attributes.
  */
@@ -20,7 +20,7 @@ const buildBadge = badgeLabel(seasonState, { dayNumber, nextWindowStartDate: sea
 
 /*
  * Persona roster: ids from the villa-diodati-chat edge function
- * (PROMPTS_CONFIG.participants), display names from the /villa/ replay
+ * (PROMPTS_CONFIG.participants), display names from the /diodati/ replay
  * (three-days.json scene characters).
  */
 const PERSONAS = [
@@ -65,7 +65,7 @@ const PERSONAS = [
                 </button>
               </div>
               <p class="villa-enter-season-copy" data-salon-season-note hidden></p>
-              <p><a class="villa-enter-backlink" href="/villa/">← Back to the archived replay</a></p>
+              <p><a class="villa-enter-backlink" href="/diodati/">← Back to the archived replay</a></p>
             </section>
 
             <section class="villa-enter-card villa-enter-error" data-salon-state="error" hidden>
@@ -79,7 +79,7 @@ const PERSONAS = [
                   Try GitHub again
                 </button>
               </div>
-              <p><a class="villa-enter-backlink" href="/villa/">← Back to the archived replay</a></p>
+              <p><a class="villa-enter-backlink" href="/diodati/">← Back to the archived replay</a></p>
             </section>
 
             <section class="villa-enter-card" data-salon-state="member" hidden>
@@ -138,9 +138,9 @@ const PERSONAS = [
             <p>
               This build was made without <code>PUBLIC_SUPABASE_URL</code> and
               <code>PUBLIC_SUPABASE_ANON_KEY</code>, so member sign-in and conversation cannot
-              run here. The archived replay at <a href="/villa/">/villa/</a> still works.
+              run here. The archived replay at <a href="/diodati/">/diodati/</a> still works.
             </p>
-            <p><a class="villa-enter-backlink" href="/villa/">← Back to the archived replay</a></p>
+            <p><a class="villa-enter-backlink" href="/diodati/">← Back to the archived replay</a></p>
           </div>
         )
       }
@@ -404,7 +404,7 @@ const PERSONAS = [
     root.querySelectorAll('[data-salon-signin]').forEach((button) => {
       button.addEventListener('click', () => {
         try {
-          signInWith(button.dataset.salonSignin, `${window.location.origin}/villa/enter/`);
+          signInWith(button.dataset.salonSignin, `${window.location.origin}/diodati/enter/`);
         } catch {
           showError('Sign-in is not configured on this build.');
         }

@@ -12,7 +12,7 @@
  * covered by the runtime cache-first strategy, so an unresolved placeholder is
  * harmless — install filters it out.
  *
- * `/villa/` precache is the contract point for villa-3day-replay.
+ * entry-point contract: `/diodati/` (moved from / villa; /villa/ redirects) for villa-3day-replay.
  * Errors elsewhere must not turn into SW v2: any failure is logged, never thrown.
  */
 const CACHE_VERSION = '__CACHE_VERSION__';
@@ -23,7 +23,7 @@ const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_URLS = [
   '/',
-  '/villa/',
+  '/diodati/',
   '/offline.html',
   '/manifest.webmanifest',
   '/icons/icon-192.png',

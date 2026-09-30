@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import season from '../data/villa-diodati/season-2026-10.json';
 import { evaluate, nowInZurich, badgeLabel } from '../scripts/salon-schedule/engine.mjs';
 
-const villaDiodatiHref = '/villa/';
+const villaDiodatiHref = '/diodati/';
 const villaLiveHref = 'https://castalia.institute/salon/villa.diodati';
 const buildNow = nowInZurich(new Date());
 const seasonState = evaluate(season.windows, season.replayDayMapping, buildNow);

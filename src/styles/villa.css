@@ -1,5 +1,5 @@
 /*
- * Villa Diodati replay — public static replay at /villa/
+ * Villa Diodati replay — public static replay at /diodati/ (/villa/ redirects)
  * Warm umber palette matching the index .villa-theme card; zero JS.
  */
 
@@ -355,7 +355,7 @@
   white-space: nowrap;
 }
 
-/* Member salon entry (/villa/enter/) --------------------------------------
+/* Member salon entry (/diodati/enter/) --------------------------------------
    Mobile-first: every interactive target is ≥44px, cards stack at 320px. */
 
 .villa-enter {
@@ -715,7 +715,7 @@
   font-size: 0.85rem;
 }
 
-/* Enter-the-Salon link in the /villa/ archive note */
+/* Enter-the-Salon link in the /diodati/ archive note */
 
 .villa-enter-link {
   font-family: var(--font-mono);
