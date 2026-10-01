@@ -192,10 +192,12 @@ function poseStandingFigure(figure) {
   rotate("spine_01", -0.04, 0, 0);
   const breath = Math.sin(animationClock.elapsedTime * 1.35 + 2.4) * 0.012;
   rotate("spine_02", -0.02 + breath, 0, 0);
-  rotate("upperarm.l", -0.24, 0, -1.04);
-  rotate("upperarm.r", -0.10, 0, 0.88);
-  rotate("lowerarm.l", -0.64, 0.08, -0.10);
-  rotate("lowerarm.r", -0.52, -0.08, 0.10);
+  // The rig's shoulder hinge is the Z axis; keep the host's arms lowered
+  // instead of rotating on X and leaving the source mesh in a T-pose.
+  rotate("upperarm.l", 0, 0, -0.92);
+  rotate("upperarm.r", 0, 0, 0.78);
+  rotate("lowerarm.l", -0.48, 0.06, -0.08);
+  rotate("lowerarm.r", -0.62, -0.06, 0.08);
   rotate("head", 0.02 - breath * 0.4, 0.28, 0);
   refreshSkinnedPose(figure);
 }
