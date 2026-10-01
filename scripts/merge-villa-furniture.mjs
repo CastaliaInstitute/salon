@@ -36,8 +36,8 @@ await addCopies('furniture/fireplace/traditional-cast-stone-fireplace.glb', [[0,
 await addCopies('furniture/candelabrum/candelabrum.glb', [
   // This scan has very large internal coordinates; 0.0025 brings it to a
   // realistic ~0.5 m mantel prop instead of a room-sized black silhouette.
-  [-0.58, 2.18, -3.55, 0, 0.0025],
-  [0.58, 2.18, -3.55, 0, 0.0025],
+  [-0.58, 2.18, -3.55, Math.PI, 0.0025],
+  [0.58, 2.18, -3.55, Math.PI, 0.0025],
 ]);
 
 await target.transform(unpartition());
