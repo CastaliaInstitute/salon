@@ -499,7 +499,17 @@ new GLTFLoader().load(
           // The source GLB contains child visibility flags from its authoring
           // scene. Do not let those flags hide limbs in the browser preview.
           object.visible = true;
-          if (object.isMesh) object.frustumCulled = false;
+          if (object.isMesh) {
+            object.frustumCulled = false;
+            if (dressingRoomMode) {
+              const wood = new THREE.MeshStandardMaterial({
+                color: 0xa66b38,
+                roughness: 0.72,
+                metalness: 0,
+              });
+              object.material = wood;
+            }
+          }
         });
         scene.add(figure);
       }
