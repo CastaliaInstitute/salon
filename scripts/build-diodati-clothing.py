@@ -10,6 +10,7 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=source)
 body = next(o for o in bpy.context.scene.objects if o.type == 'MESH' and o.name.startswith('body'))
 armature = next(o for o in bpy.context.scene.objects if o.type == 'ARMATURE')
+source_meshes = [o for o in bpy.context.scene.objects if o.type == 'MESH']
 
 def material(name, color, roughness=0.82):
     mat = bpy.data.materials.new(name)
@@ -36,6 +37,11 @@ def copy_shell(name, garment_mat, keep):
     bpy.context.collection.objects.link(obj)
     obj.data.materials.clear()
     obj.data.materials.append(garment_mat)
+    # Rebuild every polygon's material index after replacing the source
+    # mannequin materials.  The source mesh is multi-material; leaving those
+    # indices intact makes the exported coat inherit blue/pink body panels.
+    for polygon in obj.data.polygons:
+        polygon.material_index = 0
     # Delete body faces outside the garment region in rest-pose coordinates.
     bm = bmesh.new()
     bm.from_mesh(obj.data)
@@ -76,13 +82,14 @@ copy_shell('Regency cravat bib', materials['linen'], lambda c, f: 1.48 <= c.z <=
 
 # Keep only clothing in the exported asset; the original body is retained in
 # the browser as the wooden mannequin beneath these shells.
-body.hide_render = True
-body.hide_viewport = True
+for source_mesh in source_meshes:
+    source_mesh.hide_render = True
+    source_mesh.hide_viewport = True
 
 bpy.ops.object.select_all(action='DESELECT')
 for obj in bpy.context.scene.objects:
     if obj.get('garment') or obj.type == 'ARMATURE':
         obj.select_set(True)
 bpy.context.view_layer.objects.active = armature
-bpy.ops.export_scene.gltf(filepath=output, export_format='GLB', export_animations=True, export_skins=True, export_morph=False)
+bpy.ops.export_scene.gltf(filepath=output, export_format='GLB', export_animations=True, export_skins=True, export_morph=False, use_selection=True)
 print('EXPORTED', output)
