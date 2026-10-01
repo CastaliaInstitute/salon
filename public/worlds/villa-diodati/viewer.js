@@ -16,7 +16,9 @@ const furnitureLoader = new GLTFLoader();
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
+const physicsBodies = [];
 const animationClock = new THREE.Clock();
+const FLOOR_Y = -0.22;
 const facultyBusts = {
   "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
   "Claire Clairmont": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png",
@@ -143,13 +145,14 @@ function poseSeatedFigure(figure, index = 0) {
     [-0.08, -0.12, -1.24, 0.82, -0.38, -0.68, 0.02, 0.34],
     [-0.12, -0.08, -1.04, 1.16, -0.64, -0.32, 0.01, -0.30],
   ][index % 4];
+  const breath = Math.sin(animationClock.elapsedTime * 1.35 + index * 0.8) * 0.012;
   rotate("spine_01", conversational[0], 0, 0);
-  rotate("spine_02", conversational[1], 0, 0);
+  rotate("spine_02", conversational[1] + breath, 0, 0);
   rotate("upperarm.l", conversational[2], 0, -1.0);
   rotate("upperarm.r", conversational[3], 0, 0.92);
   rotate("lowerarm.l", conversational[4], 0.08, -0.08);
   rotate("lowerarm.r", conversational[5], -0.08, 0.08);
-  rotate("head", conversational[6], conversational[7], 0);
+  rotate("head", conversational[6] - breath * 0.4, conversational[7], 0);
 }
 
 function poseStandingFigure(figure) {
@@ -160,12 +163,27 @@ function poseStandingFigure(figure) {
     if (bone) bone.rotation.set(x, y, z);
   };
   rotate("spine_01", -0.04, 0, 0);
-  rotate("spine_02", -0.02, 0, 0);
+  const breath = Math.sin(animationClock.elapsedTime * 1.35 + 2.4) * 0.012;
+  rotate("spine_02", -0.02 + breath, 0, 0);
   rotate("upperarm.l", -0.22, 0, -0.92);
   rotate("upperarm.r", -0.08, 0, 0.78);
   rotate("lowerarm.l", -0.48, 0.06, -0.08);
   rotate("lowerarm.r", -0.62, -0.06, 0.08);
-  rotate("head", 0.02, 0.28, 0);
+  rotate("head", 0.02 - breath * 0.4, 0.28, 0);
+}
+
+function stepPhysics(delta) {
+  // Lightweight rigid-body foundation: gravity and floor contact for each
+  // mannequin root. Bone posing remains authored, while root motion is no
+  // longer allowed to tunnel below the salon floor.
+  for (const body of physicsBodies) {
+    body.velocityY -= 9.81 * delta;
+    body.figure.position.y += body.velocityY * delta;
+    if (body.figure.position.y < body.restY) {
+      body.figure.position.y = body.restY;
+      body.velocityY = 0;
+    }
+  }
 }
 
 function keepFeetAboveFloor(figure) {
@@ -390,34 +408,8 @@ new GLTFLoader().load(
         // scale in this room without changing the furniture layout.
         figure.scale.setScalar(1.08);
         poseMannequin(figure, x === 0.54 ? "conversational" : "seated");
-        const headBone = [...figure.children, figure].flatMap((root) => {
-          const found = [];
-          root.traverse((object) => { if (object.isBone && object.name === "head") found.push(object); });
-          return found;
-        })[0];
-        if (headBone) {
-          const headTexture = textureLoader.load(headAssets[index]);
-          headTexture.colorSpace = THREE.SRGBColorSpace;
-          const headVolume = new THREE.Mesh(
-            new THREE.SphereGeometry(0.22, 32, 20),
-            new THREE.MeshStandardMaterial({
-              map: headTexture,
-              transparent: true,
-              alphaTest: 0.08,
-              roughness: 0.74,
-              metalness: 0,
-              side: THREE.DoubleSide,
-            }),
-          );
-          headVolume.userData.isFacultyHead = true;
-          headVolume.scale.set(0.78, 0.98, 0.68);
-          headVolume.rotation.y = Math.PI;
-          headVolume.position.set(0, 0.09, 0.02);
-          headBone.add(headVolume);
-        }
         figure.traverse((object) => {
           if (!object.isMesh) return;
-          if (object.userData.isFacultyHead) return;
           const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
           object.material = sourceMaterials.map((source, materialIndex) => {
             const material = source.clone();
@@ -433,6 +425,7 @@ new GLTFLoader().load(
         // line, with a hard floor-safe limit so no feet can pass below the
         // saloon floor plane.
         figure.position.set(x, x === 0.54 ? y : y + 0.14, z);
+        physicsBodies.push({ figure, restY: figure.position.y, velocityY: 0 });
         figure.rotation.y = yaw;
         if (x !== 0.54) {
           seatedFigures.push({ figure, index });
@@ -541,6 +534,7 @@ if (window.matchMedia("(max-width: 760px)").matches) {
 renderer.setAnimationLoop(() => {
   const delta = Math.min(animationClock.getDelta(), 0.05);
   for (const mixer of mannequinMixers) mixer.update(delta);
+  stepPhysics(delta);
   for (const seated of seatedFigures) {
     poseSeatedFigure(seated.figure, seated.index);
     keepFeetAboveFloor(seated.figure);
