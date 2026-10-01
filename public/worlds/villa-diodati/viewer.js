@@ -11,6 +11,8 @@ const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
+const mannequinMixers = [];
+const animationClock = new THREE.Clock();
 const facultyBusts = {
   "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
   "Claire Clairmont": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png",
@@ -153,6 +155,12 @@ new GLTFLoader().load(
         });
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
+        const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
+        if (idleClip) {
+          const mixer = new THREE.AnimationMixer(figure);
+          mixer.clipAction(idleClip).play();
+          mannequinMixers.push(mixer);
+        }
         scene.add(figure);
       }
       status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
@@ -210,6 +218,8 @@ if (window.matchMedia("(max-width: 760px)").matches) {
 }
 
 renderer.setAnimationLoop(() => {
+  const delta = Math.min(animationClock.getDelta(), 0.05);
+  for (const mixer of mannequinMixers) mixer.update(delta);
   controls.update();
   renderer.render(scene, camera);
 });
