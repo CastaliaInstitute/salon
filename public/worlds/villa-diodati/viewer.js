@@ -147,6 +147,10 @@ new GLTFLoader().load(
       if (object.isMesh && object.material && /deep wine upholstery/i.test(object.material.name || "")) {
         object.visible = false;
       }
+      if (object.isMesh && object.material && object.material.color) {
+        const { r, g, b } = object.material.color;
+        if (r > g * 1.28 && r > b * 1.22 && r > 0.22) object.visible = false;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
