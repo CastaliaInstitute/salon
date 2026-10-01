@@ -518,11 +518,26 @@ new GLTFLoader().load(
             });
           });
         });
+        // Normalize the imported rig in world space.  The source GLB has a
+        // non-zero bind-pose offset, so placing its root at y=0 can put the
+        // visible mesh below the floor (or outside the camera framing).
+        figure.updateMatrixWorld(true);
+        const importedBounds = new THREE.Box3().setFromObject(figure);
+        const importedHeight = importedBounds.max.y - importedBounds.min.y;
+        if (Number.isFinite(importedHeight) && importedHeight > 0.01) {
+          figure.scale.multiplyScalar(2.15 / importedHeight);
+          figure.updateMatrixWorld(true);
+        }
+        const groundedBounds = new THREE.Box3().setFromObject(figure);
+        const groundedCenter = groundedBounds.getCenter(new THREE.Vector3());
+        const groundedHeight = groundedBounds.max.y - groundedBounds.min.y;
+        figure.position.set(x - groundedCenter.x, (x === 0.54 ? y : y + 0.14) - groundedBounds.min.y, z - groundedCenter.z);
+        figure.updateMatrixWorld(true);
         // The source rig keeps a tall standing silhouette even when its leg
         // bones are posed. Lower the figures only slightly into the chair
         // line, with a hard floor-safe limit so no feet can pass below the
         // saloon floor plane.
-        figure.position.set(x, x === 0.54 ? y : y + 0.14, z);
+        // Position was grounded from the imported mesh bounds above.
         // Keep the authored seated/conversational garment pose stable in the
         // browser preview. The optional ragdoll pass starts from the rig's
         // T-pose and would overwrite the period pose on every frame.
