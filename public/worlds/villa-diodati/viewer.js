@@ -139,7 +139,10 @@ new GLTFLoader().load(
       ];
       for (const [x, y, z, yaw] of placements) {
         const figure = SkeletonUtils.clone(mannequin.scene);
-        figure.scale.setScalar(0.72);
+        // Match the mannequin to the authored seating and bust mounts. The
+        // source asset is intentionally compact, so 1.08 restores human
+        // scale in this room without changing the furniture layout.
+        figure.scale.setScalar(1.08);
         poseMannequin(figure, x === 0.54 ? "conversational" : "seated");
         figure.traverse((object) => {
           if (!object.isMesh) return;
