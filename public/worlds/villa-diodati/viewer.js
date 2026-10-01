@@ -220,14 +220,12 @@ new GLTFLoader().load(
     });
     furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
       const placements = [
-        [-1.55, 0, 0.08, Math.PI * 0.08],
-        [1.55, 0, 0.08, -Math.PI * 0.08],
-        [-2.95, 0, -0.95, Math.PI * 0.72],
-        [2.95, 0, -0.95, -Math.PI * 0.72],
+        [-1.55, 0, 0.18, Math.PI * 0.08],
+        [1.55, 0, 0.18, -Math.PI * 0.08],
       ];
       for (const [x, y, z, yaw] of placements) {
         const chair = armchair.scene.clone(true);
-        chair.scale.setScalar(1.18);
+        chair.scale.setScalar(0.94);
         chair.position.set(x, y, z);
         chair.rotation.y = yaw;
         scene.add(chair);
