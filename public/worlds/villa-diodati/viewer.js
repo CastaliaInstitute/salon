@@ -505,7 +505,7 @@ new GLTFLoader().load(
       const visiblePlacements = figureOnlyMode || figureRoomMode
         ? [[0, 0.34, -0.75, 0]]
         : dressingRoomMode
-          ? [[1.45, 0.78, 0.14, 0]]
+          ? [[1.45, 0.28, 0.14, 0]]
           : placements;
       for (const [x, y, z, yaw] of visiblePlacements) {
         const figure = dressingRoomMode ? SkeletonUtils.clone(mannequin.scene) : mannequin.scene.clone(true);
