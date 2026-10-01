@@ -20,6 +20,13 @@ const facultyBusts = {
   "Percy Bysshe Shelley": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png",
   "John Polidori": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png",
 };
+const headAssets = [
+  "./furniture/heads/byron-head.png",
+  "./furniture/heads/clairmont-head.png",
+  "./furniture/heads/shelley-head.png",
+  "./furniture/heads/polidori-head.png",
+  "./furniture/heads/byron-head.png",
+];
 
 function poseMannequin(figure, pose = "seated") {
   const bones = new Map();
@@ -129,9 +136,7 @@ new GLTFLoader().load(
         object.name === "ceiling" ||
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
-      if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori) white bust$/.test(object.name)) {
-        object.position.y -= 0.52;
-      }
+      if (/white bust/i.test(object.name)) object.visible = false;
       if (/^(Byron's companion chair|reading chair|guest chair by the window)/.test(object.name)) {
         object.visible = false;
       }
@@ -163,9 +168,7 @@ new GLTFLoader().load(
           // Supabase portrait remains the faculty source of record, but
           // projecting its full-bust PNG onto a primitive creates obvious
           // billboard/mushroom artifacts at this camera distance.
-          textureLoader.load(url, () => {
-            object.visible = true;
-          });
+          textureLoader.load(url);
           object.material = material;
         }
       }
@@ -179,13 +182,28 @@ new GLTFLoader().load(
         [2.43, 0.02, -0.52, -Math.PI / 2],
         [4.05, 0.02, 1.05, -Math.PI / 2],
       ];
-      for (const [x, y, z, yaw] of placements) {
+      for (const [index, [x, y, z, yaw]] of placements.entries()) {
         const figure = SkeletonUtils.clone(mannequin.scene);
         // Match the mannequin to the authored seating and bust mounts. The
         // source asset is intentionally compact, so 1.08 restores human
         // scale in this room without changing the furniture layout.
         figure.scale.setScalar(1.08);
         poseMannequin(figure, x === 0.54 ? "conversational" : "seated");
+        const headBone = [...figure.children, figure].flatMap((root) => {
+          const found = [];
+          root.traverse((object) => { if (object.isBone && object.name === "head") found.push(object); });
+          return found;
+        })[0];
+        if (headBone) {
+          const headTexture = textureLoader.load(headAssets[index]);
+          headTexture.colorSpace = THREE.SRGBColorSpace;
+          const headSprite = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.62, 0.72),
+            new THREE.MeshBasicMaterial({ map: headTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide }),
+          );
+          headSprite.position.set(0, 0.11, 0.045);
+          headBone.add(headSprite);
+        }
         figure.traverse((object) => {
           if (!object.isMesh) return;
           object.material = object.material.clone();
