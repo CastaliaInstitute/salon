@@ -539,7 +539,7 @@ new GLTFLoader().load(
         }
         scene.add(figure);
       }
-      status.textContent = dressingRoomMode ? "Dressing room loaded: one wooden mannequin and one chair." : `Wooden mannequin circle loaded: ${placements.length} figures.`;
+      if (!dressingRoomMode) status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
