@@ -236,6 +236,18 @@ function createChairColliders() {
   addStaticBox([0, 1.45, -1.82], [1.9, 0.62, 0.08]);
 }
 
+function createDressingRoomColliders() {
+  // Physics-only surfaces matching the single visible chair; no floor or
+  // room geometry is rendered in dressing-room mode.
+  addStaticBox([0, -0.22, 0], [8, 0.12, 8]);
+  const x = 1.45;
+  const z = 0.2;
+  addStaticBox([x, 0.82, z], [0.72, 0.08, 0.72]);
+  addStaticBox([x, 1.42, z - 0.56], [0.72, 0.62, 0.08]);
+  addStaticBox([x - 0.66, 0.78, z], [0.08, 0.38, 0.72]);
+  addStaticBox([x + 0.66, 0.78, z], [0.08, 0.38, 0.72]);
+}
+
 function createRagdoll(figure) {
   figure.updateMatrixWorld(true);
   const names = new Set(["spine_01", "spine_02", "upperarm.l", "lowerarm.l", "upperarm.r", "lowerarm.r", "thigh.l", "calf.l", "foot.l", "thigh.r", "calf.r", "foot.r"]);
@@ -275,7 +287,8 @@ const physicsInit = import("rapier3d-compat")
     RAPIER = module.default ?? module;
     await RAPIER.init();
     physicsWorld = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-    createChairColliders();
+    if (dressingRoomMode) createDressingRoomColliders();
+    else createChairColliders();
     physicsReady = true;
   })
   .catch((error) => console.warn("Physics unavailable; keeping authored mannequin poses", error));
