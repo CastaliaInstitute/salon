@@ -34,8 +34,10 @@ await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -1.28, Math.PI, 0.
 // Free downloaded props: a traditional fireplace and two mantel candelabra.
 await addCopies('furniture/fireplace/traditional-cast-stone-fireplace.glb', [[0, -0.22, -3.86, 0, 1.7]]);
 await addCopies('furniture/candelabrum/candelabrum.glb', [
-  [-0.58, 2.18, -3.55, 0, 0.28],
-  [0.58, 2.18, -3.55, 0, 0.28],
+  // This scan has very large internal coordinates; 0.0025 brings it to a
+  // realistic ~0.5 m mantel prop instead of a room-sized black silhouette.
+  [-0.58, 2.18, -3.55, 0, 0.0025],
+  [0.58, 2.18, -3.55, 0, 0.0025],
 ]);
 
 await target.transform(unpartition());
