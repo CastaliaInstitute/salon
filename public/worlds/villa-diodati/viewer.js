@@ -144,6 +144,9 @@ new GLTFLoader().load(
       if (/^carved settee/.test(object.name)) {
         object.visible = false;
       }
+      if (object.isMesh && object.material && /deep wine upholstery/i.test(object.material.name || "")) {
+        object.visible = false;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
@@ -189,7 +192,7 @@ new GLTFLoader().load(
         // The source rig keeps a tall standing silhouette even when its leg
         // bones are posed. Lower the four circle members into the chair line;
         // the hearth host remains standing at the center.
-        figure.position.set(x, x === 0.54 ? y : y - 0.52, z);
+      figure.position.set(x, y - 0.52, z);
         figure.rotation.y = yaw;
         if (x !== 0.54) seatedFigures.push(figure);
         const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
@@ -243,8 +246,8 @@ new GLTFLoader().load(
     });
     furnitureLoader.load("./furniture/sofa-03/sofa_03.gltf", (sofa) => {
       const replacement = sofa.scene.clone(true);
-      replacement.scale.setScalar(1.08);
-      replacement.position.set(0, 0, -0.82);
+      replacement.scale.setScalar(0.9);
+      replacement.position.set(0, 0, -1.28);
       replacement.rotation.y = 0;
       scene.add(replacement);
     }, undefined, (error) => {
