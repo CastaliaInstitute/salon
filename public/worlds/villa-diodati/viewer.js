@@ -11,6 +11,7 @@ const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
+const clothingLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
 const mannequinMixers = [];
 const seatedFigures = [];
@@ -227,6 +228,28 @@ function dressFigure(figure, index) {
   }
 }
 
+function tintClothing(clothing, index) {
+  const palettes = [
+    { outer: 0x263b2b, waistcoat: 0xa37b3d, shirt: 0xd2c4a4 },
+    { outer: 0x641f2d, waistcoat: 0x9e4e50, shirt: 0xe0d2b8 },
+    { outer: 0x2e321f, waistcoat: 0x8f8a65, shirt: 0xd2c4a4 },
+    { outer: 0x33424c, waistcoat: 0x596b73, shirt: 0xe1d8c2 },
+    { outer: 0x4e1c31, waistcoat: 0x6b465b, shirt: 0xd8c8b0 },
+  ][index];
+  clothing.traverse((object) => {
+    if (!object.isMesh) return;
+    object.material = object.material.clone();
+    const name = object.name.toLowerCase();
+    const color = name.includes('shirt') || name.includes('linen')
+      ? palettes.shirt
+      : name.includes('waistcoat')
+        ? palettes.waistcoat
+        : palettes.outer;
+    object.material.color.set(color);
+    object.material.roughness = name.includes('dress') ? 0.92 : 0.82;
+  });
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
 
@@ -346,6 +369,7 @@ new GLTFLoader().load(
     });
     scene.add(gltf.scene);
     mannequinLoader.load("./mannequiny.glb", (mannequin) => {
+      clothingLoader.load("./diodati-clothing.glb?v=clothing-1", (clothingAsset) => {
       const placements = [
         [-4.00, 0.02, 0.24, Math.PI / 2],
         [-2.80, 0.02, 0.32, Math.PI / 2],
@@ -398,7 +422,6 @@ new GLTFLoader().load(
           });
         });
         addDrapedClothing(figure, index);
-        dressFigure(figure, index);
         // The source rig keeps a tall standing silhouette even when its leg
         // bones are posed. Lower the figures only slightly into the chair
         // line, with a hard floor-safe limit so no feet can pass below the
@@ -418,8 +441,20 @@ new GLTFLoader().load(
           mannequinMixers.push(mixer);
         }
         scene.add(figure);
+        const clothing = SkeletonUtils.clone(clothingAsset.scene);
+        clothing.scale.setScalar(1.08);
+        poseMannequin(clothing, x === 0.54 ? "conversational" : "seated");
+        tintClothing(clothing, index);
+        clothing.position.set(x, x === 0.54 ? y : y + 0.14, z);
+        clothing.rotation.y = yaw;
+        if (x !== 0.54) keepFeetAboveFloor(clothing);
+        scene.add(clothing);
       }
       status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
+      }, undefined, (error) => {
+        console.error("Could not load the fitted clothing asset", error);
+        status.textContent = "Room loaded; fitted clothing asset unavailable.";
+      });
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
