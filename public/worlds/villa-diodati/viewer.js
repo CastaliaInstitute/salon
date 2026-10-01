@@ -603,7 +603,10 @@ new GLTFLoader().load(
     if (!dressingRoomMode) status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
   (event) => {
-    if (event.total) status.textContent = `Loading the room… ${Math.round((event.loaded / event.total) * 100)}%`;
+    if (event.total) {
+      const percent = Math.min(99, Math.max(0, Math.round((event.loaded / event.total) * 100)));
+      status.textContent = `Loading the room… ${percent}%`;
+    }
   },
   (error) => {
     console.error("Could not load the Villa Diodati scene", error);
