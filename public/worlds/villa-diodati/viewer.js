@@ -71,7 +71,14 @@ new GLTFLoader().load(
       ];
       for (const [x, y, z, yaw] of placements) {
         const figure = SkeletonUtils.clone(mannequin.scene);
-        figure.scale.setScalar(5.0);
+        figure.scale.setScalar(1.15);
+        figure.traverse((object) => {
+          if (!object.isMesh) return;
+          object.material = object.material.clone();
+          object.material.color.set(0x8a4f25);
+          object.material.roughness = 0.42;
+          object.material.metalness = 0.0;
+        });
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         scene.add(figure);
