@@ -615,12 +615,14 @@ if (window.matchMedia("(max-width: 760px)").matches) {
 renderer.setAnimationLoop(() => {
   const delta = Math.min(animationClock.getDelta(), 0.05);
   for (const mixer of mannequinMixers) mixer.update(delta);
-  stepPhysics(delta);
   for (const seated of seatedFigures) {
     poseSeatedFigure(seated.figure, seated.index);
     keepFeetAboveFloor(seated.figure);
   }
   for (const figure of standingFigures) poseStandingFigure(figure);
+  // Authored poses establish the initial posture; Rapier must write the final
+  // bone transforms afterward or the pose pass would erase the simulation.
+  stepPhysics(delta);
   controls.update();
   renderer.render(scene, camera);
 });
