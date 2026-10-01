@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
@@ -69,7 +70,7 @@ new GLTFLoader().load(
         [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
       for (const [x, y, z, yaw] of placements) {
-        const figure = mannequin.scene.clone(true);
+        const figure = SkeletonUtils.clone(mannequin.scene);
         figure.scale.setScalar(2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
