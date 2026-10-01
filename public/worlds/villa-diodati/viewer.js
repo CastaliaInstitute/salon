@@ -143,12 +143,12 @@ function poseSeatedLowerBody(figure, index = 0) {
     [-1.70, -1.58, 2.26, 2.10, -0.68, -0.58],
     [-1.54, -1.72, 2.10, 2.24, -0.56, -0.66],
   ][index % 4];
-  // This rig's limb hinges are authored on local Z. Keep the correction
-  // runtime-only so the source GLB remains the reusable locomotion asset.
-  rotate("thigh.l", 0, 0.12, -1.28);
-  rotate("thigh.r", 0, -0.12, 1.28);
-  rotate("calf.l", 0, 0, 1.72);
-  rotate("calf.r", 0, 0, -1.72);
+  // The leg bones are authored along local Y, so the hinge bend is local X.
+  // Keep this correction runtime-only so the source GLB remains reusable.
+  rotate("thigh.l", -1.58, 0.12, -0.10);
+  rotate("thigh.r", -1.58, -0.12, 0.10);
+  rotate("calf.l", 2.16, 0, 0);
+  rotate("calf.r", 2.16, 0, 0);
   rotate("foot.l", lowerBody[4], 0, 0);
   rotate("foot.r", lowerBody[5], 0, 0);
   refreshSkinnedPose(figure);
@@ -510,11 +510,11 @@ new GLTFLoader().load(
       const visiblePlacements = figureOnlyMode || figureRoomMode
         ? [[0, 0.34, -0.75, 0]]
         : dressingRoomMode
-          ? [[1.45, 0.28, 0.14, 0]]
+          ? [[1.45, 0.02, 0.14, 0]]
           : placements;
       for (const [index, [x, y, z, yaw]] of visiblePlacements.entries()) {
         const figure = SkeletonUtils.clone(mannequin.scene);
-        figure.scale.setScalar(dressingRoomMode ? 1.35 : figureRoomMode ? 2.75 : 2.45);
+        figure.scale.setScalar(dressingRoomMode ? 1.0 : figureRoomMode ? 2.75 : 2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         figure.traverse((object) => {
