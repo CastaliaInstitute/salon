@@ -12,7 +12,7 @@ const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
-const figureOnlyMode = new URLSearchParams(window.location.search).get("qa") === "figure-only";
+const figureOnlyMode = (new URLSearchParams(window.location.search).get("qa") || "").startsWith("figure-only");
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
