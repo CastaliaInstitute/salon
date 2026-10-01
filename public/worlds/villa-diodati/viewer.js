@@ -448,9 +448,6 @@ new GLTFLoader().load(
       if (object.isMesh && object.material && /(warm Carrara marble|marble in carved folds)/i.test(object.material.name || "")) {
         object.visible = false;
       }
-      if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
-        object.visible = false;
-      }
       if (object.isMesh && object.name.endsWith("white bust face")) {
         const faculty = Object.keys(facultyBusts).find((name) => object.name.startsWith(name));
         const url = faculty && facultyBusts[faculty];
