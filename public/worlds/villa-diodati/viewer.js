@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
@@ -27,13 +28,37 @@ const headAssets = [
   "./furniture/heads/polidori-head.png",
   "./furniture/heads/byron-head.png",
 ];
-const wardrobes = [
-  [0x651f2b, 0x241c20, 0xf0dfc2], // Byron: wine coat, black trousers, ivory shirt
-  [0x304936, 0x1f2822, 0xe8d7bd], // Claire: deep green dress, dark underskirt, blouse
-  [0x56633b, 0x2b302b, 0xf1e2c9], // Percy: olive coat, charcoal trousers, shirt
-  [0x263c58, 0x252a31, 0xe5d8c5], // Polidori: navy coat, dark trousers, shirt
-  [0x6b2635, 0x34202a, 0xead9c0], // Mary/alternate: wine dress, dark skirt, blouse
+const wardrobeColors = [
+  0x651f2b, // Byron wine coat
+  0x304936, // Claire deep green dress
+  0x56633b, // Percy olive coat
+  0x263c58, // Polidori navy coat
+  0x6b2635, // Mary wine dress
 ];
+
+function addDrapedClothing(figure, index) {
+  const fabric = new THREE.MeshStandardMaterial({
+    color: wardrobeColors[index] || wardrobeColors[0],
+    roughness: 0.88,
+    metalness: 0,
+    side: THREE.DoubleSide,
+  });
+  // These are separate garment shells around the articulated wood, not a
+  // recolor of the mannequin. Keeping them on the root preserves the visible
+  // wood at the joints while giving the torso a period fabric silhouette.
+  const coat = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.31, 0.62, 24, 1, true), fabric);
+  coat.position.set(0, 0.93, 0);
+  figure.add(coat);
+  const lapel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.42, 0.025), fabric.clone());
+  lapel.material.color.offsetHSL(0, 0, 0.08);
+  lapel.position.set(0, 1.02, 0.245);
+  figure.add(lapel);
+  if (index === 1 || index === 4) {
+    const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.43, 0.48, 24, 1, true), fabric.clone());
+    skirt.position.set(0, 0.53, 0);
+    figure.add(skirt);
+  }
+}
 
 function poseMannequin(figure, pose = "seated") {
   const bones = new Map();
@@ -145,18 +170,36 @@ function dressFigure(figure, index) {
     figure.add(garment);
   };
 
+  const rounded = (width, height, depth, radius = 0.06, smoothness = 3) =>
+    new RoundedBoxGeometry(width, height, depth, smoothness, radius);
+
+  // A shallow lathed profile gives the skirts a hem and a natural flare,
+  // instead of the perfect cone silhouette used in the first wardrobe pass.
+  const skirtProfile = [
+    new THREE.Vector2(0.18, 1.28),
+    new THREE.Vector2(0.25, 1.16),
+    new THREE.Vector2(0.31, 0.99),
+    new THREE.Vector2(0.42, 0.77),
+    new THREE.Vector2(0.52, 0.60),
+  ];
+
   if (wardrobe.kind === "dress") {
-    add(new THREE.ConeGeometry(0.48, 0.98, 20, 1, false), fabric(wardrobe.coat), "period dress skirt", [0, 0.78, 0.03]);
-    add(new THREE.BoxGeometry(0.32, 0.16, 0.05), fabric(wardrobe.accent), "dress sash", [0, 1.25, 0.25]);
+    add(new THREE.LatheGeometry(skirtProfile, 32), fabric(wardrobe.coat), "period dress skirt", [0, 0.02, 0.03]);
+    add(rounded(0.40, 0.48, 0.32, 0.08), fabric(wardrobe.coat), "dress bodice", [0, 1.31, 0.01]);
+    add(rounded(0.34, 0.10, 0.045, 0.025), fabric(wardrobe.accent), "dress sash", [0, 1.23, 0.20]);
+    add(rounded(0.13, 0.28, 0.045, 0.02), fabric(wardrobe.accent), "dress neckline", [0, 1.48, 0.18]);
   } else {
-    add(new THREE.BoxGeometry(0.68, 0.72, 0.44), fabric(wardrobe.coat), "period coat torso", [0, 1.34, 0]);
-    add(new THREE.BoxGeometry(0.34, 0.38, 0.06), fabric(wardrobe.accent), "linen waistcoat", [0, 1.49, 0.235]);
-    add(new THREE.BoxGeometry(0.14, 0.24, 0.05), fabric(wardrobe.accent), "high collar", [0, 1.77, 0.18]);
+    add(rounded(0.68, 0.72, 0.44, 0.11), fabric(wardrobe.coat), "period coat torso", [0, 1.34, 0]);
+    add(rounded(0.34, 0.38, 0.075, 0.035), fabric(wardrobe.accent), "linen waistcoat", [0, 1.49, 0.235]);
+    add(rounded(0.14, 0.24, 0.07, 0.025), fabric(wardrobe.accent), "high collar", [0, 1.77, 0.18]);
+    add(rounded(0.055, 0.055, 0.035, 0.02), fabric(0xd2af62), "waistcoat button", [0, 1.51, 0.285]);
+    add(rounded(0.055, 0.055, 0.035, 0.02), fabric(0xd2af62), "waistcoat button", [0, 1.39, 0.285]);
   }
 
   // Small cuffs keep the posed forearms from reading as bare wooden sticks.
   for (const side of [-1, 1]) {
-    add(new THREE.CylinderGeometry(0.085, 0.085, 0.22, 12), fabric(wardrobe.coat), "period sleeve", [side * 0.31, 1.20, 0.27], [0, 0, side * 0.28]);
+    add(rounded(0.16, 0.30, 0.16, 0.055), fabric(wardrobe.coat), "period sleeve", [side * 0.31, 1.20, 0.27], [0, 0, side * 0.28]);
+    add(rounded(0.17, 0.09, 0.17, 0.03), fabric(wardrobe.accent), "shirt cuff", [side * 0.28, 1.04, 0.39], [0, 0, side * 0.28]);
   }
 }
 
@@ -305,16 +348,16 @@ new GLTFLoader().load(
         figure.traverse((object) => {
           if (!object.isMesh) return;
           if (object.userData.isFacultyHead) return;
-          const palette = wardrobes[index];
           const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
           object.material = sourceMaterials.map((source, materialIndex) => {
             const material = source.clone();
-            material.color.set(palette[materialIndex] || palette[0]);
-            material.roughness = 0.68;
+            material.color.set(0x8b542c);
+            material.roughness = 0.52;
             material.metalness = 0;
             return material;
           });
         });
+        addDrapedClothing(figure, index);
         dressFigure(figure, index);
         // The source rig keeps a tall standing silhouette even when its leg
         // bones are posed. Lower the figures only slightly into the chair
