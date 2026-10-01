@@ -537,20 +537,6 @@ new GLTFLoader().load(
         // Keep the authored seated/conversational pose stable. The source
         // idle clip reopens the arms into its T-pose after garment fitting.
       }
-      clothingLoader.load("./diodati-clothing.glb?v=wood-only-1", (clothingAsset) => {
-        for (const { figure, index } of figures) {
-          const clothing = SkeletonUtils.clone(clothingAsset.scene);
-          clothing.scale.copy(figure.scale);
-          clothing.position.copy(figure.position);
-          clothing.rotation.copy(figure.rotation);
-          poseMannequin(clothing, index === 2 ? "conversational" : "seated");
-          tintClothing(clothing, index);
-          clothing.traverse((object) => {
-            if (object.isMesh) object.frustumCulled = false;
-          });
-          scene.add(clothing);
-        }
-      }, undefined, (error) => console.error("Could not load fitted Diodati clothing", error));
       status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
