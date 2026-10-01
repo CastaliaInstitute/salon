@@ -492,6 +492,10 @@ new GLTFLoader().load(
       ];
       for (const [index, [x, y, z, yaw]] of placements.entries()) {
         const figure = SkeletonUtils.clone(mannequin.scene);
+        // Add the clone before any optional pose/material work so a malformed
+        // pose cannot make the entire mannequin disappear from the scene.
+        figure.visible = true;
+        scene.add(figure);
         // Match the mannequin to the authored seating and bust mounts. The
         // source asset is intentionally compact, so 1.08 restores human
         // scale in this room without changing the furniture layout.
@@ -527,7 +531,6 @@ new GLTFLoader().load(
         }
         // Keep the authored seated/conversational pose stable. The source
         // idle clip reopens the arms into its T-pose after garment fitting.
-        scene.add(figure);
       }
       status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
