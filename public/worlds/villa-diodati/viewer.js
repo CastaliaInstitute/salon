@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
@@ -8,6 +9,7 @@ const chatPanel = document.querySelector("#chat-panel");
 const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
+const mannequinLoader = new GLTFLoader();
 const facultyBusts = {
   "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
   "Claire Clairmont": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png",
@@ -61,6 +63,9 @@ new GLTFLoader().load(
         object.name === "ceiling" ||
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
+      if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
+        object.visible = false;
+      }
       if (object.isMesh && object.name.endsWith("white bust face")) {
         const faculty = Object.keys(facultyBusts).find((name) => object.name.startsWith(name));
         const url = faculty && facultyBusts[faculty];
@@ -92,6 +97,33 @@ new GLTFLoader().load(
       }
     });
     scene.add(gltf.scene);
+    mannequinLoader.load("./mannequiny.glb", (mannequin) => {
+      const placements = [
+        [-4.00, 0.02, 0.24, Math.PI / 2],
+        [-2.80, 0.02, 0.32, Math.PI / 2],
+        [0.54, 0.02, -0.15, Math.PI],
+        [2.43, 0.02, -0.52, -Math.PI / 2],
+        [4.05, 0.02, 1.05, -Math.PI / 2],
+      ];
+      for (const [x, y, z, yaw] of placements) {
+        const figure = SkeletonUtils.clone(mannequin.scene);
+        figure.scale.setScalar(0.72);
+        figure.traverse((object) => {
+          if (!object.isMesh) return;
+          object.material = object.material.clone();
+          object.material.color.set(0x8b542c);
+          object.material.roughness = 0.52;
+          object.material.metalness = 0;
+        });
+        figure.position.set(x, y, z);
+        figure.rotation.y = yaw;
+        scene.add(figure);
+      }
+      status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
+    }, undefined, (error) => {
+      console.error("Could not load the wooden mannequin asset", error);
+      status.textContent = "Room loaded; mannequin asset unavailable.";
+    });
     status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
   (event) => {
