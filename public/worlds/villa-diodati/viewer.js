@@ -22,6 +22,7 @@ const dressingRoomMode = qaMode === "dressing-room";
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
+const showFurniture = false;
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
@@ -68,6 +69,20 @@ function findPoseBone(bones, name) {
   return bones.get(wanted) || [...bones.entries()].find(([key]) => key.includes(wanted) || wanted.includes(key))?.[1];
 }
 
+const poseLimits = {
+  "thigh.l": { x: [-1.85, -1.25], y: [-0.10, 0.10], z: [-0.06, 0.06] },
+  "thigh.r": { x: [-1.85, -1.25], y: [-0.10, 0.10], z: [-0.06, 0.06] },
+  "calf.l": { x: [1.55, 2.35], y: [-0.08, 0.08], z: [-0.08, 0.08] },
+  "calf.r": { x: [1.55, 2.35], y: [-0.08, 0.08], z: [-0.08, 0.08] },
+  "foot.l": { x: [-0.75, -0.25], y: [-0.12, 0.12], z: [-0.12, 0.12] },
+  "foot.r": { x: [-0.75, -0.25], y: [-0.12, 0.12], z: [-0.12, 0.12] },
+};
+
+function limitPoseRotation(name, value, axis) {
+  const limit = poseLimits[name]?.[axis];
+  return limit ? THREE.MathUtils.clamp(value, limit[0], limit[1]) : value;
+}
+
 function refreshSkinnedPose(figure) {
   figure.updateMatrixWorld(true);
   figure.traverse((object) => {
@@ -107,7 +122,12 @@ function poseMannequin(figure, pose = "seated") {
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
     const bone = findPoseBone(bones, name);
-    if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
+    if (bone) {
+      bone.rotation.copy(bone.userData.poseBase);
+      bone.rotation.x += limitPoseRotation(name, x, "x");
+      bone.rotation.y += limitPoseRotation(name, y, "y");
+      bone.rotation.z += limitPoseRotation(name, z, "z");
+    }
   };
   if (pose === "seated") {
     // The asset's rest pose is fully vertical. These stronger bends make the
@@ -149,7 +169,12 @@ function poseSeatedLowerBody(figure, index = 0) {
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
     const bone = findPoseBone(bones, name);
-    if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
+    if (bone) {
+      bone.rotation.copy(bone.userData.poseBase);
+      bone.rotation.x += limitPoseRotation(name, x, "x");
+      bone.rotation.y += limitPoseRotation(name, y, "y");
+      bone.rotation.z += limitPoseRotation(name, z, "z");
+    }
   };
   const lowerBody = [
     [-1.48, -1.66, 2.04, 2.18, -0.52, -0.62],
@@ -159,10 +184,10 @@ function poseSeatedLowerBody(figure, index = 0) {
   ][index % 4];
   // The leg bones are authored along local Y, so the hinge bend is local X.
   // Keep this correction runtime-only so the source GLB remains reusable.
-  rotate("thigh.l", -1.58, 0.12, -0.10);
-  rotate("thigh.r", -1.58, -0.12, 0.10);
-  rotate("calf.l", 2.16, 0, 0);
-  rotate("calf.r", 2.16, 0, 0);
+  rotate("thigh.l", -1.58, 0, 0);
+  rotate("thigh.r", -1.58, 0, 0);
+  rotate("calf.l", 1.88, 0, 0);
+  rotate("calf.r", 1.88, 0, 0);
   rotate("foot.l", lowerBody[4], 0, 0);
   rotate("foot.r", lowerBody[5], 0, 0);
   refreshSkinnedPose(figure);
@@ -573,6 +598,7 @@ new GLTFLoader().load(
       status.textContent = "Room loaded; mannequin asset unavailable.";
     });
     furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
+      if (!showFurniture) return;
       if (figureOnlyMode || figureRoomMode) return;
       if (dressingRoomMode) {
         const chair = armchair.scene.clone(true);
@@ -604,6 +630,7 @@ new GLTFLoader().load(
       console.error("Could not load the Victorian armchair", error);
     });
     furnitureLoader.load("./furniture/sofa-03/sofa_03.gltf", (sofa) => {
+      if (!showFurniture) return;
       if (figureOnlyMode || figureRoomMode || dressingRoomMode) return;
       const replacement = sofa.scene.clone(true);
       replacement.scale.setScalar(0.9);
