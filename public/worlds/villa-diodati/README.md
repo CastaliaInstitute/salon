@@ -28,6 +28,9 @@ not as a measured architectural reconstruction.
   `mary-shelley`, `claire-clairmont`, `percy-bysshe-shelley`, and
   `john-polidori`; bind the corresponding Supabase image/model URLs in the
   WebSG layer rather than baking credentials into the GLB.
+- The browser preview also loads `mannequiny.glb`, an articulated mannequin
+  released by GDQuest, Luciano Muñoz, and contributors under CC-BY 4.0. Credit
+  is preserved here and in the source project record.
 - A camera is embedded at the lake-gallery threshold. `+Z` faces the lake.
 - Warm point lights at the fire and table plus cool lake light use
   `KHR_lights_punctual`.

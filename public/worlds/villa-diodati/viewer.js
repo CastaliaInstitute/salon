@@ -7,6 +7,7 @@ const status = document.querySelector("#status");
 const chatPanel = document.querySelector("#chat-panel");
 const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
+const mannequinLoader = new GLTFLoader();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
@@ -54,8 +55,27 @@ new GLTFLoader().load(
         object.name === "ceiling" ||
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
+      if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron)/.test(object.name)) {
+        object.visible = false;
+      }
     });
     scene.add(gltf.scene);
+    mannequinLoader.load("./mannequiny.glb", (mannequin) => {
+      const placements = [
+        [-4.00, 0.34, 0.24, Math.PI / 2],
+        [-2.80, 0.34, 0.32, Math.PI / 2],
+        [0.54, 0.14, -0.15, Math.PI],
+        [2.43, 0.34, -0.52, -Math.PI / 2],
+        [4.05, 0.34, 1.05, -Math.PI / 2],
+      ];
+      for (const [x, y, z, yaw] of placements) {
+        const figure = mannequin.scene.clone(true);
+        figure.scale.setScalar(2.45);
+        figure.position.set(x, y, z);
+        figure.rotation.y = yaw;
+        scene.add(figure);
+      }
+    });
     status.textContent = "Drag to look around. The roof is hidden in this overview.";
   },
   (event) => {
