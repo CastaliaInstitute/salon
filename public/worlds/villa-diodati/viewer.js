@@ -201,7 +201,7 @@ new GLTFLoader().load(
           const headTexture = textureLoader.load(headAssets[index]);
           headTexture.colorSpace = THREE.SRGBColorSpace;
           const headVolume = new THREE.Mesh(
-            new THREE.SphereGeometry(0.28, 32, 20),
+            new THREE.SphereGeometry(0.22, 32, 20),
             new THREE.MeshStandardMaterial({
               map: headTexture,
               transparent: true,
@@ -211,8 +211,9 @@ new GLTFLoader().load(
               side: THREE.DoubleSide,
             }),
           );
-          headVolume.scale.set(0.84, 1.08, 0.74);
-          headVolume.position.set(0, 0.11, 0.04);
+          headVolume.scale.set(0.78, 0.98, 0.68);
+          headVolume.rotation.y = Math.PI;
+          headVolume.position.set(0, 0.09, 0.02);
           headBone.add(headVolume);
         }
         figure.traverse((object) => {
