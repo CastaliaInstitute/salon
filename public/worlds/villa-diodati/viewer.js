@@ -12,7 +12,9 @@ const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
-const figureOnlyMode = (new URLSearchParams(window.location.search).get("qa") || "").startsWith("figure-only");
+const qaMode = new URLSearchParams(window.location.search).get("qa") || "";
+const figureOnlyMode = qaMode.startsWith("figure-only");
+const figureRoomMode = qaMode === "figure-room";
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
@@ -471,6 +473,11 @@ new GLTFLoader().load(
       controls.target.set(0, 1.05, 0);
       controls.update();
     }
+    if (figureRoomMode) {
+      camera.position.set(0, 1.65, 5.8);
+      controls.target.set(0, 1.15, 0);
+      controls.update();
+    }
     mannequinLoader.load("./mannequiny.glb", (mannequin) => {
       const placements = [
         [-4.00, 0.34, 0.24, Math.PI / 2],
@@ -479,10 +486,10 @@ new GLTFLoader().load(
         [2.43, 0.34, -0.52, -Math.PI / 2],
         [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
-      const visiblePlacements = figureOnlyMode ? [[0, 0.34, 0, 0]] : placements;
+      const visiblePlacements = figureOnlyMode || figureRoomMode ? [[0, 0.34, -0.75, 0]] : placements;
       for (const [x, y, z, yaw] of visiblePlacements) {
         const figure = mannequin.scene.clone(true);
-        figure.scale.setScalar(2.45);
+        figure.scale.setScalar(figureRoomMode ? 2.75 : 2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         figure.traverse((object) => {
@@ -499,7 +506,7 @@ new GLTFLoader().load(
       status.textContent = "Room loaded; mannequin asset unavailable.";
     });
     furnitureLoader.load("./furniture/wood-furniture-kit.glb", (kit) => {
-      if (figureOnlyMode) return;
+      if (figureOnlyMode || figureRoomMode) return;
       const placements = {
         Furns_Shelf_Book_1: [4.42, 0, -3.62, 0],
       };
@@ -516,7 +523,7 @@ new GLTFLoader().load(
       console.error("Could not load the wood furniture kit", error);
     });
     furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
-      if (figureOnlyMode) return;
+      if (figureOnlyMode || figureRoomMode) return;
       const placements = [
         [-1.55, 0, 0.18, Math.PI * 0.08, 0x8b2635],
         [1.55, 0, 0.18, -Math.PI * 0.08, 0x314b35],
@@ -537,7 +544,7 @@ new GLTFLoader().load(
       console.error("Could not load the Victorian armchair", error);
     });
     furnitureLoader.load("./furniture/sofa-03/sofa_03.gltf", (sofa) => {
-      if (figureOnlyMode) return;
+      if (figureOnlyMode || figureRoomMode) return;
       const replacement = sofa.scene.clone(true);
       replacement.scale.setScalar(0.9);
       replacement.position.set(0, 0, -1.28);
