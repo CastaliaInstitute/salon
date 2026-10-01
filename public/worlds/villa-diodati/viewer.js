@@ -111,8 +111,59 @@ function keepFeetAboveFloor(figure) {
   if (bounds.min.y < 0.03) figure.position.y += 0.03 - bounds.min.y;
 }
 
+// The articulated preview mannequin is deliberately neutral. Add a small,
+// readable 1816 wardrobe on top of it so the browser view and the ThirdRoom
+// scene share the same character language without baking clothes into the
+// licensed rig asset.
+function dressFigure(figure, index) {
+  const wardrobes = [
+    { coat: 0x263b2b, accent: 0xa37b3d, kind: "dress" }, // Mary: sage muslin
+    { coat: 0x641f2d, accent: 0x9e4e50, kind: "dress" }, // Claire: wine dress
+    { coat: 0x2e321f, accent: 0xd2c4a4, kind: "coat" }, // Percy: olive coat
+    { coat: 0x33424c, accent: 0xe1d8c2, kind: "waistcoat" }, // Polidori
+    { coat: 0x4e1c31, accent: 0x5e4250, kind: "coat" }, // Byron: plum coat
+  ];
+  const wardrobe = wardrobes[index];
+  const fabric = (color) => new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.88,
+    metalness: 0,
+  });
+  const add = (geometry, material, name, position, rotation = [0, 0, 0]) => {
+    const garment = new THREE.Mesh(geometry, material);
+    garment.name = name;
+    garment.position.set(...position);
+    garment.rotation.set(...rotation);
+    garment.castShadow = true;
+    figure.add(garment);
+  };
+
+  if (wardrobe.kind === "dress") {
+    add(new THREE.ConeGeometry(0.48, 0.98, 20, 1, false), fabric(wardrobe.coat), "period dress skirt", [0, 0.78, 0.03]);
+    add(new THREE.BoxGeometry(0.32, 0.16, 0.05), fabric(wardrobe.accent), "dress sash", [0, 1.25, 0.25]);
+  } else {
+    add(new THREE.BoxGeometry(0.68, 0.72, 0.44), fabric(wardrobe.coat), "period coat torso", [0, 1.34, 0]);
+    add(new THREE.BoxGeometry(0.34, 0.38, 0.06), fabric(wardrobe.accent), "linen waistcoat", [0, 1.49, 0.235]);
+    add(new THREE.BoxGeometry(0.14, 0.24, 0.05), fabric(wardrobe.accent), "high collar", [0, 1.77, 0.18]);
+  }
+
+  // Small cuffs keep the posed forearms from reading as bare wooden sticks.
+  for (const side of [-1, 1]) {
+    add(new THREE.CylinderGeometry(0.085, 0.085, 0.22, 12), fabric(wardrobe.coat), "period sleeve", [side * 0.31, 1.20, 0.27], [0, 0, side * 0.28]);
+  }
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
+
+const lakeBackdropTexture = textureLoader.load("./furniture/lake-geneva-dusk.png");
+lakeBackdropTexture.colorSpace = THREE.SRGBColorSpace;
+const lakeBackdrop = new THREE.Mesh(
+  new THREE.PlaneGeometry(15.8, 7.9),
+  new THREE.MeshBasicMaterial({ map: lakeBackdropTexture, toneMapped: false }),
+);
+lakeBackdrop.position.set(0, 2.65, -4.32);
+scene.add(lakeBackdrop);
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.06, 100);
 camera.position.set(0, 2.85, 5.15);
@@ -250,6 +301,7 @@ new GLTFLoader().load(
           object.material.roughness = 0.52;
           object.material.metalness = 0;
         });
+        dressFigure(figure, index);
         // The source rig keeps a tall standing silhouette even when its leg
         // bones are posed. Lower the figures only slightly into the chair
         // line, with a hard floor-safe limit so no feet can pass below the
