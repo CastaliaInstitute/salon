@@ -141,6 +141,9 @@ new GLTFLoader().load(
       if (/(table|chair|desk|bench|seat)/i.test(object.name)) {
         object.visible = false;
       }
+      if (/^carved settee/.test(object.name)) {
+        object.visible = false;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
@@ -237,6 +240,15 @@ new GLTFLoader().load(
       }
     }, undefined, (error) => {
       console.error("Could not load the Victorian armchair", error);
+    });
+    furnitureLoader.load("./furniture/sofa-03/sofa_03.gltf", (sofa) => {
+      const replacement = sofa.scene.clone(true);
+      replacement.scale.setScalar(1.08);
+      replacement.position.set(0, 0, -0.82);
+      replacement.rotation.y = 0;
+      scene.add(replacement);
+    }, undefined, (error) => {
+      console.error("Could not load the Victorian sofa", error);
     });
     status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
