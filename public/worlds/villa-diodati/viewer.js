@@ -7,6 +7,13 @@ const status = document.querySelector("#status");
 const chatPanel = document.querySelector("#chat-panel");
 const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
+const textureLoader = new THREE.TextureLoader();
+const facultyBusts = {
+  "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
+  "Claire Clairmont": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png",
+  "Percy Bysshe Shelley": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png",
+  "John Polidori": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png",
+};
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
@@ -54,8 +61,18 @@ new GLTFLoader().load(
         object.name === "ceiling" ||
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
-      if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron)/.test(object.name)) {
-        object.visible = false;
+      if (object.isMesh && object.name.endsWith("white bust face")) {
+        const faculty = Object.keys(facultyBusts).find((name) => object.name.startsWith(name));
+        const url = faculty && facultyBusts[faculty];
+        if (url) {
+          const material = object.material.clone();
+          textureLoader.load(url, (texture) => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            material.map = texture;
+            material.needsUpdate = true;
+          });
+          object.material = material;
+        }
       }
     });
     scene.add(gltf.scene);
