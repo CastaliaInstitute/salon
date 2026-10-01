@@ -511,6 +511,9 @@ new GLTFLoader().load(
             material.color.set(0x8b542c);
             material.roughness = 0.52;
             material.metalness = 0;
+            material.transparent = false;
+            material.opacity = 1;
+            material.depthWrite = true;
             return material;
           });
         });
