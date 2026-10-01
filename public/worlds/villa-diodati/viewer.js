@@ -101,7 +101,7 @@ function poseMannequin(figure, pose = "seated") {
   }
 }
 
-function poseSeatedLowerBody(figure) {
+function poseSeatedLowerBody(figure, index = 0) {
   const bones = new Map();
   figure.traverse((object) => {
     if (object.isBone) bones.set(object.name, object);
@@ -110,19 +110,25 @@ function poseSeatedLowerBody(figure) {
     const bone = bones.get(name);
     if (bone) bone.rotation.set(x, y, z);
   };
-  rotate("thigh.l", -1.62, 0.12, -0.10);
-  rotate("thigh.r", -1.62, -0.12, 0.10);
-  rotate("calf.l", 2.18, 0, 0);
-  rotate("calf.r", 2.18, 0, 0);
-  rotate("foot.l", -0.62, 0, 0);
-  rotate("foot.r", -0.62, 0, 0);
+  const lowerBody = [
+    [-1.48, -1.66, 2.04, 2.18, -0.52, -0.62],
+    [-1.60, -1.52, 2.16, 2.04, -0.60, -0.54],
+    [-1.70, -1.58, 2.26, 2.10, -0.68, -0.58],
+    [-1.54, -1.72, 2.10, 2.24, -0.56, -0.66],
+  ][index % 4];
+  rotate("thigh.l", lowerBody[0], 0.12, -0.10);
+  rotate("thigh.r", lowerBody[1], -0.12, 0.10);
+  rotate("calf.l", lowerBody[2], 0, 0);
+  rotate("calf.r", lowerBody[3], 0, 0);
+  rotate("foot.l", lowerBody[4], 0, 0);
+  rotate("foot.r", lowerBody[5], 0, 0);
 }
 
 function poseSeatedFigure(figure, index = 0) {
   // Re-apply the authored seated pose after the idle mixer advances. This
   // keeps the animation flow intact while preventing it from reopening the
   // knees or lifting the conversational arms into a T-pose.
-  poseSeatedLowerBody(figure);
+  poseSeatedLowerBody(figure, index);
   const bones = new Map();
   figure.traverse((object) => {
     if (object.isBone) bones.set(object.name, object);
