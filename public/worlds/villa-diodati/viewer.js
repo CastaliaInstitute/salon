@@ -498,7 +498,9 @@ new GLTFLoader().load(
         // line, with a hard floor-safe limit so no feet can pass below the
         // saloon floor plane.
         figure.position.set(x, x === 0.54 ? y : y + 0.14, z);
-        createRagdoll(figure);
+        // Keep the authored seated/conversational garment pose stable in the
+        // browser preview. The optional ragdoll pass starts from the rig's
+        // T-pose and would overwrite the period pose on every frame.
         figure.rotation.y = yaw;
         if (x !== 0.54) {
           seatedFigures.push({ figure, index });
@@ -620,9 +622,8 @@ renderer.setAnimationLoop(() => {
     keepFeetAboveFloor(seated.figure);
   }
   for (const figure of standingFigures) poseStandingFigure(figure);
-  // Authored poses establish the initial posture; Rapier must write the final
-  // bone transforms afterward or the pose pass would erase the simulation.
-  stepPhysics(delta);
+  // The preview is intentionally pose-led; physics remains available for
+  // future interaction but does not overwrite the authored clothing pose.
   controls.update();
   renderer.render(scene, camera);
 });
