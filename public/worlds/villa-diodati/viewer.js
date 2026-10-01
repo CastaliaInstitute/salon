@@ -434,7 +434,6 @@ resize();
 new GLTFLoader().load(
   "./saloon.glb?v=68a0298",
   async (gltf) => {
-    await physicsInit;
     // A cutaway roof and lake facade keep the statues visible in the browser overview.
     // The downloadable GLB remains complete for ThirdRoom.
     gltf.scene.traverse((object) => {
