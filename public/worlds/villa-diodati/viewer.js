@@ -51,21 +51,27 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.06, 100);
-camera.position.set(0, 3.4, 6.2);
+camera.position.set(0, 2.85, 5.15);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = 0.96;
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-scene.add(new THREE.HemisphereLight(0xc8d4df, 0x4a2a17, 1.65));
-const fill = new THREE.DirectionalLight(0xd2d9e1, 0.95);
-fill.position.set(-3, 7, 6);
+scene.add(new THREE.HemisphereLight(0xb98f72, 0x24130f, 0.78));
+const fill = new THREE.DirectionalLight(0xffd1a3, 0.52);
+fill.position.set(-3, 6, 4);
 scene.add(fill);
+const firelight = new THREE.PointLight(0xff8a42, 2.6, 8, 2);
+firelight.position.set(-4.15, 1.65, -2.45);
+scene.add(firelight);
+const tablelight = new THREE.PointLight(0xffbf72, 1.5, 5, 2);
+tablelight.position.set(0, 2.15, 0.05);
+scene.add(tablelight);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 1.2, -0.15);
+controls.target.set(0, 1.28, -0.25);
 controls.enableDamping = true;
 controls.dampingFactor = 0.07;
 controls.minDistance = 2.4;
