@@ -378,7 +378,7 @@ const lakeBackdrop = new THREE.Mesh(
   new THREE.MeshBasicMaterial({ map: lakeBackdropTexture, toneMapped: false, side: THREE.BackSide }),
 );
 lakeBackdrop.position.set(0, 4.0, 0);
-scene.add(lakeBackdrop);
+if (!dressingRoomMode) scene.add(lakeBackdrop);
 
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(22, 22),
@@ -386,7 +386,7 @@ const floor = new THREE.Mesh(
 );
 floor.rotation.x = -Math.PI / 2;
 floor.position.y = -0.22;
-scene.add(floor);
+if (!dressingRoomMode) scene.add(floor);
 
 const ceiling = new THREE.Mesh(
   new THREE.PlaneGeometry(22, 22),
@@ -394,7 +394,7 @@ const ceiling = new THREE.Mesh(
 );
 ceiling.rotation.x = Math.PI / 2;
 ceiling.position.y = 4.55;
-scene.add(ceiling);
+if (!dressingRoomMode) scene.add(ceiling);
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.06, 100);
 camera.position.set(0, 2.85, 5.15);
