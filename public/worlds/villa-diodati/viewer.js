@@ -508,7 +508,7 @@ new GLTFLoader().load(
           ? [[1.45, 0.34, 0.14, 0]]
           : placements;
       for (const [x, y, z, yaw] of visiblePlacements) {
-        const figure = mannequin.scene.clone(true);
+        const figure = dressingRoomMode ? SkeletonUtils.clone(mannequin.scene) : mannequin.scene.clone(true);
         figure.scale.setScalar(figureRoomMode || dressingRoomMode ? 2.75 : 2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
