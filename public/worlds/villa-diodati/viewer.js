@@ -27,6 +27,13 @@ const headAssets = [
   "./furniture/heads/polidori-head.png",
   "./furniture/heads/byron-head.png",
 ];
+const wardrobes = [
+  [0x651f2b, 0x241c20, 0xf0dfc2], // Byron: wine coat, black trousers, ivory shirt
+  [0x304936, 0x1f2822, 0xe8d7bd], // Claire: deep green dress, dark underskirt, blouse
+  [0x56633b, 0x2b302b, 0xf1e2c9], // Percy: olive coat, charcoal trousers, shirt
+  [0x263c58, 0x252a31, 0xe5d8c5], // Polidori: navy coat, dark trousers, shirt
+  [0x6b2635, 0x34202a, 0xead9c0], // Mary/alternate: wine dress, dark skirt, blouse
+];
 
 function poseMannequin(figure, pose = "seated") {
   const bones = new Map();
@@ -289,6 +296,7 @@ new GLTFLoader().load(
               side: THREE.DoubleSide,
             }),
           );
+          headVolume.userData.isFacultyHead = true;
           headVolume.scale.set(0.78, 0.98, 0.68);
           headVolume.rotation.y = Math.PI;
           headVolume.position.set(0, 0.09, 0.02);
@@ -296,10 +304,16 @@ new GLTFLoader().load(
         }
         figure.traverse((object) => {
           if (!object.isMesh) return;
-          object.material = object.material.clone();
-          object.material.color.set(0x8b542c);
-          object.material.roughness = 0.52;
-          object.material.metalness = 0;
+          if (object.userData.isFacultyHead) return;
+          const palette = wardrobes[index];
+          const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
+          object.material = sourceMaterials.map((source, materialIndex) => {
+            const material = source.clone();
+            material.color.set(palette[materialIndex] || palette[0]);
+            material.roughness = 0.68;
+            material.metalness = 0;
+            return material;
+          });
         });
         dressFigure(figure, index);
         // The source rig keeps a tall standing silhouette even when its leg
