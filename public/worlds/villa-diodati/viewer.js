@@ -194,19 +194,9 @@ function stepPhysics(delta) {
   physicsWorld.step();
   for (const ragdoll of ragdolls) {
     for (const part of ragdoll.parts) {
-      const t = part.body.translation();
-      const r = part.body.rotation();
-      const worldPosition = new THREE.Vector3(t.x, t.y, t.z);
-      const worldQuaternion = new THREE.Quaternion(r.x, r.y, r.z, r.w);
-      const parent = part.bone.parent;
-      if (parent) {
-        parent.updateMatrixWorld(true);
-        parent.worldToLocal(worldPosition);
-        const parentQuaternion = new THREE.Quaternion();
-        parent.getWorldQuaternion(parentQuaternion);
-        part.bone.quaternion.copy(parentQuaternion.invert().multiply(worldQuaternion));
-      }
-      part.bone.position.copy(worldPosition);
+      // Keep the authored bone rotations visible. The rigid bodies provide
+      // collision/contact state; copying unconstrained ball rotations here
+      // would erase the seated pose and collapse the figures into a T-pose.
     }
   }
 }
