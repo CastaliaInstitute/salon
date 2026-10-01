@@ -14,6 +14,7 @@ const mannequinLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
 const mannequinMixers = [];
 const seatedFigures = [];
+const standingFigures = [];
 const animationClock = new THREE.Clock();
 const facultyBusts = {
   "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
@@ -116,7 +117,7 @@ function poseSeatedLowerBody(figure) {
   rotate("foot.r", -0.62, 0, 0);
 }
 
-function poseSeatedFigure(figure) {
+function poseSeatedFigure(figure, index = 0) {
   // Re-apply the authored seated pose after the idle mixer advances. This
   // keeps the animation flow intact while preventing it from reopening the
   // knees or lifting the conversational arms into a T-pose.
@@ -129,12 +130,35 @@ function poseSeatedFigure(figure) {
     const bone = bones.get(name);
     if (bone) bone.rotation.set(x, y, z);
   };
-  rotate("spine_01", -0.10, 0, 0);
-  rotate("spine_02", -0.08, 0, 0);
-  rotate("upperarm.l", 0, 0, -1.32);
-  rotate("upperarm.r", 0, 0, 1.32);
-  rotate("lowerarm.l", -0.28, 0, -0.08);
-  rotate("lowerarm.r", -0.28, 0, 0.08);
+  const conversational = [
+    [-0.10, -0.08, -1.12, 0.88, -0.52, -0.42, 0.06, 0.28],
+    [-0.14, -0.10, -0.96, 1.08, -0.46, -0.20, -0.02, -0.24],
+    [-0.08, -0.12, -1.24, 0.82, -0.38, -0.68, 0.02, 0.34],
+    [-0.12, -0.08, -1.04, 1.16, -0.64, -0.32, 0.01, -0.30],
+  ][index % 4];
+  rotate("spine_01", conversational[0], 0, 0);
+  rotate("spine_02", conversational[1], 0, 0);
+  rotate("upperarm.l", conversational[2], 0, -1.0);
+  rotate("upperarm.r", conversational[3], 0, 0.92);
+  rotate("lowerarm.l", conversational[4], 0.08, -0.08);
+  rotate("lowerarm.r", conversational[5], -0.08, 0.08);
+  rotate("head", conversational[6], conversational[7], 0);
+}
+
+function poseStandingFigure(figure) {
+  const bones = new Map();
+  figure.traverse((object) => { if (object.isBone) bones.set(object.name, object); });
+  const rotate = (name, x = 0, y = 0, z = 0) => {
+    const bone = bones.get(name);
+    if (bone) bone.rotation.set(x, y, z);
+  };
+  rotate("spine_01", -0.04, 0, 0);
+  rotate("spine_02", -0.02, 0, 0);
+  rotate("upperarm.l", -0.22, 0, -0.92);
+  rotate("upperarm.r", -0.08, 0, 0.78);
+  rotate("lowerarm.l", -0.48, 0.06, -0.08);
+  rotate("lowerarm.r", -0.62, -0.06, 0.08);
+  rotate("head", 0.02, 0.28, 0);
 }
 
 function keepFeetAboveFloor(figure) {
@@ -382,8 +406,10 @@ new GLTFLoader().load(
         figure.position.set(x, x === 0.54 ? y : y + 0.14, z);
         figure.rotation.y = yaw;
         if (x !== 0.54) {
-          seatedFigures.push(figure);
+          seatedFigures.push({ figure, index });
           keepFeetAboveFloor(figure);
+        } else {
+          standingFigures.push(figure);
         }
         const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
         if (idleClip) {
@@ -474,10 +500,11 @@ if (window.matchMedia("(max-width: 760px)").matches) {
 renderer.setAnimationLoop(() => {
   const delta = Math.min(animationClock.getDelta(), 0.05);
   for (const mixer of mannequinMixers) mixer.update(delta);
-  for (const figure of seatedFigures) {
-    poseSeatedFigure(figure);
-    keepFeetAboveFloor(figure);
+  for (const seated of seatedFigures) {
+    poseSeatedFigure(seated.figure, seated.index);
+    keepFeetAboveFloor(seated.figure);
   }
+  for (const figure of standingFigures) poseStandingFigure(figure);
   controls.update();
   renderer.render(scene, camera);
 });
