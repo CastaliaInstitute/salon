@@ -143,10 +143,10 @@ function poseSeatedLowerBody(figure, index = 0) {
     [-1.70, -1.58, 2.26, 2.10, -0.68, -0.58],
     [-1.54, -1.72, 2.10, 2.24, -0.56, -0.66],
   ][index % 4];
-  rotate("thigh.l", lowerBody[0] - 0.55, 0.12, -0.10);
-  rotate("thigh.r", lowerBody[1] - 0.55, -0.12, 0.10);
-  rotate("calf.l", lowerBody[2] + 0.55, 0, 0);
-  rotate("calf.r", lowerBody[3] + 0.55, 0, 0);
+  rotate("thigh.l", 1.35, 0.12, -0.10);
+  rotate("thigh.r", 1.35, -0.12, 0.10);
+  rotate("calf.l", -1.85, 0, 0);
+  rotate("calf.r", -1.85, 0, 0);
   rotate("foot.l", lowerBody[4], 0, 0);
   rotate("foot.r", lowerBody[5], 0, 0);
   refreshSkinnedPose(figure);
