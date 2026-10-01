@@ -600,7 +600,7 @@ new GLTFLoader().load(
     }, undefined, (error) => {
       console.error("Could not load the Victorian sofa", error);
     });
-    status.textContent = dressingRoomMode ? "Dressing room loaded. Drag to look around." : "White bust mannequin circle loaded. Drag to look around.";
+    if (!dressingRoomMode) status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
   (event) => {
     if (event.total) status.textContent = `Loading the room… ${Math.round((event.loaded / event.total) * 100)}%`;
