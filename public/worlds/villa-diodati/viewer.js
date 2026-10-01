@@ -507,14 +507,15 @@ new GLTFLoader().load(
           if (!object.isMesh) return;
           const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
           object.material = sourceMaterials.map((source, materialIndex) => {
-            const material = source.clone();
-            material.color.set(0x8b542c);
-            material.roughness = 0.52;
-            material.metalness = 0;
-            material.transparent = false;
-            material.opacity = 1;
-            material.depthWrite = true;
-            return material;
+            // Use an unlit wood material for the base rig. This guarantees the
+            // mannequin remains visible even if the imported GLB materials or
+            // room lighting are malformed.
+            return new THREE.MeshBasicMaterial({
+              color: materialIndex === 2 ? 0xb98d62 : 0x8b542c,
+              transparent: false,
+              opacity: 1,
+              depthWrite: true,
+            });
           });
         });
         // The source rig keeps a tall standing silhouette even when its leg
