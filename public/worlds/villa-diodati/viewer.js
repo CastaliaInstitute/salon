@@ -117,30 +117,12 @@ new GLTFLoader().load(
         const url = faculty && facultyBusts[faculty];
         if (url) {
           const material = object.material.clone();
-          textureLoader.load(url, (texture) => {
-            texture.colorSpace = THREE.SRGBColorSpace;
-            // The stored source is a full bust; show only the head and hair so
-            // it remains a head replacement on the wooden mannequin body.
-            texture.repeat.set(0.56, 0.50);
-            texture.offset.set(0.22, 0.50);
-            texture.wrapS = THREE.ClampToEdgeWrapping;
-            texture.wrapT = THREE.ClampToEdgeWrapping;
-            const headCard = new THREE.Mesh(
-              // A shallow rounded form keeps the isolated Supabase portrait
-              // from reading as a billboard while preserving the head-only
-              // replacement on the rigged wooden body.
-              new THREE.SphereGeometry(0.36, 24, 16),
-              new THREE.MeshBasicMaterial({
-                map: texture,
-                transparent: true,
-                depthWrite: false,
-                side: THREE.DoubleSide,
-              }),
-            );
-            headCard.scale.set(0.78, 1.0, 0.62);
-            headCard.position.set(object.position.x, object.position.y + 0.02, object.position.z + 0.28);
-            object.parent?.add(headCard);
-            object.visible = false;
+          // Keep the authored white marble head geometry visible. The
+          // Supabase portrait remains the faculty source of record, but
+          // projecting its full-bust PNG onto a primitive creates obvious
+          // billboard/mushroom artifacts at this camera distance.
+          textureLoader.load(url, () => {
+            object.visible = true;
           });
           object.material = material;
         }
