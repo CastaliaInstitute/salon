@@ -577,6 +577,27 @@ function standingByron() {
 
 // Historical figures are intentionally omitted from the authored GLB. The room
 // is staged for the replacement wooden mannequin + Supabase bust system.
+function whiteBust({ name, facultyId, position, yaw = 0 }) {
+  const g = group(name, position, yaw, {
+    role: "white_bust_head",
+    bustSource: "supabase.faculty",
+    facultyId,
+    bustAttachment: "head_mount",
+  }, [0.92, 0.70, 0.92]);
+  cyl(`${name} neck`, M.marble, [0, 1.76, 0], [0.20, 0.24, 0.20], g);
+  ball(`${name} bust shoulders`, M.marble, [0, 1.58, -0.02], [0.72, 0.42, 0.42], g);
+  ball(`${name} white bust face`, M.marble, [0, 2.02, 0.02], [0.40, 0.48, 0.38], g);
+  ball(`${name} carved hair`, M.marbleShadow, [0, 2.22, -0.01], [0.43, 0.25, 0.42], g);
+  ball(`${name} nose`, M.marble, [0, 2.01, 0.22], [0.08, 0.10, 0.12], g);
+  ball(`${name} left eye`, M.marbleShadow, [-0.095, 2.08, 0.185], [0.035, 0.035, 0.026], g);
+  ball(`${name} right eye`, M.marbleShadow, [0.095, 2.08, 0.185], [0.035, 0.035, 0.026], g);
+}
+
+whiteBust({ name: "Mary Shelley white bust", facultyId: "mary-shelley", position: [-4.00, 0.16, 0.24], yaw: Math.PI / 2 });
+whiteBust({ name: "Claire Clairmont white bust", facultyId: "claire-clairmont", position: [-2.80, 0.16, 0.32], yaw: Math.PI / 2 });
+whiteBust({ name: "Lord Byron white bust", facultyId: "lord-byron", position: [0.54, 0.16, -0.15], yaw: Math.PI });
+whiteBust({ name: "Percy Bysshe Shelley white bust", facultyId: "percy-bysshe-shelley", position: [2.43, 0.16, -0.52], yaw: -Math.PI / 2 });
+whiteBust({ name: "John Polidori white bust", facultyId: "john-polidori", position: [4.05, 0.16, 1.05], yaw: -Math.PI / 2 });
 
 // Writing desk by the side window, folios and inkwell.
 cube("writing desk top", M.woodLight, [-4.63, 0.95, -1.90], [1.50, 0.14, 0.84]);
