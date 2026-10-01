@@ -10,6 +10,7 @@ const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
+const furnitureLoader = new GLTFLoader();
 const facultyBusts = {
   "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
   "Claire Clairmont": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png",
@@ -153,6 +154,27 @@ new GLTFLoader().load(
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
+    });
+    furnitureLoader.load("./furniture/wood-furniture-kit.glb", (kit) => {
+      const placements = {
+        Furns_Table_Round_2: [0, 0.02, 0.22, 0],
+        Furns_Chair_1: [-1.28, 0, 0.38, Math.PI / 2],
+        Furns_Chair_2: [1.28, 0, 0.38, -Math.PI / 2],
+        Furns_Chair_3: [-1.18, 0, -0.82, Math.PI * 0.72],
+        Furns_Chair_4: [1.18, 0, -0.82, -Math.PI * 0.72],
+        Furns_Shelf_Book_1: [4.42, 0, -3.62, 0],
+      };
+      kit.scene.traverse((object) => {
+        const placement = placements[object.name];
+        object.visible = Boolean(placement);
+        if (!placement) return;
+        object.position.set(placement[0], placement[1], placement[2]);
+        object.rotation.y = placement[3];
+        object.scale.multiplyScalar(0.82);
+      });
+      scene.add(kit.scene);
+    }, undefined, (error) => {
+      console.error("Could not load the wood furniture kit", error);
     });
     status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
