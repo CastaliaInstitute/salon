@@ -490,8 +490,8 @@ new GLTFLoader().load(
     if (figureRoomMode || dressingRoomMode) {
       scene.background = new THREE.Color(0x202020);
       scene.fog = null;
-      camera.position.set(0, 1.65, 5.8);
-      controls.target.set(0, 1.15, 0);
+      camera.position.set(dressingRoomMode ? 2.8 : 0, 1.65, 5.8);
+      controls.target.set(dressingRoomMode ? 1.15 : 0, 1.15, 0);
       controls.update();
     }
     mannequinLoader.load("./mannequiny.glb", (mannequin) => {
@@ -502,7 +502,11 @@ new GLTFLoader().load(
         [2.43, 0.34, -0.52, -Math.PI / 2],
         [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
-      const visiblePlacements = figureOnlyMode || figureRoomMode || dressingRoomMode ? [[0, 0.34, -0.75, 0]] : placements;
+      const visiblePlacements = figureOnlyMode || figureRoomMode
+        ? [[0, 0.34, -0.75, 0]]
+        : dressingRoomMode
+          ? [[1.45, 0.34, 0.14, 0]]
+          : placements;
       for (const [x, y, z, yaw] of visiblePlacements) {
         const figure = mannequin.scene.clone(true);
         figure.scale.setScalar(figureRoomMode || dressingRoomMode ? 2.75 : 2.45);
@@ -524,6 +528,10 @@ new GLTFLoader().load(
             }
           }
         });
+        if (dressingRoomMode) {
+          poseSeatedFigure(figure, 0);
+          seatedFigures.push({ figure, index: 0 });
+        }
         scene.add(figure);
       }
       status.textContent = dressingRoomMode ? "Dressing room loaded: one wooden mannequin and one chair." : `Wooden mannequin circle loaded: ${placements.length} figures.`;
