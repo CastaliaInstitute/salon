@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import RAPIER from "rapier3d-compat";
+let RAPIER = null;
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
@@ -266,11 +266,15 @@ function createRagdoll(figure) {
   ragdolls.push({ figure, parts });
 }
 
-const physicsInit = RAPIER.init().then(() => {
-  physicsWorld = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-  createChairColliders();
-  physicsReady = true;
-});
+const physicsInit = import("rapier3d-compat")
+  .then(async (module) => {
+    RAPIER = module.default ?? module;
+    await RAPIER.init();
+    physicsWorld = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+    createChairColliders();
+    physicsReady = true;
+  })
+  .catch((error) => console.warn("Physics unavailable; keeping authored mannequin poses", error));
 
 function keepFeetAboveFloor(figure) {
   figure.updateMatrixWorld(true);
