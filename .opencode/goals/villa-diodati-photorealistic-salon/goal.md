@@ -27,3 +27,12 @@ Build a photorealistic Villa Diodati world in ThirdRoom: model the house and sal
      - <feature> (depends: a, b)     starts only when a and b are complete
      Specs themselves live in .opencode/specs/<feature>/ and each goes through the
      three-gate workflow (requirements -> design -> tasks -> implement). -->
+
+- thirdroom-capability-spike
+- villa-diodati-house-and-saloon (depends: thirdroom-capability-spike)
+- diodati-grounds-and-weather (depends: villa-diodati-house-and-saloon)
+- articulated-marble-avatars (depends: thirdroom-capability-spike)
+- multi-speaker-salon-dialogue (depends: thirdroom-capability-spike)
+- speaker-gaze-gesture-performance (depends: articulated-marble-avatars, multi-speaker-salon-dialogue)
+- world-assembly-verification (depends: villa-diodati-house-and-saloon, diodati-grounds-and-weather, articulated-marble-avatars, multi-speaker-salon-dialogue, speaker-gaze-gesture-performance)
+- thirdroom-world-publish (depends: world-assembly-verification)
