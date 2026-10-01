@@ -220,14 +220,19 @@ new GLTFLoader().load(
     });
     furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
       const placements = [
-        [-1.55, 0, 0.18, Math.PI * 0.08],
-        [1.55, 0, 0.18, -Math.PI * 0.08],
+        [-1.55, 0, 0.18, Math.PI * 0.08, 0x8b2635],
+        [1.55, 0, 0.18, -Math.PI * 0.08, 0x314b35],
       ];
-      for (const [x, y, z, yaw] of placements) {
+      for (const [x, y, z, yaw, tint] of placements) {
         const chair = armchair.scene.clone(true);
         chair.scale.setScalar(0.94);
         chair.position.set(x, y, z);
         chair.rotation.y = yaw;
+        chair.traverse((object) => {
+          if (!object.isMesh) return;
+          object.material = object.material.clone();
+          object.material.color.multiply(new THREE.Color(tint));
+        });
         scene.add(chair);
       }
     }, undefined, (error) => {
