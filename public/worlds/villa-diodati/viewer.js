@@ -17,6 +17,35 @@ const facultyBusts = {
   "John Polidori": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png",
 };
 
+function poseMannequin(figure, pose = "seated") {
+  const bones = new Map();
+  figure.traverse((object) => {
+    if (object.isBone) bones.set(object.name, object);
+  });
+  const rotate = (name, x = 0, y = 0, z = 0) => {
+    const bone = bones.get(name);
+    if (bone) bone.rotation.set(x, y, z);
+  };
+  if (pose === "seated") {
+    rotate("thigh.l", -1.10, 0.04, -0.08);
+    rotate("thigh.r", -1.10, -0.04, 0.08);
+    rotate("calf.l", 1.42, 0, 0);
+    rotate("calf.r", 1.42, 0, 0);
+    rotate("foot.l", -0.32, 0, 0);
+    rotate("foot.r", -0.32, 0, 0);
+    rotate("upperarm.l", 0.10, 0, -0.38);
+    rotate("upperarm.r", 0.10, 0, 0.38);
+    rotate("lowerarm.l", -0.55, 0.08, -0.20);
+    rotate("lowerarm.r", -0.55, -0.08, 0.20);
+  } else if (pose === "conversational") {
+    rotate("upperarm.l", -0.35, 0, -0.72);
+    rotate("upperarm.r", -0.20, 0, 0.62);
+    rotate("lowerarm.l", -0.55, 0.1, -0.15);
+    rotate("lowerarm.r", -0.72, -0.1, 0.18);
+    rotate("head", 0.02, 0.18, 0);
+  }
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
 
@@ -108,6 +137,7 @@ new GLTFLoader().load(
       for (const [x, y, z, yaw] of placements) {
         const figure = SkeletonUtils.clone(mannequin.scene);
         figure.scale.setScalar(0.72);
+        poseMannequin(figure, x === 0.54 ? "conversational" : "seated");
         figure.traverse((object) => {
           if (!object.isMesh) return;
           object.material = object.material.clone();
