@@ -468,94 +468,19 @@ new GLTFLoader().load(
     scene.add(gltf.scene);
     mannequinLoader.load("./mannequiny.glb", (mannequin) => {
       const placements = [
-        [-4.00, 0.02, 0.24, Math.PI / 2],
-        [-2.80, 0.02, 0.32, Math.PI / 2],
-        [0.54, 0.02, -0.15, Math.PI],
-        [2.43, 0.02, -0.52, -Math.PI / 2],
-        [4.05, 0.02, 1.05, -Math.PI / 2],
+        [-4.00, 0.34, 0.24, Math.PI / 2],
+        [-2.80, 0.34, 0.32, Math.PI / 2],
+        [0.54, 0.14, -0.15, Math.PI],
+        [2.43, 0.34, -0.52, -Math.PI / 2],
+        [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
-      const figures = [];
-      for (const [index, [x, y, z, yaw]] of placements.entries()) {
-        const figure = SkeletonUtils.clone(mannequin.scene);
-        // Add the clone before any optional pose/material work so a malformed
-        // pose cannot make the entire mannequin disappear from the scene.
-        figure.visible = true;
-        scene.add(figure);
-        // Match the mannequin to the authored seating and bust mounts. The
-        // source asset is intentionally compact, so 1.08 restores human
-        // scale in this room without changing the furniture layout.
-        figure.scale.setScalar(1.08);
-        poseMannequin(figure, x === 0.54 ? "conversational" : "seated");
-        figure.traverse((object) => {
-          object.visible = true;
-          if (object.isMesh) object.frustumCulled = false;
-          if (!object.isMesh) return;
-          const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
-          object.material = sourceMaterials.map((source, materialIndex) => {
-            // Use an unlit wood material for the base rig. This guarantees the
-            // mannequin remains visible even if the imported GLB materials or
-            // room lighting are malformed.
-            return new THREE.MeshBasicMaterial({
-              color: materialIndex === 2 ? 0xb98d62 : 0x8b542c,
-              transparent: false,
-              opacity: 1,
-              depthWrite: true,
-            });
-          });
-        });
-        // Normalize the imported rig in world space.  The source GLB has a
-        // non-zero bind-pose offset, so placing its root at y=0 can put the
-        // visible mesh below the floor (or outside the camera framing).
-        figure.updateMatrixWorld(true);
-        const importedBounds = new THREE.Box3().setFromObject(figure);
-        const importedHeight = importedBounds.max.y - importedBounds.min.y;
-        if (Number.isFinite(importedHeight) && importedHeight > 0.01) {
-          figure.scale.multiplyScalar(2.15 / importedHeight);
-          figure.updateMatrixWorld(true);
-        }
-        const groundedBounds = new THREE.Box3().setFromObject(figure);
-        const groundedCenter = groundedBounds.getCenter(new THREE.Vector3());
-        const groundedHeight = groundedBounds.max.y - groundedBounds.min.y;
-        figure.position.set(x - groundedCenter.x, (x === 0.54 ? y : y + 0.14) - groundedBounds.min.y, z - groundedCenter.z);
-        figure.updateMatrixWorld(true);
-        // The source rig keeps a tall standing silhouette even when its leg
-        // bones are posed. Lower the figures only slightly into the chair
-        // line, with a hard floor-safe limit so no feet can pass below the
-        // saloon floor plane.
-        // Position was grounded from the imported mesh bounds above.
-        // Keep the authored seated/conversational garment pose stable in the
-        // browser preview. The optional ragdoll pass starts from the rig's
-        // T-pose and would overwrite the period pose on every frame.
+      for (const [x, y, z, yaw] of placements) {
+        const figure = mannequin.scene.clone(true);
+        figure.scale.setScalar(2.45);
+        figure.position.set(x, y, z);
         figure.rotation.y = yaw;
-        figures.push({ figure, index });
-        if (x !== 0.54) {
-          seatedFigures.push({ figure, index });
-          keepFeetAboveFloor(figure);
-        } else {
-          standingFigures.push(figure);
-        }
-        // Keep the authored seated/conversational pose stable. The source
-        // idle clip reopens the arms into its T-pose after garment fitting.
+        scene.add(figure);
       }
-      // The downloaded mannequin GLB contains the rig, but its skinned body
-      // mesh is not visible in the browser renderer. Keep the fitted rig
-      // layer as the visible fallback until the source body is re-exported.
-      clothingLoader.load("./diodati-clothing.glb?v=wood-only-1", (clothingAsset) => {
-        for (const { figure, index } of figures) {
-          const clothing = SkeletonUtils.clone(clothingAsset.scene);
-          clothing.scale.copy(figure.scale);
-          clothing.position.copy(figure.position);
-          clothing.rotation.copy(figure.rotation);
-          poseMannequin(clothing, index === 2 ? "conversational" : "seated");
-          clothing.traverse((object) => {
-            if (object.isMesh) {
-              object.frustumCulled = false;
-              object.material = new THREE.MeshBasicMaterial({ color: 0x8b542c });
-            }
-          });
-          scene.add(clothing);
-        }
-      });
       status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
