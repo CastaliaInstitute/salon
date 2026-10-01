@@ -575,8 +575,15 @@ function standingByron() {
   return g;
 }
 
-// Historical figures are intentionally omitted from the authored GLB. The room
-// is staged for the replacement wooden mannequin + Supabase bust system.
+// The salon figures are articulated wooden mannequins with period garments. Their
+// white bust heads are separate scene nodes so ThirdRoom can later swap the
+// Supabase faculty source without rebuilding the room.
+seatedAvatar({ name: "Mary Shelley mannequin", facultyId: "mary-shelley", position: [-4.00, 0, 0.24], yaw: Math.PI / 2, dress: true, book: true, garment: M.mary });
+seatedAvatar({ name: "Claire Clairmont mannequin", facultyId: "claire-clairmont", position: [-2.80, 0, 0.32], yaw: Math.PI / 2, dress: true, garment: M.claire });
+seatedAvatar({ name: "Lord Byron mannequin", facultyId: "lord-byron", position: [0.54, 0, -0.15], yaw: Math.PI, garment: M.byron });
+seatedAvatar({ name: "Percy Bysshe Shelley mannequin", facultyId: "percy-bysshe-shelley", position: [2.43, 0, -0.52], yaw: -Math.PI / 2, garment: M.percy });
+seatedAvatar({ name: "John Polidori mannequin", facultyId: "john-polidori", position: [4.05, 0, 1.05], yaw: -Math.PI / 2, garment: M.polidori });
+
 function whiteBust({ name, facultyId, position, yaw = 0 }) {
   const g = group(name, position, yaw, {
     role: "white_bust_head",

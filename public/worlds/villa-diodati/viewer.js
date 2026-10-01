@@ -1,14 +1,12 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
 const chatPanel = document.querySelector("#chat-panel");
 const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
-const mannequinLoader = new GLTFLoader();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
@@ -61,34 +59,7 @@ new GLTFLoader().load(
       }
     });
     scene.add(gltf.scene);
-    mannequinLoader.load("./mannequiny.glb", (mannequin) => {
-      const placements = [
-        [-4.00, 0.34, 0.24, Math.PI / 2],
-        [-2.80, 0.34, 0.32, Math.PI / 2],
-        [0.54, 0.14, -0.15, Math.PI],
-        [2.43, 0.34, -0.52, -Math.PI / 2],
-        [4.05, 0.34, 1.05, -Math.PI / 2],
-      ];
-      for (const [x, y, z, yaw] of placements) {
-        const figure = SkeletonUtils.clone(mannequin.scene);
-        figure.scale.setScalar(1.15);
-        figure.traverse((object) => {
-          if (!object.isMesh) return;
-          object.material = object.material.clone();
-          object.material.color.set(0x8a4f25);
-          object.material.roughness = 0.42;
-          object.material.metalness = 0.0;
-        });
-        figure.position.set(x, y, z);
-        figure.rotation.y = yaw;
-        scene.add(figure);
-      }
-      status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
-    }, undefined, (error) => {
-      console.error("Could not load the wooden mannequin asset", error);
-      status.textContent = "Room loaded; mannequin asset unavailable.";
-    });
-    status.textContent = "Drag to look around. The roof is hidden in this overview.";
+    status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
   (event) => {
     if (event.total) status.textContent = `Loading the room… ${Math.round((event.loaded / event.total) * 100)}%`;
