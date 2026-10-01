@@ -23,7 +23,9 @@ const dressingRoomMode = qaMode === "dressing-room" || standaloneDressingRoom;
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
-const showFurniture = true;
+// Furniture is baked into salon.glb. Keep the legacy loaders disabled so a
+// cached viewer cannot add duplicate runtime copies on top of the asset.
+const showFurniture = false;
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
@@ -493,7 +495,7 @@ window.addEventListener("resize", resize);
 resize();
 
 new GLTFLoader().load(
-  "./salon.glb?v=room-shell-1",
+  "./salon.glb?v=room-furniture-1",
   async (gltf) => {
     // A cutaway roof and lake facade keep the statues visible in the browser overview.
     // The downloadable GLB remains complete for ThirdRoom.
