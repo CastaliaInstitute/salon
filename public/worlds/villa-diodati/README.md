@@ -31,6 +31,9 @@ not as a measured architectural reconstruction.
 - The browser preview also loads `mannequiny.glb`, an articulated mannequin
   released by GDQuest, Luciano Muñoz, and contributors under CC-BY 4.0. Credit
   is preserved here and in the source project record.
+- The browser preview stages four copies of Poly Haven's `Arm Chair 01`, a CC0
+  Victorian armchair with carved wood and upholstered cushions. The imported
+  glTF and 1K textures live under `furniture/armchair-01/`.
 - A camera is embedded at the lake-gallery threshold. `+Z` faces the lake.
 - Warm point lights at the fire and table plus cool lake light use
   `KHR_lights_punctual`.

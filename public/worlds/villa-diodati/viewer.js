@@ -218,6 +218,23 @@ new GLTFLoader().load(
     }, undefined, (error) => {
       console.error("Could not load the wood furniture kit", error);
     });
+    furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
+      const placements = [
+        [-1.55, 0, 0.08, Math.PI * 0.08],
+        [1.55, 0, 0.08, -Math.PI * 0.08],
+        [-2.95, 0, -0.95, Math.PI * 0.72],
+        [2.95, 0, -0.95, -Math.PI * 0.72],
+      ];
+      for (const [x, y, z, yaw] of placements) {
+        const chair = armchair.scene.clone(true);
+        chair.scale.setScalar(1.18);
+        chair.position.set(x, y, z);
+        chair.rotation.y = yaw;
+        scene.add(chair);
+      }
+    }, undefined, (error) => {
+      console.error("Could not load the Victorian armchair", error);
+    });
     status.textContent = "White bust mannequin circle loaded. Drag to look around.";
   },
   (event) => {
