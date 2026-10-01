@@ -32,10 +32,10 @@ await addCopies('furniture/armchair-01/ArmChair_01.gltf', [
 // Turn the sofa toward the fireplace on the rear wall.
 await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -1.28, Math.PI, 0.9]]);
 // Free downloaded props: a traditional fireplace and two mantel candelabra.
-await addCopies('furniture/fireplace/traditional-cast-stone-fireplace.glb', [[-4.15, -0.22, -2.42, 0, 1.7]]);
+await addCopies('furniture/fireplace/traditional-cast-stone-fireplace.glb', [[0, -0.22, -3.86, 0, 1.7]]);
 await addCopies('furniture/candelabrum/candelabrum.glb', [
-  [-4.62, 1.28, -2.02, 0, 0.28],
-  [-3.68, 1.28, -2.02, 0, 0.28],
+  [-0.58, 2.18, -3.55, 0, 0.28],
+  [0.58, 2.18, -3.55, 0, 0.28],
 ]);
 
 await target.transform(unpartition());
