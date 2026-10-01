@@ -68,8 +68,14 @@ new GLTFLoader().load(
           const material = object.material.clone();
           textureLoader.load(url, (texture) => {
             texture.colorSpace = THREE.SRGBColorSpace;
+            // The stored source is a full bust; show only the head and hair so
+            // it remains a head replacement on the wooden mannequin body.
+            texture.repeat.set(0.56, 0.50);
+            texture.offset.set(0.22, 0.50);
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
             const headCard = new THREE.Mesh(
-              new THREE.PlaneGeometry(0.72, 0.90),
+              new THREE.PlaneGeometry(0.56, 0.68),
               new THREE.MeshBasicMaterial({
                 map: texture,
                 transparent: true,
