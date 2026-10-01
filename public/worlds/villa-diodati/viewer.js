@@ -209,11 +209,27 @@ scene.background = new THREE.Color(0x171513);
 const lakeBackdropTexture = textureLoader.load("./furniture/lake-geneva-dusk.png");
 lakeBackdropTexture.colorSpace = THREE.SRGBColorSpace;
 const lakeBackdrop = new THREE.Mesh(
-  new THREE.PlaneGeometry(15.8, 7.9),
-  new THREE.MeshBasicMaterial({ map: lakeBackdropTexture, toneMapped: false }),
+  new THREE.CylinderGeometry(12, 12, 10, 64, 1, true),
+  new THREE.MeshBasicMaterial({ map: lakeBackdropTexture, toneMapped: false, side: THREE.BackSide }),
 );
-lakeBackdrop.position.set(0, 2.65, -4.32);
+lakeBackdrop.position.set(0, 4.0, 0);
 scene.add(lakeBackdrop);
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(22, 22),
+  new THREE.MeshStandardMaterial({ color: 0x5a5047, roughness: 0.78, metalness: 0 }),
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -0.22;
+scene.add(floor);
+
+const ceiling = new THREE.Mesh(
+  new THREE.PlaneGeometry(22, 22),
+  new THREE.MeshStandardMaterial({ color: 0x171513, roughness: 1, metalness: 0, side: THREE.DoubleSide }),
+);
+ceiling.rotation.x = Math.PI / 2;
+ceiling.position.y = 4.55;
+scene.add(ceiling);
 
 const camera = new THREE.PerspectiveCamera(72, 1, 0.06, 100);
 camera.position.set(0, 2.85, 5.15);
