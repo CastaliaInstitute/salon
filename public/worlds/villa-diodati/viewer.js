@@ -12,6 +12,7 @@ const openChat = document.querySelector("#open-chat");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
 const clothingLoader = new GLTFLoader();
+const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
 const mannequinMixers = [];
 const seatedFigures = [];
@@ -440,14 +441,26 @@ new GLTFLoader().load(
           mannequinMixers.push(mixer);
         }
         scene.add(figure);
-        const clothing = SkeletonUtils.clone(clothingAsset.scene);
-        clothing.scale.setScalar(1.08);
-        poseMannequin(clothing, x === 0.54 ? "conversational" : "seated");
-        tintClothing(clothing, index);
-        clothing.position.set(x, x === 0.54 ? y : y + 0.14, z);
-        clothing.rotation.y = yaw;
-        if (x !== 0.54) keepFeetAboveFloor(clothing);
-        scene.add(clothing);
+        if (index !== 0) {
+          const clothing = SkeletonUtils.clone(clothingAsset.scene);
+          clothing.scale.setScalar(1.08);
+          poseMannequin(clothing, x === 0.54 ? "conversational" : "seated");
+          tintClothing(clothing, index);
+          clothing.position.set(x, x === 0.54 ? y : y + 0.14, z);
+          clothing.rotation.y = yaw;
+          if (x !== 0.54) keepFeetAboveFloor(clothing);
+          scene.add(clothing);
+        } else {
+          downloadedDressLoader.load("./mary-regency-dress.glb?v=mary-dress-1", (dressAsset) => {
+            const dress = SkeletonUtils.clone(dressAsset.scene);
+            dress.scale.setScalar(1.08);
+            poseMannequin(dress, "seated");
+            dress.position.set(x, y + 0.14, z);
+            dress.rotation.y = yaw;
+            keepFeetAboveFloor(dress);
+            scene.add(dress);
+          }, undefined, (error) => console.error("Could not load Mary's downloaded dress", error));
+        }
       }
       status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
       }, undefined, (error) => {
