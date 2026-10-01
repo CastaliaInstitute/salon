@@ -86,9 +86,9 @@ const M = {
   hairBrown: material("chestnut hair", [0.20, 0.09, 0.045]),
   byron: material("Byron - dark plum coat", [0.14, 0.055, 0.075]),
   byronVest: material("Byron - shadowed waistcoat", [0.095, 0.07, 0.07]),
-  mary: material("Mary - ivory muslin", [0.83, 0.77, 0.65]),
-  marySash: material("Mary - sage sash", [0.34, 0.38, 0.28]),
-  claire: material("Claire - pale cream dress", [0.72, 0.62, 0.48]),
+  mary: material("Mary - deep sage muslin", [0.20, 0.29, 0.20]),
+  marySash: material("Mary - muted gold sash", [0.57, 0.39, 0.16]),
+  claire: material("Claire - wine dress", [0.38, 0.12, 0.14]),
   claireSash: material("Claire - faded rose sash", [0.48, 0.20, 0.18]),
   percy: material("Percy - dark olive coat", [0.20, 0.22, 0.16]),
   percyShirt: material("Percy - linen shirt", [0.76, 0.69, 0.56]),
@@ -550,17 +550,17 @@ function standingByron() {
     facultyId: "lord-byron",
     bustAttachment: "head_mount",
   }, [0.92, 0.68, 0.92]);
-  cone("Byron sculpted cloak", M.marble, [0, 1.08, 0], [0.92, 1.85, 0.68], g);
-  cube("Byron carved chest folds", M.marbleShadow, [0, 1.54, 0.34], [0.42, 0.65, 0.08], g);
-  cube("Byron sculpted collar", M.marble, [0, 1.91, 0.30], [0.33, 0.20, 0.10], g);
-  cyl("Byron neck", M.marble, [0, 2.03, 0.03], [0.21, 0.24, 0.21], g);
+  cone("Byron dark plum coat", M.byron, [0, 1.08, 0], [0.92, 1.85, 0.68], g);
+  cube("Byron waistcoat", M.byronVest, [0, 1.54, 0.34], [0.42, 0.65, 0.08], g);
+  cube("Byron collar", M.trim, [0, 1.91, 0.30], [0.33, 0.20, 0.10], g);
+  cyl("Byron wooden neck", M.mannequinLight, [0, 2.03, 0.03], [0.21, 0.24, 0.21], g);
   ball("Byron head", M.marble, [0, 2.27, 0.03], [0.43, 0.49, 0.39], g);
   ball("Byron carved curls", M.marbleShadow, [0, 2.47, 0.015], [0.47, 0.26, 0.43], g);
   ball("Byron nose", M.marble, [0, 2.26, 0.24], [0.08, 0.11, 0.12], g);
   ball("Byron left eye recess", M.marbleShadow, [-0.10, 2.32, 0.19], [0.035, 0.035, 0.025], g);
   ball("Byron right eye recess", M.marbleShadow, [0.10, 2.32, 0.19], [0.035, 0.035, 0.025], g);
-  ball("Byron left shoulder pivot", M.marbleJoint, [-0.45, 1.76, 0.10], [0.30, 0.30, 0.30], g);
-  ball("Byron right shoulder pivot", M.marbleJoint, [0.45, 1.76, 0.10], [0.30, 0.30, 0.30], g);
+  ball("Byron left shoulder pivot", M.mannequinLight, [-0.45, 1.76, 0.10], [0.30, 0.30, 0.30], g);
+  ball("Byron right shoulder pivot", M.mannequinLight, [0.45, 1.76, 0.10], [0.30, 0.30, 0.30], g);
   for (const side of [-1, 1]) {
     cyl(`Byron upper arm ${side}`, M.marble, [side * 0.45, 1.57, 0.10], [0.28, 0.75, 0.28], g, quatEuler(0, 0, side * -0.29));
     ball(`Byron elbow pivot ${side}`, M.marbleJoint, [side * 0.62, 1.30, 0.18], [0.20, 0.20, 0.20], g);
