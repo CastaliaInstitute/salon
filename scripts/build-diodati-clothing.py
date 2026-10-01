@@ -63,14 +63,13 @@ def copy_shell(name, garment_mat, keep):
     return obj
 
 # The shell follows the mannequin's topology rather than floating in front of it.
-copy_shell('Regency coat and dress upper shell', materials['burgundy'], lambda c, f: 0.72 <= c.z <= 1.62)
-copy_shell('Regency skirt shell', materials['wine'], lambda c, f: 0.30 <= c.z <= 1.16)
-copy_shell('Regency linen shirt front', materials['linen'], lambda c, f: 1.18 <= c.z <= 1.62 and c.y > -0.12)
+copy_shell('Regency coat upper shell', materials['burgundy'], lambda c, f: 0.72 <= c.z <= 1.62 and abs(c.x) < 0.34)
+copy_shell('Regency linen shirt front', materials['linen'], lambda c, f: 1.18 <= c.z <= 1.62 and c.y > -0.12 and abs(c.x) < 0.24)
 
 # The men’s coat is cut long behind the waist, echoing the 1816 tailcoat
 # silhouette instead of ending as a modern short jacket.  It stays a skinned
 # shell, so the tails follow the pelvis and spine when the mannequin is posed.
-copy_shell('Regency tailcoat tails', materials['burgundy'], lambda c, f: 0.42 <= c.z <= 1.10 and c.y < -0.025)
+copy_shell('Regency tailcoat tails', materials['burgundy'], lambda c, f: 0.72 <= c.z <= 1.10 and c.y < -0.025 and abs(c.x) < 0.42)
 
 # A small waistcoat overlay is an intentional separate garment layer.
 waist = copy_shell('Regency waistcoat shell', materials['olive'], lambda c, f: 1.18 <= c.z <= 1.62 and c.y > -0.12 and abs(c.x) < 0.40)
