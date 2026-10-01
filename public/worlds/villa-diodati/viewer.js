@@ -171,7 +171,10 @@ new GLTFLoader().load(
           object.material.roughness = 0.52;
           object.material.metalness = 0;
         });
-        figure.position.set(x, y, z);
+        // The source rig keeps a tall standing silhouette even when its leg
+        // bones are posed. Lower the four circle members into the chair line;
+        // the hearth host remains standing at the center.
+        figure.position.set(x, x === 0.54 ? y : y - 0.52, z);
         figure.rotation.y = yaw;
         if (x !== 0.54) seatedFigures.push(figure);
         const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
