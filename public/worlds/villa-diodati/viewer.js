@@ -71,11 +71,15 @@ new GLTFLoader().load(
       ];
       for (const [x, y, z, yaw] of placements) {
         const figure = SkeletonUtils.clone(mannequin.scene);
-        figure.scale.setScalar(2.45);
+        figure.scale.setScalar(5.0);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         scene.add(figure);
       }
+      status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
+    }, undefined, (error) => {
+      console.error("Could not load the wooden mannequin asset", error);
+      status.textContent = "Room loaded; mannequin asset unavailable.";
     });
     status.textContent = "Drag to look around. The roof is hidden in this overview.";
   },
