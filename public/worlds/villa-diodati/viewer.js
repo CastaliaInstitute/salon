@@ -622,7 +622,9 @@ new GLTFLoader().load(
           status.textContent = `Dressing room loaded: seated runtime pose, ${poseBones.length}/5 leg bones matched.`;
         }
         scene.add(figure);
-        physicsInit.then(() => createRagdoll(figure));
+        // Keep the visible pose authoritative. The experimental ragdoll joint
+        // chain could separate the torso from the mannequin while idling;
+        // physics remains available for room/chair collision surfaces.
       }
       if (!dressingRoomMode) status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
