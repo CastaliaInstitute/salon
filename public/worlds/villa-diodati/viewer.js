@@ -22,7 +22,7 @@ const dressingRoomMode = qaMode === "dressing-room";
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
-const showFurniture = dressingRoomMode;
+const showFurniture = true;
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
@@ -502,7 +502,7 @@ new GLTFLoader().load(
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
       if (/white bust/i.test(object.name)) object.visible = false;
-      if (/^(low reading table|reading table|table leg|table candelabra|Byron's companion chair|reading chair|guest chair by the window|carved settee|writing desk|bookcase|book |open manuscript|loose letter|draft pages|inkpot|quill )/i.test(object.name)) {
+      if (/^(low reading table|reading table|table leg|table candelabra|Byron's companion chair|reading chair|guest chair by the window|carved settee|writing desk|bookcase|book |open manuscript|loose letter|draft pages|inkpot|quill |fireplace|fire log|fire flame|gathering rug|rug inset|mantel candlestick)/i.test(object.name)) {
         object.visible = false;
       }
       if (object.isMesh && object.material && /deep wine upholstery/i.test(object.material.name || "")) {
