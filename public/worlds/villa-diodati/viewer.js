@@ -129,6 +129,9 @@ new GLTFLoader().load(
         object.name === "ceiling" ||
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
+      if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori) white bust$/.test(object.name)) {
+        object.position.y -= 0.52;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
