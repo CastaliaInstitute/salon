@@ -15,6 +15,7 @@ const mannequinLoader = new GLTFLoader();
 const qaMode = new URLSearchParams(window.location.search).get("qa") || "";
 const figureOnlyMode = qaMode.startsWith("figure-only");
 const figureRoomMode = qaMode === "figure-room";
+const dressingRoomMode = qaMode === "dressing-room";
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
@@ -465,7 +466,7 @@ new GLTFLoader().load(
         }
       }
     });
-    if (!figureOnlyMode) scene.add(gltf.scene);
+    if (!figureOnlyMode && !dressingRoomMode) scene.add(gltf.scene);
     else {
       scene.background = new THREE.Color(0x202020);
       scene.fog = null;
@@ -473,7 +474,9 @@ new GLTFLoader().load(
       controls.target.set(0, 1.05, 0);
       controls.update();
     }
-    if (figureRoomMode) {
+    if (figureRoomMode || dressingRoomMode) {
+      scene.background = new THREE.Color(0x202020);
+      scene.fog = null;
       camera.position.set(0, 1.65, 5.8);
       controls.target.set(0, 1.15, 0);
       controls.update();
@@ -486,10 +489,10 @@ new GLTFLoader().load(
         [2.43, 0.34, -0.52, -Math.PI / 2],
         [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
-      const visiblePlacements = figureOnlyMode || figureRoomMode ? [[0, 0.34, -0.75, 0]] : placements;
+      const visiblePlacements = figureOnlyMode || figureRoomMode || dressingRoomMode ? [[0, 0.34, -0.75, 0]] : placements;
       for (const [x, y, z, yaw] of visiblePlacements) {
         const figure = mannequin.scene.clone(true);
-        figure.scale.setScalar(figureRoomMode ? 2.75 : 2.45);
+        figure.scale.setScalar(figureRoomMode || dressingRoomMode ? 2.75 : 2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         figure.traverse((object) => {
@@ -500,7 +503,7 @@ new GLTFLoader().load(
         });
         scene.add(figure);
       }
-      status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
+      status.textContent = dressingRoomMode ? "Dressing room loaded: one wooden mannequin and one chair." : `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
@@ -524,6 +527,14 @@ new GLTFLoader().load(
     });
     furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
       if (figureOnlyMode || figureRoomMode) return;
+      if (dressingRoomMode) {
+        const chair = armchair.scene.clone(true);
+        chair.scale.setScalar(0.9);
+        chair.position.set(1.35, 0, -0.7);
+        chair.rotation.y = -Math.PI * 0.12;
+        scene.add(chair);
+        return;
+      }
       const placements = [
         [-1.55, 0, 0.18, Math.PI * 0.08, 0x8b2635],
         [1.55, 0, 0.18, -Math.PI * 0.08, 0x314b35],
@@ -553,7 +564,7 @@ new GLTFLoader().load(
     }, undefined, (error) => {
       console.error("Could not load the Victorian sofa", error);
     });
-    status.textContent = "White bust mannequin circle loaded. Drag to look around.";
+    status.textContent = dressingRoomMode ? "Dressing room loaded. Drag to look around." : "White bust mannequin circle loaded. Drag to look around.";
   },
   (event) => {
     if (event.total) status.textContent = `Loading the room… ${Math.round((event.loaded / event.total) * 100)}%`;
