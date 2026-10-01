@@ -10,10 +10,11 @@ not as a measured architectural reconstruction.
   reading matter, candles and a storm-dark lake outlook.
 - A covered three-sided gallery with Tuscan-style columns follows the public
   heritage description of the villa.
-- Five articulated marble statues stage the circle in the composition of the
-  supplied reference still from the 2017 film *Mary Shelley*: Byron standing
-  at the hearth; Mary and Claire seated together; Percy and Polidori opposite
-  them. Visible spherical pivots make the figures read as articulated statues.
+- Five articulated mannequin figures stage the circle in the supplied
+  reference's composition: Byron standing at the hearth; Mary and Claire
+  seated together; Percy and Polidori opposite them. Bodies use warm
+  oiled-beech materials, period-color clothing, visible spherical pivots, and
+  dark collars where a Supabase faculty bust can be mounted.
 - Open the interactive browser view at `/worlds/villa-diodati/`. Drag to orbit
   and scroll to zoom; the conversation panel is visible alongside the world.
   The browser overview hides the lake-facing wall and ceiling to expose the
@@ -21,6 +22,12 @@ not as a measured architectural reconstruction.
 - `saloon-chat.js` adds a side-mounted, multi-speaker transcript panel using
   ThirdRoom's WebSG `UICanvas` / `UIText` API. It is an authored sample dialogue,
   not connected to Matrix yet.
+- Faculty figure groups carry GLB `extras` metadata with
+  `bustSource: "supabase.faculty"`, a stable `facultyId`, and
+  `bustAttachment: "head_mount"`. Current IDs are `lord-byron`,
+  `mary-shelley`, `claire-clairmont`, `percy-bysshe-shelley`, and
+  `john-polidori`; bind the corresponding Supabase image/model URLs in the
+  WebSG layer rather than baking credentials into the GLB.
 - A camera is embedded at the lake-gallery threshold. `+Z` faces the lake.
 - Warm point lights at the fire and table plus cool lake light use
   `KHR_lights_punctual`.
