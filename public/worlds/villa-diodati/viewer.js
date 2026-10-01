@@ -479,6 +479,12 @@ new GLTFLoader().load(
         figure.scale.setScalar(2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
+        figure.traverse((object) => {
+          // The source GLB contains child visibility flags from its authoring
+          // scene. Do not let those flags hide limbs in the browser preview.
+          object.visible = true;
+          if (object.isMesh) object.frustumCulled = false;
+        });
         scene.add(figure);
       }
       status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
