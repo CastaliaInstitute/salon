@@ -555,7 +555,7 @@ new GLTFLoader().load(
       console.error("Could not load the Victorian armchair", error);
     });
     furnitureLoader.load("./furniture/sofa-03/sofa_03.gltf", (sofa) => {
-      if (figureOnlyMode || figureRoomMode) return;
+      if (figureOnlyMode || figureRoomMode || dressingRoomMode) return;
       const replacement = sofa.scene.clone(true);
       replacement.scale.setScalar(0.9);
       replacement.position.set(0, 0, -1.28);
