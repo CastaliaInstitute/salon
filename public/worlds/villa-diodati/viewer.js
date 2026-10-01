@@ -132,6 +132,9 @@ new GLTFLoader().load(
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori) white bust$/.test(object.name)) {
         object.position.y -= 0.52;
       }
+      if (/^(Byron's companion chair|reading chair|guest chair by the window)/.test(object.name)) {
+        object.visible = false;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
