@@ -2,13 +2,14 @@
 
 ## Outcome
 
-Build a photorealistic Villa Diodati world in ThirdRoom: model the house and saloon, place it in surrounding terrain with exterior weather, and stage articulated marble-statue avatars of Byron, Mary Shelley, Percy Shelley, Claire Clairmont, and John Polidori that gesture and turn their gaze toward the current speaker.
+Build a photorealistic Villa Diodati world in ThirdRoom: model the house and saloon in rainy storm weather, illuminate it with a warm fireplace and candles plus visible lightning outside, and stage articulated marble-statue avatars of Byron, Mary Shelley, Percy Shelley, Claire Clairmont, and John Polidori that gesture and turn their gaze toward the current speaker.
 
 ## Success metrics
 
 - A published ThirdRoom world opens from a stable salon.castalia.institute link and renders the house, saloon, five named statues, exterior terrain/weather, and multi-speaker side chat.
 - The house is modeled as a coherent villa with an explorable saloon interior and recognizable exterior massing.
-- Terrain, grounds, lake setting, and weather are visible outside the house and render in the scene.
+- Terrain, grounds, lake setting, and visible rain render outside the house; lightning flashes periodically illuminate the exterior and are visible from the saloon.
+- The fireplace and candles produce warm, flickering local light that contrasts with cool storm light from outside.
 - A scripted salon exchange reliably changes the active statue's speaking gesture and gaze; the other statues orient toward the speaker.
 - The room and statue assets are visually reviewed and approved as a coherent photorealistic environment with marble figures.
 - The uploaded scene stays within ThirdRoom's documented GLB size guidance and passes a complete desktop browser walkthrough.
