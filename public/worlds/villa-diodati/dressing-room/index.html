@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#171513" />
+    <meta name="description" content="Villa Diodati Dressing Room: a runtime-poseable wooden mannequin and chair." />
+    <title>Villa Diodati Dressing Room | Castalia Institute</title>
+    <base href="../" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./viewer.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "rapier3d-compat": "./vendor/rapier/rapier.mjs"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="world" aria-label="Villa Diodati Dressing Room">
+      <canvas id="scene" aria-label="Interactive dressing room mannequin"></canvas>
+      <header class="topbar">
+        <a class="brand" href="https://salon.castalia.institute/">CASTALIA <span>·</span> SALON</a>
+        <div class="world-title">VILLA DIODATI <span>DRESSING ROOM</span></div>
+        <nav class="topbar-links" aria-label="World links">
+          <a class="asset-link" href="../">Saloon</a>
+          <a class="asset-link" href="../README.md">About this reconstruction</a>
+        </nav>
+      </header>
+      <aside class="chat is-hidden" id="chat-panel" aria-hidden="true"></aside>
+      <button id="open-chat" hidden type="button">Conversation</button>
+      <button id="close-chat" hidden type="button">Close</button>
+      <div class="status" id="status">Preparing the dressing room…</div>
+      <div class="controls-hint">Drag to orbit <span>·</span> scroll to zoom</div>
+    </main>
+    <script type="module" src="../viewer.js?v=dressing-room-endpoint-1"></script>
+  </body>
+</html>
