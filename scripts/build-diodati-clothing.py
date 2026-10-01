@@ -61,9 +61,18 @@ copy_shell('Regency coat and dress upper shell', materials['burgundy'], lambda c
 copy_shell('Regency skirt shell', materials['wine'], lambda c, f: 0.30 <= c.z <= 1.16)
 copy_shell('Regency linen shirt front', materials['linen'], lambda c, f: 1.18 <= c.z <= 1.62 and c.y > -0.12)
 
+# The men’s coat is cut long behind the waist, echoing the 1816 tailcoat
+# silhouette instead of ending as a modern short jacket.  It stays a skinned
+# shell, so the tails follow the pelvis and spine when the mannequin is posed.
+copy_shell('Regency tailcoat tails', materials['burgundy'], lambda c, f: 0.42 <= c.z <= 1.10 and c.y < -0.025)
+
 # A small waistcoat overlay is an intentional separate garment layer.
 waist = copy_shell('Regency waistcoat shell', materials['olive'], lambda c, f: 1.18 <= c.z <= 1.62 and c.y > -0.12 and abs(c.x) < 0.40)
 waist.scale = (1.045, 1.062, 1.035)
+
+# A narrow white cravat bib gives the boys a readable neckline at the salon
+# camera distance; it shares the spine weights of the fitted shirt surface.
+copy_shell('Regency cravat bib', materials['linen'], lambda c, f: 1.48 <= c.z <= 1.67 and c.y > 0.03 and abs(c.x) < 0.13)
 
 # Keep only clothing in the exported asset; the original body is retained in
 # the browser as the wooden mannequin beneath these shells.

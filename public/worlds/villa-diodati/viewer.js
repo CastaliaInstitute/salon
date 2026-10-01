@@ -478,7 +478,6 @@ new GLTFLoader().load(
     });
     scene.add(gltf.scene);
     mannequinLoader.load("./mannequiny.glb", (mannequin) => {
-      clothingLoader.load("./diodati-clothing.glb?v=clothing-1", (clothingAsset) => {
       const placements = [
         [-4.00, 0.02, 0.24, Math.PI / 2],
         [-2.80, 0.02, 0.32, Math.PI / 2],
@@ -522,34 +521,8 @@ new GLTFLoader().load(
         // Keep the authored seated/conversational pose stable. The source
         // idle clip reopens the arms into its T-pose after garment fitting.
         scene.add(figure);
-        if (index !== 0) {
-          const clothing = SkeletonUtils.clone(clothingAsset.scene);
-          clothing.scale.setScalar(1.08);
-          poseMannequin(clothing, x === 0.54 ? "conversational" : "seated");
-          tintClothing(clothing, index);
-          clothing.visible = false;
-          clothing.position.set(x, x === 0.54 ? y : y + 0.14, z);
-          clothing.rotation.y = yaw;
-          if (x !== 0.54) keepFeetAboveFloor(clothing);
-          scene.add(clothing);
-        } else {
-          downloadedDressLoader.load("./mary-regency-dress.glb?v=mary-dress-1", (dressAsset) => {
-            const dress = SkeletonUtils.clone(dressAsset.scene);
-            dress.scale.setScalar(1.08);
-            poseMannequin(dress, "seated");
-            dress.position.set(x, y + 0.14, z);
-            dress.rotation.y = yaw;
-            keepFeetAboveFloor(dress);
-            dress.visible = false;
-            scene.add(dress);
-          }, undefined, (error) => console.error("Could not load Mary's downloaded dress", error));
-        }
       }
       status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
-      }, undefined, (error) => {
-        console.error("Could not load the fitted clothing asset", error);
-        status.textContent = "Room loaded; fitted clothing asset unavailable.";
-      });
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
