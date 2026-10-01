@@ -25,7 +25,11 @@
       <header class="topbar">
         <a class="brand" href="https://salon.castalia.institute/">CASTALIA <span>·</span> SALON</a>
         <div class="world-title">VILLA DIODATI <span>LAKE GENEVA · 1816</span></div>
-        <a class="asset-link" href="./README.md">About this reconstruction</a>
+        <nav class="topbar-links" aria-label="World links">
+          <a class="asset-link dressing-room-link" href="?qa=dressing-room">Dressing room</a>
+          <a class="asset-link saloon-link" href="./">Saloon</a>
+          <a class="asset-link" href="./README.md">About this reconstruction</a>
+        </nav>
       </header>
 
       <aside class="chat is-hidden" id="chat-panel" aria-label="Staged salon transcript">
@@ -64,9 +68,56 @@
 
       <button id="open-chat" class="chat-tab is-visible" type="button" aria-expanded="false">Conversation</button>
 
+      <section class="dressing-controls" id="dressing-controls" aria-label="Figure animation controls" hidden>
+        <div class="dressing-heading">
+          <div>
+            <span class="eyebrow">FIGURE STUDIO</span>
+            <h1>Dressing room</h1>
+          </div>
+          <span class="pose-indicator" id="pose-indicator">Idle</span>
+        </div>
+        <label class="character-picker" for="character-select">Figure</label>
+        <select id="character-select" aria-label="Choose a figure">
+          <option value="0">Mary Shelley</option>
+          <option value="1">Claire Clairmont</option>
+          <option value="2">Percy Bysshe Shelley</option>
+          <option value="3">John Polidori</option>
+          <option value="4">Lord Byron</option>
+        </select>
+        <div class="pose-buttons" role="group" aria-label="Choose an animation">
+          <button type="button" data-action="idle" aria-pressed="true">Idle</button>
+          <button type="button" data-action="gesture" aria-pressed="false">Gesture</button>
+          <button type="button" data-action="walk" aria-pressed="false">Walk</button>
+          <button type="button" data-action="sit" aria-pressed="false">Sit</button>
+          <button type="button" data-action="drink" aria-pressed="false">Drink</button>
+        </div>
+        <p class="dressing-help">Choose a figure and pose. Drag to orbit around the mannequin.</p>
+      </section>
+
       <div class="status" id="status">Preparing the room…</div>
       <div class="controls-hint">Drag to orbit <span>·</span> scroll to zoom</div>
     </main>
     <script type="module" src="./viewer.js?v=dressing-room-scale-stable-1"></script>
+    <script>
+      (() => {
+        let currentVersion = null;
+        const checkDeployment = async () => {
+          try {
+            const response = await fetch(`/deploy-version.json?t=${Date.now()}`, { cache: "no-store" });
+            if (!response.ok) return;
+            const payload = await response.json();
+            if (currentVersion && payload.version && payload.version !== currentVersion) {
+              window.location.reload();
+              return;
+            }
+            currentVersion = payload.version;
+          } catch (_) {
+            // A temporary network failure should not interrupt the room.
+          }
+        };
+        checkDeployment();
+        window.setInterval(checkDeployment, 15000);
+      })();
+    </script>
   </body>
 </html>
