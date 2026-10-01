@@ -593,6 +593,7 @@ new GLTFLoader().load(
           status.textContent = `Dressing room loaded: seated runtime pose, ${poseBones.length}/5 leg bones matched.`;
         }
         scene.add(figure);
+        physicsInit.then(() => createRagdoll(figure));
       }
       if (!dressingRoomMode) status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
@@ -684,8 +685,7 @@ renderer.setAnimationLoop(() => {
     poseStandingFigure(figure);
     keepFeetAboveFloor(figure);
   }
-  // The preview is intentionally pose-led; physics remains available for
-  // future interaction but does not overwrite the authored clothing pose.
+  stepPhysics(delta);
   controls.update();
   renderer.render(scene, camera);
 });
