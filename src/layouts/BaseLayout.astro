@@ -2,7 +2,6 @@
 import '../styles/global.css';
 import CastaliaShell from '../components/CastaliaShell.tsx';
 import SalonSWRegistry from '../components/SalonSWRegistry.astro';
-import { pageContractForSitePath, pageMetaFromContract, normalizeSitePath } from '@castalia/platform';
 
 interface Props {
   title: string;
@@ -14,16 +13,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const baseWithSlash = `${base}/`;
 const path = Astro.url.pathname;
 const pageTitle = `${title} | Salon`;
-const contract = pageContractForSitePath(path, {
-  site: 'salon',
-  title: pageTitle,
-  isPublic: (p) => {
-    const n = normalizeSitePath(p);
-    return n === '/' || n.startsWith('/diodati') || n.startsWith('/live');
-  },
-});
-const meta = pageMetaFromContract(contract, path);
-const isHomePage = normalizeSitePath(path) === '/';
+const isPublicPath = path === '/' || path.startsWith('/diodati') || path.startsWith('/live');
+const isHomePage = path === '/';
 ---
 
 <!DOCTYPE html>
@@ -32,7 +23,7 @@ const isHomePage = normalizeSitePath(path) === '/';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content={description}>
-  <meta name="robots" content={meta.robots} />
+  <meta name="robots" content={isPublicPath ? 'index, follow' : 'noindex, nofollow'} />
   <title>{pageTitle}</title>
   <link rel="icon" type="image/svg+xml" href={`${baseWithSlash}favicon.svg`}>
   <link rel="manifest" href={`${baseWithSlash}manifest.webmanifest`}>
