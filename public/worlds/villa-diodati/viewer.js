@@ -22,7 +22,7 @@ const dressingRoomMode = qaMode === "dressing-room";
 const clothingLoader = new GLTFLoader();
 const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
-const showFurniture = false;
+const showFurniture = dressingRoomMode;
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
