@@ -12,6 +12,7 @@ const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
 const mannequinMixers = [];
+const seatedFigures = [];
 const animationClock = new THREE.Clock();
 const facultyBusts = {
   "Lord Byron": "https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png",
@@ -57,6 +58,23 @@ function poseMannequin(figure, pose = "seated") {
     rotate("lowerarm.r", -0.52, -0.08, 0.10);
     rotate("head", 0.02, 0.32, 0);
   }
+}
+
+function poseSeatedLowerBody(figure) {
+  const bones = new Map();
+  figure.traverse((object) => {
+    if (object.isBone) bones.set(object.name, object);
+  });
+  const rotate = (name, x = 0, y = 0, z = 0) => {
+    const bone = bones.get(name);
+    if (bone) bone.rotation.set(x, y, z);
+  };
+  rotate("thigh.l", -1.62, 0.12, -0.10);
+  rotate("thigh.r", -1.62, -0.12, 0.10);
+  rotate("calf.l", 2.18, 0, 0);
+  rotate("calf.r", 2.18, 0, 0);
+  rotate("foot.l", -0.62, 0, 0);
+  rotate("foot.r", -0.62, 0, 0);
 }
 
 const scene = new THREE.Scene();
@@ -155,6 +173,7 @@ new GLTFLoader().load(
         });
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
+        if (x !== 0.54) seatedFigures.push(figure);
         const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
         if (idleClip) {
           const mixer = new THREE.AnimationMixer(figure);
@@ -220,6 +239,7 @@ if (window.matchMedia("(max-width: 760px)").matches) {
 renderer.setAnimationLoop(() => {
   const delta = Math.min(animationClock.getDelta(), 0.05);
   for (const mixer of mannequinMixers) mixer.update(delta);
+  for (const figure of seatedFigures) poseSeatedLowerBody(figure);
   controls.update();
   renderer.render(scene, camera);
 });
