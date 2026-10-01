@@ -212,9 +212,10 @@ new GLTFLoader().load(
           object.material.metalness = 0;
         });
         // The source rig keeps a tall standing silhouette even when its leg
-        // bones are posed. Lower the four circle members into the chair line;
-        // the hearth host remains standing at the center.
-      figure.position.set(x, y - 0.52, z);
+        // bones are posed. Lower the figures only slightly into the chair
+        // line, with a hard floor-safe limit so no feet can pass below the
+        // saloon floor plane.
+        figure.position.set(x, Math.max(y - 0.08, -0.08), z);
         figure.rotation.y = yaw;
         if (x !== 0.54) seatedFigures.push(figure);
         const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
