@@ -54,6 +54,11 @@ function preparePoseBases(figure) {
   });
 }
 
+function findPoseBone(bones, name) {
+  const wanted = name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return bones.get(wanted) || [...bones.entries()].find(([key]) => key.includes(wanted) || wanted.includes(key))?.[1];
+}
+
 function refreshSkinnedPose(figure) {
   figure.updateMatrixWorld(true);
   figure.traverse((object) => {
@@ -92,7 +97,7 @@ function poseMannequin(figure, pose = "seated") {
     if (object.isBone) bones.set(object.name.toLowerCase().replace(/[^a-z0-9]/g, ""), object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
-    const bone = bones.get(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
+    const bone = findPoseBone(bones, name);
     if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   if (pose === "seated") {
@@ -134,7 +139,7 @@ function poseSeatedLowerBody(figure, index = 0) {
     if (object.isBone) bones.set(object.name.toLowerCase().replace(/[^a-z0-9]/g, ""), object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
-    const bone = bones.get(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
+    const bone = findPoseBone(bones, name);
     if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   const lowerBody = [
@@ -495,7 +500,7 @@ new GLTFLoader().load(
     if (figureRoomMode || dressingRoomMode) {
       scene.background = new THREE.Color(0x202020);
       scene.fog = null;
-      camera.position.set(dressingRoomMode ? 4.2 : 0, dressingRoomMode ? 2.4 : 1.65, dressingRoomMode ? 9.6 : 5.8);
+      camera.position.set(dressingRoomMode ? 3.1 : 0, dressingRoomMode ? 1.8 : 1.65, dressingRoomMode ? 5.2 : 5.8);
       controls.target.set(dressingRoomMode ? 1.45 : 0, dressingRoomMode ? 0.9 : 1.15, dressingRoomMode ? 0.14 : 0);
       controls.update();
     }
@@ -543,8 +548,12 @@ new GLTFLoader().load(
         if (dressingRoomMode) {
           poseSeatedFigure(figure, 0);
           seatedFigures.push({ figure, index: 0 });
-          const poseBones = ["pelvis", "thigh.l", "calf.l", "thigh.r", "calf.r"]
-            .filter((name) => figure.getObjectByName(name));
+          const poseBones = [];
+          figure.traverse((object) => {
+            if (!object.isBone) return;
+            const key = object.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+            if (["pelvis", "thighl", "calfl", "thighr", "calfr"].some((name) => key.includes(name))) poseBones.push(object.name);
+          });
           status.textContent = `Dressing room loaded: seated runtime pose, ${poseBones.length}/5 leg bones matched.`;
         }
         scene.add(figure);
