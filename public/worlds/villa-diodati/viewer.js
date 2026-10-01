@@ -44,6 +44,12 @@ const wardrobeColors = [
   0x6b2635, // Mary wine dress
 ];
 
+function preparePoseBases(figure) {
+  figure.traverse((object) => {
+    if (object.isBone && !object.userData.poseBase) object.userData.poseBase = object.rotation.clone();
+  });
+}
+
 function addDrapedClothing(figure, index) {
   const fabric = new THREE.MeshStandardMaterial({
     color: wardrobeColors[index] || wardrobeColors[0],
@@ -69,13 +75,14 @@ function addDrapedClothing(figure, index) {
 }
 
 function poseMannequin(figure, pose = "seated") {
+  preparePoseBases(figure);
   const bones = new Map();
   figure.traverse((object) => {
     if (object.isBone) bones.set(object.name, object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
     const bone = bones.get(name);
-    if (bone) bone.rotation.set(x, y, z);
+    if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   if (pose === "seated") {
     // The asset's rest pose is fully vertical. These stronger bends make the
@@ -108,13 +115,14 @@ function poseMannequin(figure, pose = "seated") {
 }
 
 function poseSeatedLowerBody(figure, index = 0) {
+  preparePoseBases(figure);
   const bones = new Map();
   figure.traverse((object) => {
     if (object.isBone) bones.set(object.name, object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
     const bone = bones.get(name);
-    if (bone) bone.rotation.set(x, y, z);
+    if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   const lowerBody = [
     [-1.48, -1.66, 2.04, 2.18, -0.52, -0.62],
@@ -135,13 +143,14 @@ function poseSeatedFigure(figure, index = 0) {
   // keeps the animation flow intact while preventing it from reopening the
   // knees or lifting the conversational arms into a T-pose.
   poseSeatedLowerBody(figure, index);
+  preparePoseBases(figure);
   const bones = new Map();
   figure.traverse((object) => {
     if (object.isBone) bones.set(object.name, object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
     const bone = bones.get(name);
-    if (bone) bone.rotation.set(x, y, z);
+    if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   const conversational = [
     [-0.10, -0.08, -1.12, 0.88, -0.52, -0.42, 0.06, 0.28],
@@ -162,11 +171,12 @@ function poseSeatedFigure(figure, index = 0) {
 }
 
 function poseStandingFigure(figure) {
+  preparePoseBases(figure);
   const bones = new Map();
   figure.traverse((object) => { if (object.isBone) bones.set(object.name, object); });
   const rotate = (name, x = 0, y = 0, z = 0) => {
     const bone = bones.get(name);
-    if (bone) bone.rotation.set(x, y, z);
+    if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   rotate("spine_01", -0.04, 0, 0);
   const breath = Math.sin(animationClock.elapsedTime * 1.35 + 2.4) * 0.012;
