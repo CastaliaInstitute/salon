@@ -84,6 +84,33 @@ function poseSeatedLowerBody(figure) {
   rotate("foot.r", -0.62, 0, 0);
 }
 
+function poseSeatedFigure(figure) {
+  // Re-apply the authored seated pose after the idle mixer advances. This
+  // keeps the animation flow intact while preventing it from reopening the
+  // knees or lifting the conversational arms into a T-pose.
+  poseSeatedLowerBody(figure);
+  const bones = new Map();
+  figure.traverse((object) => {
+    if (object.isBone) bones.set(object.name, object);
+  });
+  const rotate = (name, x = 0, y = 0, z = 0) => {
+    const bone = bones.get(name);
+    if (bone) bone.rotation.set(x, y, z);
+  };
+  rotate("spine_01", -0.10, 0, 0);
+  rotate("spine_02", -0.08, 0, 0);
+  rotate("upperarm.l", 0, 0, -1.32);
+  rotate("upperarm.r", 0, 0, 1.32);
+  rotate("lowerarm.l", -0.28, 0, -0.08);
+  rotate("lowerarm.r", -0.28, 0, 0.08);
+}
+
+function keepFeetAboveFloor(figure) {
+  figure.updateMatrixWorld(true);
+  const bounds = new THREE.Box3().setFromObject(figure);
+  if (bounds.min.y < 0.03) figure.position.y += 0.03 - bounds.min.y;
+}
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x171513);
 
@@ -227,9 +254,12 @@ new GLTFLoader().load(
         // bones are posed. Lower the figures only slightly into the chair
         // line, with a hard floor-safe limit so no feet can pass below the
         // saloon floor plane.
-        figure.position.set(x, Math.max(y - 0.08, -0.08), z);
+        figure.position.set(x, x === 0.54 ? y : y + 0.14, z);
         figure.rotation.y = yaw;
-        if (x !== 0.54) seatedFigures.push(figure);
+        if (x !== 0.54) {
+          seatedFigures.push(figure);
+          keepFeetAboveFloor(figure);
+        }
         const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
         if (idleClip) {
           const mixer = new THREE.AnimationMixer(figure);
@@ -319,7 +349,10 @@ if (window.matchMedia("(max-width: 760px)").matches) {
 renderer.setAnimationLoop(() => {
   const delta = Math.min(animationClock.getDelta(), 0.05);
   for (const mixer of mannequinMixers) mixer.update(delta);
-  for (const figure of seatedFigures) poseSeatedLowerBody(figure);
+  for (const figure of seatedFigures) {
+    poseSeatedFigure(figure);
+    keepFeetAboveFloor(figure);
+  }
   controls.update();
   renderer.render(scene, camera);
 });
