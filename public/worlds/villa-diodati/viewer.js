@@ -504,7 +504,6 @@ new GLTFLoader().load(
             return material;
           });
         });
-        addDrapedClothing(figure, index);
         // The source rig keeps a tall standing silhouette even when its leg
         // bones are posed. Lower the figures only slightly into the chair
         // line, with a hard floor-safe limit so no feet can pass below the
@@ -528,6 +527,7 @@ new GLTFLoader().load(
           clothing.scale.setScalar(1.08);
           poseMannequin(clothing, x === 0.54 ? "conversational" : "seated");
           tintClothing(clothing, index);
+          clothing.visible = false;
           clothing.position.set(x, x === 0.54 ? y : y + 0.14, z);
           clothing.rotation.y = yaw;
           if (x !== 0.54) keepFeetAboveFloor(clothing);
@@ -540,6 +540,7 @@ new GLTFLoader().load(
             dress.position.set(x, y + 0.14, z);
             dress.rotation.y = yaw;
             keepFeetAboveFloor(dress);
+            dress.visible = false;
             scene.add(dress);
           }, undefined, (error) => console.error("Could not load Mary's downloaded dress", error));
         }
