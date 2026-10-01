@@ -50,6 +50,13 @@ function preparePoseBases(figure) {
   });
 }
 
+function refreshSkinnedPose(figure) {
+  figure.updateMatrixWorld(true);
+  figure.traverse((object) => {
+    if (object.isSkinnedMesh && object.skeleton) object.skeleton.update();
+  });
+}
+
 function addDrapedClothing(figure, index) {
   const fabric = new THREE.MeshStandardMaterial({
     color: wardrobeColors[index] || wardrobeColors[0],
@@ -99,6 +106,7 @@ function poseMannequin(figure, pose = "seated") {
     rotate("upperarm.r", 0, 0, 1.32);
     rotate("lowerarm.l", -0.28, 0, -0.08);
     rotate("lowerarm.r", -0.28, 0, 0.08);
+    refreshSkinnedPose(figure);
   } else if (pose === "conversational") {
     rotate("thigh.l", -1.62, 0.12, -0.10);
     rotate("thigh.r", -1.62, -0.12, 0.10);
@@ -111,6 +119,7 @@ function poseMannequin(figure, pose = "seated") {
     rotate("lowerarm.l", -0.64, 0.08, -0.10);
     rotate("lowerarm.r", -0.52, -0.08, 0.10);
     rotate("head", 0.02, 0.32, 0);
+    refreshSkinnedPose(figure);
   }
 }
 
@@ -136,6 +145,7 @@ function poseSeatedLowerBody(figure, index = 0) {
   rotate("calf.r", lowerBody[3], 0, 0);
   rotate("foot.l", lowerBody[4], 0, 0);
   rotate("foot.r", lowerBody[5], 0, 0);
+  refreshSkinnedPose(figure);
 }
 
 function poseSeatedFigure(figure, index = 0) {
@@ -168,6 +178,7 @@ function poseSeatedFigure(figure, index = 0) {
   rotate("lowerarm.l", -0.28, 0, -0.08);
   rotate("lowerarm.r", -0.28, 0, 0.08);
   rotate("head", conversational[6] - breath * 0.4, conversational[7], 0);
+  refreshSkinnedPose(figure);
 }
 
 function poseStandingFigure(figure) {
@@ -186,6 +197,7 @@ function poseStandingFigure(figure) {
   rotate("lowerarm.l", -0.64, 0.08, -0.10);
   rotate("lowerarm.r", -0.52, -0.08, 0.10);
   rotate("head", 0.02 - breath * 0.4, 0.28, 0);
+  refreshSkinnedPose(figure);
 }
 
 function stepPhysics(delta) {
