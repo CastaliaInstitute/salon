@@ -511,7 +511,7 @@ new GLTFLoader().load(
           : placements;
       for (const [x, y, z, yaw] of visiblePlacements) {
         const figure = dressingRoomMode ? SkeletonUtils.clone(mannequin.scene) : mannequin.scene.clone(true);
-        figure.scale.setScalar(figureRoomMode || dressingRoomMode ? 2.75 : 2.45);
+        figure.scale.setScalar(dressingRoomMode ? 1.35 : figureRoomMode ? 2.75 : 2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         figure.traverse((object) => {
@@ -633,7 +633,7 @@ renderer.setAnimationLoop(() => {
   for (const mixer of mannequinMixers) mixer.update(delta);
   for (const seated of seatedFigures) {
     poseSeatedFigure(seated.figure, seated.index);
-    keepFeetAboveFloor(seated.figure);
+    if (!dressingRoomMode) keepFeetAboveFloor(seated.figure);
   }
   for (const figure of standingFigures) poseStandingFigure(figure);
   // The preview is intentionally pose-led; physics remains available for
