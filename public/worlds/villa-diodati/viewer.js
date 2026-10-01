@@ -337,7 +337,9 @@ const physicsInit = import("rapier3d-compat")
 function keepFeetAboveFloor(figure) {
   figure.updateMatrixWorld(true);
   const bounds = new THREE.Box3().setFromObject(figure);
-  if (bounds.min.y < 0.03) figure.position.y += 0.03 - bounds.min.y;
+  // Align the lowest visible geometry to the floor; only clamping below the
+  // floor leaves figures visibly hovering when their authored root is high.
+  figure.position.y += 0.03 - bounds.min.y;
 }
 
 // The articulated preview mannequin is deliberately neutral. Add a small,
@@ -500,7 +502,7 @@ new GLTFLoader().load(
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
       ) object.visible = false;
       if (/white bust/i.test(object.name)) object.visible = false;
-      if (/^(low reading table|reading table|table leg|table candelabra|Byron's companion chair|reading chair|guest chair by the window|bookcase|book )/i.test(object.name)) {
+      if (/^(low reading table|reading table|table leg|table candelabra|Byron's companion chair|reading chair|guest chair by the window|carved settee|writing desk|bookcase|book |open manuscript|loose letter|draft pages|inkpot|quill )/i.test(object.name)) {
         object.visible = false;
       }
       if (object.isMesh && object.material && /deep wine upholstery/i.test(object.material.name || "")) {
@@ -678,7 +680,10 @@ renderer.setAnimationLoop(() => {
     poseSeatedFigure(seated.figure, seated.index);
     if (!dressingRoomMode) keepFeetAboveFloor(seated.figure);
   }
-  for (const figure of standingFigures) poseStandingFigure(figure);
+  for (const figure of standingFigures) {
+    poseStandingFigure(figure);
+    keepFeetAboveFloor(figure);
+  }
   // The preview is intentionally pose-led; physics remains available for
   // future interaction but does not overwrite the authored clothing pose.
   controls.update();
