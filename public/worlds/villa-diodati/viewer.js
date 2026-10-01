@@ -509,8 +509,8 @@ new GLTFLoader().load(
         : dressingRoomMode
           ? [[1.45, 0.28, 0.14, 0]]
           : placements;
-      for (const [x, y, z, yaw] of visiblePlacements) {
-        const figure = dressingRoomMode ? SkeletonUtils.clone(mannequin.scene) : mannequin.scene.clone(true);
+      for (const [index, [x, y, z, yaw]] of visiblePlacements.entries()) {
+        const figure = SkeletonUtils.clone(mannequin.scene);
         figure.scale.setScalar(dressingRoomMode ? 1.35 : figureRoomMode ? 2.75 : 2.45);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
@@ -520,16 +520,23 @@ new GLTFLoader().load(
           object.visible = true;
           if (object.isMesh) {
             object.frustumCulled = false;
-            if (dressingRoomMode) {
-              const wood = new THREE.MeshStandardMaterial({
-                color: 0xa66b38,
-                roughness: 0.72,
-                metalness: 0,
-              });
-              object.material = wood;
-            }
+            const wood = new THREE.MeshStandardMaterial({
+              color: 0xa66b38,
+              roughness: 0.72,
+              metalness: 0,
+            });
+            object.material = wood;
           }
         });
+        if (!dressingRoomMode && !figureRoomMode) {
+          if (x === 0.54) {
+            poseStandingFigure(figure);
+            standingFigures.push(figure);
+          } else {
+            poseSeatedFigure(figure, index);
+            seatedFigures.push({ figure, index });
+          }
+        }
         if (dressingRoomMode) {
           poseSeatedFigure(figure, 0);
           seatedFigures.push({ figure, index: 0 });
