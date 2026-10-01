@@ -73,12 +73,12 @@ function findPoseBone(bones, name) {
 }
 
 const poseLimits = {
-  "thigh.l": { x: [-1.85, -1.25], y: [-0.10, 0.10], z: [-0.06, 0.06] },
-  "thigh.r": { x: [-1.85, -1.25], y: [-0.10, 0.10], z: [-0.06, 0.06] },
-  "calf.l": { x: [1.55, 2.35], y: [-0.08, 0.08], z: [-0.08, 0.08] },
-  "calf.r": { x: [1.55, 2.35], y: [-0.08, 0.08], z: [-0.08, 0.08] },
-  "foot.l": { x: [-0.75, -0.25], y: [-0.12, 0.12], z: [-0.12, 0.12] },
-  "foot.r": { x: [-0.75, -0.25], y: [-0.12, 0.12], z: [-0.12, 0.12] },
+  "thigh.l": { x: [-1.85, -1.25], y: [-0.42, 0.42], z: [-0.20, 0.20] },
+  "thigh.r": { x: [-1.85, -1.25], y: [-0.42, 0.42], z: [-0.20, 0.20] },
+  "calf.l": { x: [1.55, 2.25], y: [-0.16, 0.16], z: [-0.14, 0.14] },
+  "calf.r": { x: [1.55, 2.25], y: [-0.16, 0.16], z: [-0.14, 0.14] },
+  "foot.l": { x: [-0.60, -0.20], y: [-0.16, 0.16], z: [-0.16, 0.16] },
+  "foot.r": { x: [-0.60, -0.20], y: [-0.16, 0.16], z: [-0.16, 0.16] },
 };
 
 function limitPoseRotation(name, value, axis) {
@@ -187,10 +187,10 @@ function poseSeatedLowerBody(figure, index = 0) {
   ][index % 4];
   // The leg bones are authored along local Y, so the hinge bend is local X.
   // Keep this correction runtime-only so the source GLB remains reusable.
-  rotate("thigh.l", -1.58, 0, 0);
-  rotate("thigh.r", -1.58, 0, 0);
-  rotate("calf.l", 1.88, 0, 0);
-  rotate("calf.r", 1.88, 0, 0);
+  rotate("thigh.l", -1.58, 0.24, 0);
+  rotate("thigh.r", -1.58, -0.24, 0);
+  rotate("calf.l", 1.82, 0.04, 0);
+  rotate("calf.r", 1.82, -0.04, 0);
   rotate("foot.l", lowerBody[4], 0, 0);
   rotate("foot.r", lowerBody[5], 0, 0);
   refreshSkinnedPose(figure);
@@ -547,7 +547,8 @@ new GLTFLoader().load(
       const placements = [
         [-4.00, 0.34, 0.24, Math.PI / 2],
         [-2.80, 0.34, 0.32, Math.PI / 2],
-        [0.54, 0.14, -0.15, Math.PI],
+        // The standing speaker faces into the circle; the fireplace is behind him.
+        [0.54, 0.14, -0.15, 0],
         [2.43, 0.34, -0.52, -Math.PI / 2],
         [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
