@@ -89,10 +89,10 @@ function poseMannequin(figure, pose = "seated") {
   preparePoseBases(figure);
   const bones = new Map();
   figure.traverse((object) => {
-    if (object.isBone) bones.set(object.name, object);
+    if (object.isBone) bones.set(object.name.toLowerCase().replace(/[^a-z0-9]/g, ""), object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
-    const bone = bones.get(name);
+    const bone = bones.get(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
     if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   if (pose === "seated") {
@@ -131,10 +131,10 @@ function poseSeatedLowerBody(figure, index = 0) {
   preparePoseBases(figure);
   const bones = new Map();
   figure.traverse((object) => {
-    if (object.isBone) bones.set(object.name, object);
+    if (object.isBone) bones.set(object.name.toLowerCase().replace(/[^a-z0-9]/g, ""), object);
   });
   const rotate = (name, x = 0, y = 0, z = 0) => {
-    const bone = bones.get(name);
+    const bone = bones.get(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
     if (bone) bone.rotation.copy(bone.userData.poseBase).x += x, bone.rotation.y = bone.userData.poseBase.y + y, bone.rotation.z = bone.userData.poseBase.z + z;
   };
   const lowerBody = [
@@ -514,7 +514,7 @@ new GLTFLoader().load(
           : placements;
       for (const [index, [x, y, z, yaw]] of visiblePlacements.entries()) {
         const figure = SkeletonUtils.clone(mannequin.scene);
-        figure.scale.setScalar(dressingRoomMode ? 1.0 : figureRoomMode ? 2.75 : 2.45);
+        figure.scale.setScalar(1.08);
         figure.position.set(x, y, z);
         figure.rotation.y = yaw;
         figure.traverse((object) => {
@@ -524,7 +524,7 @@ new GLTFLoader().load(
           if (object.isMesh) {
             object.frustumCulled = false;
             const wood = new THREE.MeshStandardMaterial({
-              color: 0xa66b38,
+              color: 0xc18a52,
               roughness: 0.72,
               metalness: 0,
             });
@@ -553,23 +553,6 @@ new GLTFLoader().load(
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
-    });
-    furnitureLoader.load("./furniture/wood-furniture-kit.glb", (kit) => {
-      if (figureOnlyMode || figureRoomMode) return;
-      const placements = {
-        Furns_Shelf_Book_1: [4.42, 0, -3.62, 0],
-      };
-      kit.scene.traverse((object) => {
-        const placement = placements[object.name];
-        object.visible = Boolean(placement);
-        if (!placement) return;
-        object.position.set(placement[0], placement[1], placement[2]);
-        object.rotation.y = placement[3];
-        object.scale.multiplyScalar(0.82);
-      });
-      scene.add(kit.scene);
-    }, undefined, (error) => {
-      console.error("Could not load the wood furniture kit", error);
     });
     furnitureLoader.load("./furniture/armchair-01/ArmChair_01.gltf", (armchair) => {
       if (figureOnlyMode || figureRoomMode) return;
