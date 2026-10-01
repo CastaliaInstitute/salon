@@ -135,6 +135,9 @@ new GLTFLoader().load(
       if (/^(Byron's companion chair|reading chair|guest chair by the window)/.test(object.name)) {
         object.visible = false;
       }
+      if (/^(low reading table|reading table|table leg|table candelabra)/.test(object.name)) {
+        object.visible = false;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
