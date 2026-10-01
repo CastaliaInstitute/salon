@@ -29,7 +29,8 @@ await addCopies('furniture/armchair-01/ArmChair_01.gltf', [
   [-3.95, 0, 0.34, Math.PI / 2, 0.94],
   [3.95, 0, 1.02, -Math.PI / 2, 0.94],
 ]);
-await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, 0, -1.28, 0, 0.9]]);
+// Turn the sofa toward the fireplace on the rear wall.
+await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -1.28, Math.PI, 0.9]]);
 
 await target.transform(unpartition());
 await io.write(file('salon.glb'), target);
