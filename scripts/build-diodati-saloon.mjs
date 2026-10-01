@@ -591,8 +591,9 @@ function whiteBust({ name, facultyId, position, yaw = 0 }) {
     facultyId,
     bustAttachment: "head_mount",
   }, [0.92, 0.70, 0.92]);
-  cyl(`${name} neck`, M.marble, [0, 1.76, 0], [0.20, 0.24, 0.20], g);
-  ball(`${name} bust shoulders`, M.marble, [0, 1.58, -0.02], [0.72, 0.42, 0.42], g);
+  // Head-only replacement: keep the wooden neck and dressed shoulders exposed
+  // so the faculty likeness reads as a mounted head, not a second bust torso.
+  cyl(`${name} white head socket`, M.marble, [0, 1.79, 0], [0.18, 0.18, 0.18], g);
   ball(`${name} white bust face`, M.marble, [0, 2.02, 0.02], [0.40, 0.48, 0.38], g);
   ball(`${name} carved hair`, M.marbleShadow, [0, 2.22, -0.01], [0.43, 0.25, 0.42], g);
   ball(`${name} nose`, M.marble, [0, 2.01, 0.22], [0.08, 0.10, 0.12], g);
