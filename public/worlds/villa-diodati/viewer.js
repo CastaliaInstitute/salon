@@ -25,7 +25,7 @@ const downloadedDressLoader = new GLTFLoader();
 const furnitureLoader = new GLTFLoader();
 // Furniture is baked into salon.glb. Keep the legacy loaders disabled so a
 // cached viewer cannot add duplicate runtime copies on top of the asset.
-const showFurniture = false;
+const showFurniture = dressingRoomMode;
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
@@ -256,10 +256,20 @@ function stepPhysics(delta) {
   physicsWorld.step();
   for (const ragdoll of ragdolls) {
     for (const part of ragdoll.parts) {
-      // Keep the authored bone rotations visible. The rigid bodies provide
-      // collision/contact state; copying unconstrained ball rotations here
-      // would erase the seated pose and collapse the figures into a T-pose.
+      const translation = part.body.translation();
+      const rotation = part.body.rotation();
+      const worldPosition = new THREE.Vector3(translation.x, translation.y, translation.z);
+      const worldQuaternion = new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+      const parent = part.bone.parent;
+      if (parent) {
+        parent.worldToLocal(worldPosition);
+        const parentQuaternion = new THREE.Quaternion();
+        parent.getWorldQuaternion(parentQuaternion);
+        part.bone.quaternion.copy(parentQuaternion.invert().multiply(worldQuaternion));
+      }
+      part.bone.position.copy(worldPosition);
     }
+    refreshSkinnedPose(ragdoll.figure);
   }
 }
 
@@ -316,8 +326,23 @@ function createRagdoll(figure) {
   for (const part of parts) {
     const parent = byBone.get(part.bone.parent);
     if (!parent) continue;
+    const parentPosition = parent.body.translation();
+    const childPosition = part.body.translation();
+    const jointPosition = {
+      x: (parentPosition.x + childPosition.x) * 0.5,
+      y: (parentPosition.y + childPosition.y) * 0.5,
+      z: (parentPosition.z + childPosition.z) * 0.5,
+    };
+    const parentRotation = parent.body.rotation();
+    const childRotation = part.body.rotation();
+    const parentInverse = new THREE.Quaternion(parentRotation.x, parentRotation.y, parentRotation.z, parentRotation.w).invert();
+    const childInverse = new THREE.Quaternion(childRotation.x, childRotation.y, childRotation.z, childRotation.w).invert();
+    const parentAnchor = new THREE.Vector3(jointPosition.x, jointPosition.y, jointPosition.z)
+      .applyQuaternion(parentInverse).sub(new THREE.Vector3(parentPosition.x, parentPosition.y, parentPosition.z).applyQuaternion(parentInverse));
+    const childAnchor = new THREE.Vector3(jointPosition.x, jointPosition.y, jointPosition.z)
+      .applyQuaternion(childInverse).sub(new THREE.Vector3(childPosition.x, childPosition.y, childPosition.z).applyQuaternion(childInverse));
     physicsWorld.createImpulseJoint(
-      RAPIER.JointData.spherical({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }),
+      RAPIER.JointData.spherical(parentAnchor, childAnchor),
       parent.body,
       part.body,
       true,
@@ -682,7 +707,7 @@ renderer.setAnimationLoop(() => {
   const delta = Math.min(animationClock.getDelta(), 0.05);
   for (const mixer of mannequinMixers) mixer.update(delta);
   for (const seated of seatedFigures) {
-    poseSeatedFigure(seated.figure, seated.index);
+    if (!dressingRoomMode || !physicsReady) poseSeatedFigure(seated.figure, seated.index);
     if (!dressingRoomMode) keepFeetAboveFloor(seated.figure);
   }
   for (const figure of standingFigures) {
