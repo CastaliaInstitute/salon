@@ -138,6 +138,9 @@ new GLTFLoader().load(
       if (/^(low reading table|reading table|table leg|table candelabra)/.test(object.name)) {
         object.visible = false;
       }
+      if (/(table|chair|desk|bench|seat)/i.test(object.name)) {
+        object.visible = false;
+      }
       if (/^(Mary Shelley|Claire Clairmont|Percy Bysshe Shelley|John Polidori|Lord Byron) mannequin/.test(object.name)) {
         object.visible = false;
       }
