@@ -1,0 +1,127 @@
+:root {
+  color-scheme: dark;
+  font-family: Georgia, "Times New Roman", serif;
+  background: #171513;
+  color: #eee7d8;
+  --gold: #c6a56d;
+  --panel: rgba(24, 20, 17, 0.90);
+}
+
+* { box-sizing: border-box; }
+
+html, body, .world {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body { background: #171513; }
+
+.world {
+  position: relative;
+  isolation: isolate;
+}
+
+#scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.topbar {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 64px;
+  padding: 0 24px;
+  background: linear-gradient(180deg, rgba(13, 12, 11, .87), rgba(13, 12, 11, .30));
+  letter-spacing: .12em;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+}
+
+.brand, .asset-link { color: #f2ead9; text-decoration: none; }
+.brand { white-space: nowrap; font-weight: 700; }
+.brand span { color: var(--gold); padding: 0 .25rem; }
+.world-title { text-align: center; color: var(--gold); font-weight: 700; }
+.world-title span { display: block; margin-top: 4px; color: #d5c7ad; font-size: 9px; font-weight: 400; }
+.asset-link { color: #d5c7ad; white-space: nowrap; letter-spacing: .04em; }
+.asset-link:hover { color: #fff; }
+
+.chat {
+  position: absolute;
+  z-index: 2;
+  top: 82px;
+  right: 22px;
+  bottom: 72px;
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 31vw);
+  min-width: 270px;
+  padding: 20px 18px 14px;
+  border: 1px solid rgba(198, 165, 109, .62);
+  border-radius: 5px;
+  background: var(--panel);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .38);
+  backdrop-filter: blur(9px);
+  transition: transform .22s ease, opacity .22s ease;
+}
+
+.chat.is-hidden { opacity: 0; pointer-events: none; transform: translateX(calc(100% + 30px)); }
+.chat-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.eyebrow { margin: 0; color: var(--gold); font: 700 9px/1.4 Arial, sans-serif; letter-spacing: .17em; }
+.chat h1 { margin: 5px 0 0; font-size: 23px; font-weight: 400; }
+.icon-button { border: 0; padding: 0 3px; color: #cbb992; background: transparent; cursor: pointer; font: 28px/1 Arial, sans-serif; }
+.icon-button:hover { color: white; }
+.chat-note { margin: 12px 0 15px; color: #bcb09d; font: italic 13px/1.5 Georgia, serif; }
+.conversation { display: flex; flex-direction: column; gap: 9px; overflow: auto; padding-right: 2px; }
+.message { padding: 11px 12px 10px; border-left: 2px solid var(--gold); background: rgba(255, 255, 255, .045); }
+.message h2 { margin: 0 0 5px; font: 700 10px/1.3 Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.message p { margin: 0; color: #e5dccb; font: 14px/1.45 Georgia, serif; }
+.byron h2 { color: #d09a66; }
+.mary h2 { color: #d5c9ad; }
+.percy h2 { color: #9eb58d; }
+.claire h2 { color: #d6a6a1; }
+.polidori h2 { color: #9dbdca; }
+.chat-footer { margin-top: auto; padding-top: 12px; color: #887c69; font: 8px/1.3 Arial, sans-serif; letter-spacing: .13em; }
+
+.chat-tab {
+  position: absolute;
+  z-index: 3;
+  top: 80px;
+  right: 18px;
+  display: none;
+  border: 1px solid rgba(198, 165, 109, .7);
+  border-radius: 4px;
+  padding: 10px 14px;
+  color: #eee7d8;
+  background: rgba(24, 20, 17, .9);
+  font: 12px Arial, sans-serif;
+  cursor: pointer;
+}
+.chat-tab.is-visible { display: block; }
+
+.status, .controls-hint { position: absolute; z-index: 2; bottom: 18px; color: rgba(240, 231, 215, .75); font: 10px Arial, sans-serif; letter-spacing: .04em; }
+.status { left: 20px; }
+.controls-hint { right: 22px; }
+.controls-hint span { color: var(--gold); padding: 0 4px; }
+
+@media (max-width: 760px) {
+  .topbar { min-height: 56px; padding: 0 14px; }
+  .world-title { display: none; }
+  .chat { top: auto; right: 10px; bottom: 52px; left: 10px; width: auto; min-width: 0; max-height: 45vh; padding: 14px; }
+  .chat h1 { font-size: 20px; }
+  .chat-note { margin: 7px 0 10px; }
+  .message { padding: 8px 10px; }
+  .message p { font-size: 13px; }
+  .chat-footer { padding-top: 8px; }
+  .chat-tab { top: 64px; right: 10px; }
+  .controls-hint { left: 14px; right: auto; bottom: 16px; }
+  .status { display: none; }
+}

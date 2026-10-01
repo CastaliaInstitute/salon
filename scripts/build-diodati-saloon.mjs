@@ -75,6 +75,9 @@ const M = {
   moonlight: material("lake-glow glass", [0.20, 0.32, 0.40], 0.25, {
     emissive: [0.045, 0.09, 0.13],
   }),
+  marble: material("warm Carrara marble", [0.82, 0.80, 0.74], 0.27, { metallic: 0.035 }),
+  marbleShadow: material("marble in carved folds", [0.65, 0.64, 0.59], 0.34),
+  marbleJoint: material("articulated marble joints", [0.71, 0.70, 0.65], 0.30),
   skin: material("porcelain skin", [0.78, 0.58, 0.43]),
   hair: material("dark hair", [0.075, 0.043, 0.032]),
   hairBrown: material("chestnut hair", [0.20, 0.09, 0.045]),
@@ -493,36 +496,44 @@ armchair("Byron's companion chair", [2.55, 0, -0.60], -Math.PI / 2, M.velvet);
 armchair("reading chair", [4.12, 0, 0.96], -Math.PI / 2, M.woodLight);
 armchair("guest chair by the window", [0.0, 0, 2.42], Math.PI, M.velvet);
 
-function seatedAvatar({ name, position, yaw, outfit, accent, hair = M.hair, dress = false, book = false }) {
+function seatedAvatar({ name, position, yaw, dress = false, book = false }) {
   const g = group(name, position, yaw, {
-    role: "historical_character_avatar",
-    likeness: "stylized generic period-costume figure, not a portrait likeness",
+    role: "articulated_marble_statue",
+    likeness: "stylized sculptural figure; not a portrait likeness",
   }, [0.92, 0.70, 0.92]);
-  // Seated body: hips, folded skirt or breeches, torso, shoulders and head.
-  cube(`${name} hips`, outfit, [0, 0.81, 0], [0.55, 0.32, 0.48], g);
+  // Separate stone forms and visible pivot joints make each guest read as a poseable statue.
+  cube(`${name} pelvis`, M.marble, [0, 0.81, 0], [0.55, 0.32, 0.48], g);
   if (dress) {
-    cone(`${name} full muslin skirt`, outfit, [0, 0.74, 0.13], [0.86, 0.92, 0.90], g);
-    cube(`${name} sash`, accent, [0, 1.22, -0.035], [0.58, 0.16, 0.53], g);
+    cone(`${name} carved drapery`, M.marble, [0, 0.74, 0.13], [0.86, 0.92, 0.90], g);
+    cube(`${name} carved sash fold`, M.marbleShadow, [0, 1.22, -0.035], [0.58, 0.12, 0.53], g);
+    for (const side of [-1, 1]) {
+      cyl(`${name} skirt fold ${side}`, M.marbleShadow, [side * 0.17, 0.71, 0.40], [0.035, 0.60, 0.035], g, quatEuler(0, 0, side * 0.08));
+    }
   } else {
-    cube(`${name} seated trousers`, outfit, [0, 0.57, 0.36], [0.50, 0.20, 0.76], g, quatEuler(-0.12, 0, 0));
-    cube(`${name} shirtfront`, accent, [0, 1.25, 0.025], [0.38, 0.43, 0.43], g);
+    cube(`${name} draped seated legs`, M.marble, [0, 0.57, 0.36], [0.50, 0.20, 0.76], g, quatEuler(-0.12, 0, 0));
+    cube(`${name} carved chest fold`, M.marbleShadow, [0, 1.25, 0.245], [0.11, 0.40, 0.035], g);
   }
-  cube(`${name} torso`, outfit, [0, 1.36, -0.05], [0.67, 0.69, 0.43], g, quatEuler(-0.05, 0, 0));
-  cube(`${name} collar`, accent, [0, 1.70, 0.015], [0.33, 0.13, 0.34], g);
-  cyl(`${name} neck`, M.skin, [0, 1.82, 0.015], [0.20, 0.22, 0.20], g);
-  ball(`${name} face`, M.skin, [0, 2.03, 0.02], [0.40, 0.48, 0.38], g);
-  ball(`${name} hair cap`, hair, [0, 2.23, -0.01], [0.43, 0.25, 0.42], g);
-  // Small nose and eyes give the proxies a readable front when viewed in-world.
-  ball(`${name} nose`, M.skin, [0, 2.02, 0.22], [0.08, 0.10, 0.12], g);
-  ball(`${name} left eye`, M.ink, [-0.095, 2.08, 0.185], [0.035, 0.035, 0.026], g);
-  ball(`${name} right eye`, M.ink, [0.095, 2.08, 0.185], [0.035, 0.035, 0.026], g);
+  cube(`${name} torso`, M.marble, [0, 1.36, -0.05], [0.67, 0.69, 0.43], g, quatEuler(-0.05, 0, 0));
+  cube(`${name} carved collar`, M.marbleShadow, [0, 1.70, 0.015], [0.33, 0.10, 0.34], g);
+  cyl(`${name} neck`, M.marble, [0, 1.82, 0.015], [0.20, 0.22, 0.20], g);
+  ball(`${name} face`, M.marble, [0, 2.03, 0.02], [0.40, 0.48, 0.38], g);
+  ball(`${name} carved hair`, M.marbleShadow, [0, 2.23, -0.01], [0.43, 0.25, 0.42], g);
+  ball(`${name} nose`, M.marble, [0, 2.02, 0.22], [0.08, 0.10, 0.12], g);
+  ball(`${name} left eye recess`, M.marbleShadow, [-0.095, 2.08, 0.185], [0.035, 0.035, 0.026], g);
+  ball(`${name} right eye recess`, M.marbleShadow, [0.095, 2.08, 0.185], [0.035, 0.035, 0.026], g);
+  ball(`${name} left hip joint`, M.marbleJoint, [-0.21, 0.75, 0.09], [0.19, 0.19, 0.19], g);
+  ball(`${name} right hip joint`, M.marbleJoint, [0.21, 0.75, 0.09], [0.19, 0.19, 0.19], g);
   for (const side of [-1, 1]) {
-    cube(`${name} upper leg ${side}`, outfit, [side * 0.19, 0.63, 0.38], [0.29, 0.22, 0.68], g, quatEuler(-0.06, 0, side * -0.04));
-    cube(`${name} shin ${side}`, dress ? outfit : accent, [side * 0.19, 0.30, 0.55], [0.19, 0.48, 0.20], g);
-    cube(`${name} shoe ${side}`, M.wood, [side * 0.19, 0.10, 0.70], [0.22, 0.13, 0.39], g);
-    cube(`${name} upper sleeve ${side}`, outfit, [side * 0.38, 1.42, 0.08], [0.23, 0.43, 0.25], g, quatEuler(0, 0, side * -0.17));
-    cyl(`${name} forearm ${side}`, dress ? outfit : accent, [side * 0.32, 1.16, 0.35], [0.13, 0.42, 0.13], g, quatEuler(-0.64, 0, side * 0.25));
-    ball(`${name} hand ${side}`, M.skin, [side * 0.28, 1.02, 0.52], [0.15, 0.13, 0.17], g);
+    cube(`${name} upper leg ${side}`, M.marble, [side * 0.19, 0.63, 0.38], [0.29, 0.22, 0.68], g, quatEuler(-0.06, 0, side * -0.04));
+    ball(`${name} knee pivot ${side}`, M.marbleJoint, [side * 0.19, 0.58, 0.64], [0.20, 0.18, 0.20], g);
+    cube(`${name} shin ${side}`, M.marble, [side * 0.19, 0.30, 0.55], [0.19, 0.48, 0.20], g);
+    cube(`${name} foot ${side}`, M.marble, [side * 0.19, 0.10, 0.70], [0.22, 0.13, 0.39], g);
+    ball(`${name} shoulder pivot ${side}`, M.marbleJoint, [side * 0.38, 1.48, 0.04], [0.27, 0.27, 0.27], g);
+    cube(`${name} upper arm ${side}`, M.marble, [side * 0.38, 1.42, 0.08], [0.23, 0.43, 0.25], g, quatEuler(0, 0, side * -0.17));
+    ball(`${name} elbow pivot ${side}`, M.marbleJoint, [side * 0.32, 1.19, 0.30], [0.16, 0.16, 0.16], g);
+    cyl(`${name} forearm ${side}`, M.marble, [side * 0.32, 1.16, 0.35], [0.13, 0.42, 0.13], g, quatEuler(-0.64, 0, side * 0.25));
+    ball(`${name} wrist pivot ${side}`, M.marbleJoint, [side * 0.28, 1.02, 0.49], [0.13, 0.13, 0.13], g);
+    ball(`${name} hand ${side}`, M.marble, [side * 0.28, 1.02, 0.52], [0.15, 0.13, 0.17], g);
   }
   if (book) {
     cube(`${name} book cover`, M.velvet, [0.22, 1.12, 0.60], [0.34, 0.07, 0.27], g, quatEuler(-0.12, -0.16, -0.08));
@@ -533,35 +544,41 @@ function seatedAvatar({ name, position, yaw, outfit, accent, hair = M.hair, dres
 
 function standingByron() {
   const g = group("Lord Byron - standing host", [0.54, 0, -0.15], Math.PI, {
-    role: "host_avatar",
-    likeness: "stylized generic period-costume figure, not a portrait likeness",
+    role: "articulated_marble_statue_host",
+    likeness: "stylized sculptural figure; not a portrait likeness",
   }, [0.92, 0.68, 0.92]);
-  cone("Byron long plum coat", M.byron, [0, 1.08, 0], [0.92, 1.85, 0.68], g);
-  cube("Byron waistcoat", M.byronVest, [0, 1.54, 0.34], [0.42, 0.65, 0.08], g);
-  cube("Byron shirt collar", M.trim, [0, 1.91, 0.30], [0.33, 0.20, 0.10], g);
-  cyl("Byron neck", M.skin, [0, 2.03, 0.03], [0.21, 0.24, 0.21], g);
-  ball("Byron head", M.skin, [0, 2.27, 0.03], [0.43, 0.49, 0.39], g);
-  ball("Byron dark curls", M.hair, [0, 2.47, 0.015], [0.47, 0.26, 0.43], g);
-  ball("Byron nose", M.skin, [0, 2.26, 0.24], [0.08, 0.11, 0.12], g);
-  ball("Byron left eye", M.ink, [-0.10, 2.32, 0.19], [0.035, 0.035, 0.025], g);
-  ball("Byron right eye", M.ink, [0.10, 2.32, 0.19], [0.035, 0.035, 0.025], g);
+  cone("Byron sculpted cloak", M.marble, [0, 1.08, 0], [0.92, 1.85, 0.68], g);
+  cube("Byron carved chest folds", M.marbleShadow, [0, 1.54, 0.34], [0.42, 0.65, 0.08], g);
+  cube("Byron sculpted collar", M.marble, [0, 1.91, 0.30], [0.33, 0.20, 0.10], g);
+  cyl("Byron neck", M.marble, [0, 2.03, 0.03], [0.21, 0.24, 0.21], g);
+  ball("Byron head", M.marble, [0, 2.27, 0.03], [0.43, 0.49, 0.39], g);
+  ball("Byron carved curls", M.marbleShadow, [0, 2.47, 0.015], [0.47, 0.26, 0.43], g);
+  ball("Byron nose", M.marble, [0, 2.26, 0.24], [0.08, 0.11, 0.12], g);
+  ball("Byron left eye recess", M.marbleShadow, [-0.10, 2.32, 0.19], [0.035, 0.035, 0.025], g);
+  ball("Byron right eye recess", M.marbleShadow, [0.10, 2.32, 0.19], [0.035, 0.035, 0.025], g);
+  ball("Byron left shoulder pivot", M.marbleJoint, [-0.45, 1.76, 0.10], [0.30, 0.30, 0.30], g);
+  ball("Byron right shoulder pivot", M.marbleJoint, [0.45, 1.76, 0.10], [0.30, 0.30, 0.30], g);
   for (const side of [-1, 1]) {
-    cyl(`Byron sleeve ${side}`, M.byron, [side * 0.45, 1.57, 0.10], [0.28, 0.75, 0.28], g, quatEuler(0, 0, side * -0.29));
-    cyl(`Byron forearm ${side}`, M.byron, [side * 0.62, 1.27, 0.23], [0.17, 0.52, 0.17], g, quatEuler(0, 0, side * 0.24));
-    ball(`Byron hand ${side}`, M.skin, [side * 0.68, 1.02, 0.28], [0.16, 0.15, 0.15], g);
-    cyl(`Byron boot ${side}`, M.ink, [side * 0.23, 0.22, 0], [0.23, 0.45, 0.23], g);
-    cube(`Byron shoe ${side}`, M.ink, [side * 0.23, 0.08, 0.10], [0.29, 0.13, 0.42], g);
+    cyl(`Byron upper arm ${side}`, M.marble, [side * 0.45, 1.57, 0.10], [0.28, 0.75, 0.28], g, quatEuler(0, 0, side * -0.29));
+    ball(`Byron elbow pivot ${side}`, M.marbleJoint, [side * 0.62, 1.30, 0.18], [0.20, 0.20, 0.20], g);
+    cyl(`Byron forearm ${side}`, M.marble, [side * 0.62, 1.27, 0.23], [0.17, 0.52, 0.17], g, quatEuler(0, 0, side * 0.24));
+    ball(`Byron wrist pivot ${side}`, M.marbleJoint, [side * 0.68, 1.03, 0.28], [0.15, 0.15, 0.15], g);
+    ball(`Byron hand ${side}`, M.marble, [side * 0.68, 1.02, 0.28], [0.16, 0.15, 0.15], g);
+    ball(`Byron hip pivot ${side}`, M.marbleJoint, [side * 0.23, 0.60, 0], [0.20, 0.20, 0.20], g);
+    cyl(`Byron articulated leg ${side}`, M.marble, [side * 0.23, 0.43, 0], [0.23, 0.58, 0.23], g);
+    ball(`Byron knee pivot ${side}`, M.marbleJoint, [side * 0.23, 0.17, 0], [0.16, 0.16, 0.16], g);
+    cube(`Byron foot ${side}`, M.marble, [side * 0.23, 0.08, 0.10], [0.29, 0.13, 0.42], g);
   }
   return g;
 }
 
 // Period-costume figures follow the supplied composition: two guests on the settee,
 // the host standing at the hearth, and two guests seated to the right.
-seatedAvatar({ name: "Mary Shelley", position: [-4.00, 0, 0.24], yaw: Math.PI / 2, outfit: M.mary, accent: M.marySash, hair: M.hairBrown, dress: true });
-seatedAvatar({ name: "Claire Clairmont", position: [-2.80, 0, 0.32], yaw: Math.PI / 2, outfit: M.claire, accent: M.claireSash, hair: M.hair, dress: true });
+seatedAvatar({ name: "Mary Shelley", position: [-4.00, 0, 0.24], yaw: Math.PI / 2, dress: true });
+seatedAvatar({ name: "Claire Clairmont", position: [-2.80, 0, 0.32], yaw: Math.PI / 2, dress: true });
 standingByron();
-seatedAvatar({ name: "Percy Bysshe Shelley", position: [2.43, 0, -0.52], yaw: -Math.PI / 2, outfit: M.percy, accent: M.percyShirt, hair: M.hairBrown });
-seatedAvatar({ name: "John Polidori", position: [4.05, 0, 1.05], yaw: -Math.PI / 2, outfit: M.polidori, accent: M.polidoriShirt, hair: M.hair, book: true });
+seatedAvatar({ name: "Percy Bysshe Shelley", position: [2.43, 0, -0.52], yaw: -Math.PI / 2 });
+seatedAvatar({ name: "John Polidori", position: [4.05, 0, 1.05], yaw: -Math.PI / 2, book: true });
 
 // Writing desk by the side window, folios and inkwell.
 cube("writing desk top", M.woodLight, [-4.63, 0.95, -1.90], [1.50, 0.14, 0.84]);

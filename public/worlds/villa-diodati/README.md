@@ -1,8 +1,8 @@
 # Villa Diodati — saloon prototype
 
-`saloon.glb` is a self-contained glTF 2.0 prototype for a ThirdRoom world.
-It is designed as a small, walkable conversation space, not as a measured
-architectural reconstruction.
+`saloon.glb` is a self-contained glTF 2.0 prototype for a ThirdRoom world and
+an interactive browser preview. It is designed as a small conversation space,
+not as a measured architectural reconstruction.
 
 ## Scene
 
@@ -10,10 +10,14 @@ architectural reconstruction.
   reading matter, candles and a storm-dark lake outlook.
 - A covered three-sided gallery with Tuscan-style columns follows the public
   heritage description of the villa.
-- Five stylized, non-portrait avatars stage the circle in the composition of
-  the supplied reference still from the 2017 film *Mary Shelley*: Byron
-  standing at the hearth; Mary and Claire seated together; Percy and Polidori
-  opposite them.
+- Five articulated marble statues stage the circle in the composition of the
+  supplied reference still from the 2017 film *Mary Shelley*: Byron standing
+  at the hearth; Mary and Claire seated together; Percy and Polidori opposite
+  them. Visible spherical pivots make the figures read as articulated statues.
+- Open the interactive browser view at `/worlds/villa-diodati/`. Drag to orbit
+  and scroll to zoom; the conversation panel is visible alongside the world.
+  The browser overview hides the lake-facing wall and ceiling to expose the
+  statues; the downloadable GLB retains the complete room shell.
 - `saloon-chat.js` adds a side-mounted, multi-speaker transcript panel using
   ThirdRoom's WebSG `UICanvas` / `UIText` API. It is an authored sample dialogue,
   not connected to Matrix yet.
@@ -30,9 +34,9 @@ sides. The public 1816/1832 exterior views support the lake-facing terrace and
 colonnaded approach.
 
 No original room plan has been located. The interior partitioning, furniture,
-color palette, avatar appearance and staging are interpretive design choices
-informed by the film still. The avatars represent the historical circle, not
-likenesses of the people or actors.
+marble treatment and staging are interpretive design choices informed by the
+film still. The statues represent the historical circle, not likenesses of the
+people or actors.
 
 ## Rebuild
 
@@ -43,6 +47,8 @@ node scripts/build-diodati-saloon.mjs
 ```
 
 The generator uses only Node built-ins and writes this standalone GLB.
+The interactive browser view is a lightweight static preview of the same GLB;
+it is not a running ThirdRoom client.
 ThirdRoom accepts the WebSG JavaScript file separately: upload
 `saloon-chat.js` in the world's Script settings (or open the in-world editor
 and paste its contents).

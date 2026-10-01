@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#171513" />
+    <meta name="description" content="Explore the Villa Diodati saloon and its articulated marble statues, with a staged conversation among the Shelley circle." />
+    <title>Villa Diodati Saloon | Castalia Institute</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./viewer.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="world" aria-label="Villa Diodati 3D world">
+      <canvas id="scene" aria-label="Interactive 3D view of the Villa Diodati saloon"></canvas>
+
+      <header class="topbar">
+        <a class="brand" href="https://salon.castalia.institute/">CASTALIA <span>·</span> SALON</a>
+        <div class="world-title">VILLA DIODATI <span>LAKE GENEVA · 1816</span></div>
+        <a class="asset-link" href="./README.md">About this reconstruction</a>
+      </header>
+
+      <aside class="chat" id="chat-panel" aria-label="Staged salon transcript">
+        <div class="chat-heading">
+          <div>
+            <span class="eyebrow">A STORMY EVENING</span>
+            <h1>Salon transcript</h1>
+          </div>
+          <button id="close-chat" class="icon-button" type="button" aria-label="Close chat panel">×</button>
+        </div>
+        <p class="chat-note">An imagined exchange among the guests—not dialogue from the film or a historical transcript.</p>
+        <div class="conversation">
+          <article class="message byron">
+            <h2>Lord Byron</h2>
+            <p>This rain has made a prison of the villa.</p>
+          </article>
+          <article class="message mary">
+            <h2>Mary Shelley</h2>
+            <p>Then let us make something worth staying in for.</p>
+          </article>
+          <article class="message percy">
+            <h2>Percy Bysshe Shelley</h2>
+            <p>A thought can travel farther than any of us tonight.</p>
+          </article>
+          <article class="message claire">
+            <h2>Claire Clairmont</h2>
+            <p>Only if someone is brave enough to begin it.</p>
+          </article>
+          <article class="message polidori">
+            <h2>John Polidori</h2>
+            <p>Very well. Let us give the darkness a voice.</p>
+          </article>
+        </div>
+        <div class="chat-footer">ILLUSTRATIVE SCENE · NOT LIVE MATRIX CHAT</div>
+      </aside>
+
+      <button id="open-chat" class="chat-tab" type="button" aria-expanded="true">Conversation</button>
+
+      <div class="status" id="status">Preparing the room…</div>
+      <div class="controls-hint">Drag to orbit <span>·</span> scroll to zoom</div>
+    </main>
+    <script type="module" src="./viewer.js"></script>
+  </body>
+</html>
