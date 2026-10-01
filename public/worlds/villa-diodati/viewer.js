@@ -68,8 +68,18 @@ new GLTFLoader().load(
           const material = object.material.clone();
           textureLoader.load(url, (texture) => {
             texture.colorSpace = THREE.SRGBColorSpace;
-            material.map = texture;
-            material.needsUpdate = true;
+            const headCard = new THREE.Mesh(
+              new THREE.PlaneGeometry(0.72, 0.90),
+              new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+              }),
+            );
+            headCard.position.set(object.position.x, object.position.y + 0.02, object.position.z + 0.28);
+            object.parent?.add(headCard);
+            object.visible = false;
           });
           object.material = material;
         }
