@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import RAPIER from "rapier3d-compat";
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
@@ -17,7 +18,9 @@ const furnitureLoader = new GLTFLoader();
 const mannequinMixers = [];
 const seatedFigures = [];
 const standingFigures = [];
-const physicsBodies = [];
+const ragdolls = [];
+let physicsWorld = null;
+let physicsReady = false;
 const animationClock = new THREE.Clock();
 const FLOOR_Y = -0.22;
 const facultyBusts = {
@@ -149,10 +152,12 @@ function poseSeatedFigure(figure, index = 0) {
   const breath = Math.sin(animationClock.elapsedTime * 1.35 + index * 0.8) * 0.012;
   rotate("spine_01", conversational[0], 0, 0);
   rotate("spine_02", conversational[1] + breath, 0, 0);
-  rotate("upperarm.l", conversational[2], 0, -1.0);
-  rotate("upperarm.r", conversational[3], 0, 0.92);
-  rotate("lowerarm.l", conversational[4], 0.08, -0.08);
-  rotate("lowerarm.r", conversational[5], -0.08, 0.08);
+  // This rig's upper-arm rest axis is Z (not X); using X leaves both arms in
+  // the glTF T-pose even though the numeric rotations look plausible.
+  rotate("upperarm.l", 0, 0, -1.32);
+  rotate("upperarm.r", 0, 0, 1.32);
+  rotate("lowerarm.l", -0.28, 0, -0.08);
+  rotate("lowerarm.r", -0.28, 0, 0.08);
   rotate("head", conversational[6] - breath * 0.4, conversational[7], 0);
 }
 
@@ -166,26 +171,92 @@ function poseStandingFigure(figure) {
   rotate("spine_01", -0.04, 0, 0);
   const breath = Math.sin(animationClock.elapsedTime * 1.35 + 2.4) * 0.012;
   rotate("spine_02", -0.02 + breath, 0, 0);
-  rotate("upperarm.l", -0.22, 0, -0.92);
-  rotate("upperarm.r", -0.08, 0, 0.78);
-  rotate("lowerarm.l", -0.48, 0.06, -0.08);
-  rotate("lowerarm.r", -0.62, -0.06, 0.08);
+  rotate("upperarm.l", -0.24, 0, -1.04);
+  rotate("upperarm.r", -0.10, 0, 0.88);
+  rotate("lowerarm.l", -0.64, 0.08, -0.10);
+  rotate("lowerarm.r", -0.52, -0.08, 0.10);
   rotate("head", 0.02 - breath * 0.4, 0.28, 0);
 }
 
 function stepPhysics(delta) {
-  // Lightweight rigid-body foundation: gravity and floor contact for each
-  // mannequin root. Bone posing remains authored, while root motion is no
-  // longer allowed to tunnel below the salon floor.
-  for (const body of physicsBodies) {
-    body.velocityY -= 9.81 * delta;
-    body.figure.position.y += body.velocityY * delta;
-    if (body.figure.position.y < body.restY) {
-      body.figure.position.y = body.restY;
-      body.velocityY = 0;
+  if (!physicsReady) return;
+  physicsWorld.timestep = Math.min(delta, 1 / 30);
+  physicsWorld.step();
+  for (const ragdoll of ragdolls) {
+    for (const part of ragdoll.parts) {
+      const t = part.body.translation();
+      const r = part.body.rotation();
+      const worldPosition = new THREE.Vector3(t.x, t.y, t.z);
+      const worldQuaternion = new THREE.Quaternion(r.x, r.y, r.z, r.w);
+      const parent = part.bone.parent;
+      if (parent) {
+        parent.updateMatrixWorld(true);
+        parent.worldToLocal(worldPosition);
+        const parentQuaternion = new THREE.Quaternion();
+        parent.getWorldQuaternion(parentQuaternion);
+        part.bone.quaternion.copy(parentQuaternion.invert().multiply(worldQuaternion));
+      }
+      part.bone.position.copy(worldPosition);
     }
   }
 }
+
+function addStaticBox(center, halfExtents) {
+  const body = physicsWorld.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(...center));
+  physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(...halfExtents), body);
+}
+
+function createChairColliders() {
+  addStaticBox([0, -0.22, 0], [11, 0.12, 11]);
+  for (const x of [-1.55, 1.55]) {
+    addStaticBox([x, 0.82, 0.18], [0.72, 0.08, 0.72]);
+    addStaticBox([x, 1.42, -0.38], [0.72, 0.62, 0.08]);
+    addStaticBox([x - 0.66, 0.78, 0.18], [0.08, 0.38, 0.72]);
+    addStaticBox([x + 0.66, 0.78, 0.18], [0.08, 0.38, 0.72]);
+  }
+  addStaticBox([0, 0.82, -1.28], [1.9, 0.08, 0.62]);
+  addStaticBox([0, 1.45, -1.82], [1.9, 0.62, 0.08]);
+}
+
+function createRagdoll(figure) {
+  figure.updateMatrixWorld(true);
+  const names = new Set(["spine_01", "spine_02", "upperarm.l", "lowerarm.l", "upperarm.r", "lowerarm.r", "thigh.l", "calf.l", "foot.l", "thigh.r", "calf.r", "foot.r"]);
+  const parts = [];
+  const byBone = new Map();
+  figure.traverse((bone) => {
+    if (!bone.isBone || !names.has(bone.name)) return;
+    const p = new THREE.Vector3();
+    const q = new THREE.Quaternion();
+    bone.getWorldPosition(p);
+    bone.getWorldQuaternion(q);
+    const body = physicsWorld.createRigidBody(
+      RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x, p.y, p.z)
+        .setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
+        .setLinearDamping(3).setAngularDamping(3).setCanSleep(false),
+    );
+    physicsWorld.createCollider(RAPIER.ColliderDesc.ball(0.13).setMass(0.7), body);
+    const part = { bone, body };
+    parts.push(part);
+    byBone.set(bone, part);
+  });
+  for (const part of parts) {
+    const parent = byBone.get(part.bone.parent);
+    if (!parent) continue;
+    physicsWorld.createImpulseJoint(
+      RAPIER.JointData.spherical({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }),
+      parent.body,
+      part.body,
+      true,
+    );
+  }
+  ragdolls.push({ figure, parts });
+}
+
+const physicsInit = RAPIER.init().then(() => {
+  physicsWorld = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  createChairColliders();
+  physicsReady = true;
+});
 
 function keepFeetAboveFloor(figure) {
   figure.updateMatrixWorld(true);
@@ -344,7 +415,8 @@ resize();
 
 new GLTFLoader().load(
   "./saloon.glb?v=68a0298",
-  (gltf) => {
+  async (gltf) => {
+    await physicsInit;
     // A cutaway roof and lake facade keep the statues visible in the browser overview.
     // The downloadable GLB remains complete for ThirdRoom.
     gltf.scene.traverse((object) => {
@@ -426,7 +498,7 @@ new GLTFLoader().load(
         // line, with a hard floor-safe limit so no feet can pass below the
         // saloon floor plane.
         figure.position.set(x, x === 0.54 ? y : y + 0.14, z);
-        physicsBodies.push({ figure, restY: figure.position.y, velocityY: 0 });
+        createRagdoll(figure);
         figure.rotation.y = yaw;
         if (x !== 0.54) {
           seatedFigures.push({ figure, index });
