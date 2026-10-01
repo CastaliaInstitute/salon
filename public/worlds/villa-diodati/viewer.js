@@ -10,6 +10,9 @@ const status = document.querySelector("#status");
 const chatPanel = document.querySelector("#chat-panel");
 const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
+const dressingControls = document.querySelector("#dressing-controls");
+const characterSelect = document.querySelector("#character-select");
+const poseIndicator = document.querySelector("#pose-indicator");
 const textureLoader = new THREE.TextureLoader();
 const mannequinLoader = new GLTFLoader();
 const qaMode = new URLSearchParams(window.location.search).get("qa") || "";
@@ -25,6 +28,12 @@ const standingFigures = [];
 const ragdolls = [];
 let physicsWorld = null;
 let physicsReady = false;
+let dressingFigure = null;
+let dressingOutfit = null;
+let dressingCup = null;
+let dressingAction = "idle";
+let selectedCharacter = 0;
+let dressingStartTime = 0;
 const animationClock = new THREE.Clock();
 const FLOOR_Y = -0.22;
 const facultyBusts = {
@@ -576,6 +585,8 @@ new GLTFLoader().load(
       const placements = [
         [-1.55, 0, 0.18, Math.PI * 0.08, 0x8b2635],
         [1.55, 0, 0.18, -Math.PI * 0.08, 0x314b35],
+        [-3.95, 0, 0.34, Math.PI / 2, 0x6e2630],
+        [3.95, 0, 1.02, -Math.PI / 2, 0x3c4f39],
       ];
       for (const [x, y, z, yaw, tint] of placements) {
         const chair = armchair.scene.clone(true);
