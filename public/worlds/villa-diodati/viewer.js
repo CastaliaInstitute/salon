@@ -126,7 +126,10 @@ new GLTFLoader().load(
             texture.wrapS = THREE.ClampToEdgeWrapping;
             texture.wrapT = THREE.ClampToEdgeWrapping;
             const headCard = new THREE.Mesh(
-              new THREE.PlaneGeometry(0.56, 0.68),
+              // A shallow rounded form keeps the isolated Supabase portrait
+              // from reading as a billboard while preserving the head-only
+              // replacement on the rigged wooden body.
+              new THREE.SphereGeometry(0.36, 24, 16),
               new THREE.MeshBasicMaterial({
                 map: texture,
                 transparent: true,
@@ -134,6 +137,7 @@ new GLTFLoader().load(
                 side: THREE.DoubleSide,
               }),
             );
+            headCard.scale.set(0.78, 1.0, 0.62);
             headCard.position.set(object.position.x, object.position.y + 0.02, object.position.z + 0.28);
             object.parent?.add(headCard);
             object.visible = false;
