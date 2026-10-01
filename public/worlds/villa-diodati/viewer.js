@@ -564,8 +564,8 @@ new GLTFLoader().load(
     if (figureRoomMode || dressingRoomMode) {
       scene.background = new THREE.Color(0x202020);
       scene.fog = null;
-      camera.position.set(dressingRoomMode ? 3.1 : 0, dressingRoomMode ? 1.8 : 1.65, dressingRoomMode ? 5.2 : 5.8);
-      controls.target.set(dressingRoomMode ? 1.45 : 0, dressingRoomMode ? 0.9 : 1.15, dressingRoomMode ? 0.14 : 0);
+      camera.position.set(dressingRoomMode ? 2.25 : 0, dressingRoomMode ? 1.45 : 1.65, dressingRoomMode ? 3.25 : 5.8);
+      controls.target.set(dressingRoomMode ? 1.45 : 0, dressingRoomMode ? 0.78 : 1.15, dressingRoomMode ? 0.14 : 0);
       controls.update();
     }
     mannequinLoader.load("./mannequiny.glb", (mannequin) => {
