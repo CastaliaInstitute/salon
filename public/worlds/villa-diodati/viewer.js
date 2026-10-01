@@ -159,10 +159,6 @@ function poseSeatedFigure(figure, index = 0) {
   rotate("lowerarm.l", -0.28, 0, -0.08);
   rotate("lowerarm.r", -0.28, 0, 0.08);
   rotate("head", conversational[6] - breath * 0.4, conversational[7], 0);
-  // Final rig-specific correction. The mannequin's authored arm axis is
-  // already encoded in poseMannequin; keep the animation from reopening the
-  // arms into a T-pose after the clothing is attached.
-  poseMannequin(figure, "seated");
 }
 
 function poseStandingFigure(figure) {
@@ -180,7 +176,6 @@ function poseStandingFigure(figure) {
   rotate("lowerarm.l", -0.64, 0.08, -0.10);
   rotate("lowerarm.r", -0.52, -0.08, 0.10);
   rotate("head", 0.02 - breath * 0.4, 0.28, 0);
-  poseMannequin(figure, "conversational");
 }
 
 function stepPhysics(delta) {
