@@ -38,10 +38,6 @@ function poseMannequin(figure, pose = "seated") {
     rotate("foot.r", -0.62, 0, 0);
     rotate("spine_01", -0.10, 0, 0);
     rotate("spine_02", -0.08, 0, 0);
-    rotate("upperarm.l", 0.28, 0, -0.52);
-    rotate("upperarm.r", 0.28, 0, 0.52);
-    rotate("lowerarm.l", -0.82, 0.10, -0.20);
-    rotate("lowerarm.r", -0.82, -0.10, 0.20);
   } else if (pose === "conversational") {
     rotate("thigh.l", -1.62, 0.12, -0.10);
     rotate("thigh.r", -1.62, -0.12, 0.10);
@@ -49,10 +45,6 @@ function poseMannequin(figure, pose = "seated") {
     rotate("calf.r", 2.18, 0, 0);
     rotate("foot.l", -0.62, 0, 0);
     rotate("foot.r", -0.62, 0, 0);
-    rotate("upperarm.l", -0.55, 0, -0.88);
-    rotate("upperarm.r", -0.18, 0, 0.72);
-    rotate("lowerarm.l", -0.95, 0.1, -0.15);
-    rotate("lowerarm.r", -0.72, -0.1, 0.18);
     rotate("head", 0.02, 0.32, 0);
   }
 }
