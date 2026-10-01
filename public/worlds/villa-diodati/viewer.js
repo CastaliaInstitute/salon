@@ -506,12 +506,8 @@ new GLTFLoader().load(
         } else {
           standingFigures.push(figure);
         }
-        const idleClip = mannequin.animations?.find((clip) => clip.name === "idle");
-        if (idleClip) {
-          const mixer = new THREE.AnimationMixer(figure);
-          mixer.clipAction(idleClip).play();
-          mannequinMixers.push(mixer);
-        }
+        // Keep the authored seated/conversational pose stable. The source
+        // idle clip reopens the arms into its T-pose after garment fitting.
         scene.add(figure);
         if (index !== 0) {
           const clothing = SkeletonUtils.clone(clothingAsset.scene);
