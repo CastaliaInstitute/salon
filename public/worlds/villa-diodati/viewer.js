@@ -199,8 +199,6 @@ new GLTFLoader().load(
     furnitureLoader.load("./furniture/wood-furniture-kit.glb", (kit) => {
       const placements = {
         Furns_Table_Round_2: [0, 0.02, 0.22, 0],
-        Furns_Chair_1: [-1.28, 0, 0.38, Math.PI / 2],
-        Furns_Chair_2: [1.28, 0, 0.38, -Math.PI / 2],
         Furns_Shelf_Book_1: [4.42, 0, -3.62, 0],
       };
       kit.scene.traverse((object) => {
