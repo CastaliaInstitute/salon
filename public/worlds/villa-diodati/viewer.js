@@ -200,12 +200,20 @@ new GLTFLoader().load(
         if (headBone) {
           const headTexture = textureLoader.load(headAssets[index]);
           headTexture.colorSpace = THREE.SRGBColorSpace;
-          const headSprite = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.46, 0.54),
-            new THREE.MeshBasicMaterial({ map: headTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide }),
+          const headVolume = new THREE.Mesh(
+            new THREE.SphereGeometry(0.28, 32, 20),
+            new THREE.MeshStandardMaterial({
+              map: headTexture,
+              transparent: true,
+              alphaTest: 0.08,
+              roughness: 0.74,
+              metalness: 0,
+              side: THREE.DoubleSide,
+            }),
           );
-          headSprite.position.set(0, 0.11, 0.045);
-          headBone.add(headSprite);
+          headVolume.scale.set(0.84, 1.08, 0.74);
+          headVolume.position.set(0, 0.11, 0.04);
+          headBone.add(headVolume);
         }
         figure.traverse((object) => {
           if (!object.isMesh) return;
