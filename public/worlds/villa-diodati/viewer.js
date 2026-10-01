@@ -529,9 +529,9 @@ new GLTFLoader().load(
       if (figureOnlyMode || figureRoomMode) return;
       if (dressingRoomMode) {
         const chair = armchair.scene.clone(true);
-        chair.scale.setScalar(0.9);
-        chair.position.set(1.35, 0, -0.7);
-        chair.rotation.y = -Math.PI * 0.12;
+        chair.scale.setScalar(0.94);
+        chair.position.set(1.45, 0, 0.2);
+        chair.rotation.y = -Math.PI * 0.08;
         scene.add(chair);
         return;
       }
