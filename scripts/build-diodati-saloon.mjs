@@ -575,13 +575,8 @@ function standingByron() {
   return g;
 }
 
-// Period-costume figures follow the supplied composition: two guests on the settee,
-// the host standing at the hearth, and two guests seated to the right.
-seatedAvatar({ name: "Mary Shelley", facultyId: "mary-shelley", position: [-4.00, 0, 0.24], yaw: Math.PI / 2, dress: true, garment: M.mary });
-seatedAvatar({ name: "Claire Clairmont", facultyId: "claire-clairmont", position: [-2.80, 0, 0.32], yaw: Math.PI / 2, dress: true, garment: M.claire });
-standingByron();
-seatedAvatar({ name: "Percy Bysshe Shelley", facultyId: "percy-bysshe-shelley", position: [2.43, 0, -0.52], yaw: -Math.PI / 2, garment: M.percy });
-seatedAvatar({ name: "John Polidori", facultyId: "john-polidori", position: [4.05, 0, 1.05], yaw: -Math.PI / 2, book: true, garment: M.polidori });
+// Historical figures are intentionally omitted from the authored GLB. The room
+// is staged for the replacement wooden mannequin + Supabase bust system.
 
 // Writing desk by the side window, folios and inkwell.
 cube("writing desk top", M.woodLight, [-4.63, 0.95, -1.90], [1.50, 0.14, 0.84]);
