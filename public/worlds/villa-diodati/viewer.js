@@ -198,7 +198,7 @@ new GLTFLoader().load(
           const headTexture = textureLoader.load(headAssets[index]);
           headTexture.colorSpace = THREE.SRGBColorSpace;
           const headSprite = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.62, 0.72),
+            new THREE.PlaneGeometry(0.46, 0.54),
             new THREE.MeshBasicMaterial({ map: headTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide }),
           );
           headSprite.position.set(0, 0.11, 0.045);
