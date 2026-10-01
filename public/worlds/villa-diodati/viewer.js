@@ -490,6 +490,7 @@ new GLTFLoader().load(
         [2.43, 0.02, -0.52, -Math.PI / 2],
         [4.05, 0.02, 1.05, -Math.PI / 2],
       ];
+      const figures = [];
       for (const [index, [x, y, z, yaw]] of placements.entries()) {
         const figure = SkeletonUtils.clone(mannequin.scene);
         // Add the clone before any optional pose/material work so a malformed
@@ -542,6 +543,7 @@ new GLTFLoader().load(
         // browser preview. The optional ragdoll pass starts from the rig's
         // T-pose and would overwrite the period pose on every frame.
         figure.rotation.y = yaw;
+        figures.push({ figure, index });
         if (x !== 0.54) {
           seatedFigures.push({ figure, index });
           keepFeetAboveFloor(figure);
@@ -551,6 +553,20 @@ new GLTFLoader().load(
         // Keep the authored seated/conversational pose stable. The source
         // idle clip reopens the arms into its T-pose after garment fitting.
       }
+      clothingLoader.load("./diodati-clothing.glb?v=wood-only-1", (clothingAsset) => {
+        for (const { figure, index } of figures) {
+          const clothing = SkeletonUtils.clone(clothingAsset.scene);
+          clothing.scale.copy(figure.scale);
+          clothing.position.copy(figure.position);
+          clothing.rotation.copy(figure.rotation);
+          poseMannequin(clothing, index === 2 ? "conversational" : "seated");
+          tintClothing(clothing, index);
+          clothing.traverse((object) => {
+            if (object.isMesh) object.frustumCulled = false;
+          });
+          scene.add(clothing);
+        }
+      }, undefined, (error) => console.error("Could not load fitted Diodati clothing", error));
       status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
