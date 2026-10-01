@@ -492,7 +492,7 @@ window.addEventListener("resize", resize);
 resize();
 
 new GLTFLoader().load(
-  "./saloon.glb?v=68a0298",
+  "./salon.glb?v=room-shell-1",
   async (gltf) => {
     // A cutaway roof and lake facade keep the statues visible in the browser overview.
     // The downloadable GLB remains complete for ThirdRoom.
