@@ -498,6 +498,8 @@ new GLTFLoader().load(
         figure.scale.setScalar(1.08);
         poseMannequin(figure, x === 0.54 ? "conversational" : "seated");
         figure.traverse((object) => {
+          object.visible = true;
+          if (object.isMesh) object.frustumCulled = false;
           if (!object.isMesh) return;
           const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
           object.material = sourceMaterials.map((source, materialIndex) => {
@@ -527,7 +529,7 @@ new GLTFLoader().load(
         // idle clip reopens the arms into its T-pose after garment fitting.
         scene.add(figure);
       }
-      status.textContent = "Wooden mannequin circle loaded. Drag to look around.";
+      status.textContent = `Wooden mannequin circle loaded: ${placements.length} figures.`;
     }, undefined, (error) => {
       console.error("Could not load the wooden mannequin asset", error);
       status.textContent = "Room loaded; mannequin asset unavailable.";
