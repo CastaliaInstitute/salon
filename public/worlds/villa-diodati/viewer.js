@@ -533,6 +533,9 @@ new GLTFLoader().load(
         if (dressingRoomMode) {
           poseSeatedFigure(figure, 0);
           seatedFigures.push({ figure, index: 0 });
+          const poseBones = ["pelvis", "thigh.l", "calf.l", "thigh.r", "calf.r"]
+            .filter((name) => figure.getObjectByName(name));
+          status.textContent = `Dressing room loaded: seated runtime pose, ${poseBones.length}/5 leg bones matched.`;
         }
         scene.add(figure);
       }
