@@ -30,7 +30,8 @@ await addCopies('furniture/armchair-01/ArmChair_01.gltf', [
   [3.95, 0, 1.02, -Math.PI / 2, 0.94],
 ]);
 // Turn the sofa toward the fireplace on the rear wall.
-await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -1.28, Math.PI, 0.9]]);
+// Keep the sofa behind the standing speaker, outside the speaking circle.
+await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -2.1, Math.PI, 0.8]]);
 // Free downloaded props: a traditional fireplace and two mantel candelabra.
 await addCopies('furniture/fireplace/traditional-cast-stone-fireplace.glb', [[0, -0.22, -3.86, 0, 1.7]]);
 await addCopies('furniture/candelabrum/candelabrum.glb', [
