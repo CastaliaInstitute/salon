@@ -58,6 +58,8 @@ const upperFloors = [new THREE.Group(), new THREE.Group()]; upperFloors.forEach(
 const floorQuery = new URLSearchParams(location.search).get("floor");
 const requestedFloor = floorQuery === null || floorQuery === "" ? NaN : Number(floorQuery);
 let floorLevel = Number.isInteger(requestedFloor) && requestedFloor >= 0 && requestedFloor <= 3 ? requestedFloor : 1;
+const defaultSalonFloor = 1;
+if (!Number.isInteger(requestedFloor)) floorLevel = defaultSalonFloor;
 const clock = new THREE.Clock();
 const figures = new Map();
 // Dressable avatar contract: every source sheet uses the same safe frame and
