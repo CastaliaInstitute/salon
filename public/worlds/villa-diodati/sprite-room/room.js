@@ -17,7 +17,7 @@ const cinematicCamera = new THREE.PerspectiveCamera(36, 1, .1, 100);
 const mapCamera = new THREE.OrthographicCamera(-8, 8, 8, -8, .1, 100);
 let activeCamera = isoCamera;
 let cinematic = false;
-let topDown = false;
+let topDown = new URLSearchParams(location.search).get("map") === "topdown";
 const controls = new OrbitControls(activeCamera, canvas);
 controls.enablePan = true; controls.enableDamping = true; controls.dampingFactor = .08;
 controls.target.set(0, 0.8, 0);
@@ -107,6 +107,6 @@ async function pollMatrix() { try { if (!matrixToken) { const reg = await fetch(
 cameraButton.addEventListener("click", () => { topDown = false; mapMarkers.visible = false; cinematic = !cinematic; activeCamera = cinematic ? cinematicCamera : isoCamera; controls.object = activeCamera; cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; mapButton.textContent = "Top-down map"; resize(); });
 mapButton.addEventListener("click", () => { topDown = !topDown; cinematic = false; mapMarkers.visible = topDown; activeCamera = topDown ? mapCamera : isoCamera; controls.object = activeCamera; mapButton.textContent = topDown ? "Room view" : "Top-down map"; cameraButton.textContent = "Cinematic view"; resize(); });
 function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); isoCamera.left = -8 * w / h; isoCamera.right = 8 * w / h; isoCamera.top = 5; isoCamera.bottom = -5; isoCamera.updateProjectionMatrix(); mapCamera.left = -8 * w / h; mapCamera.right = 8 * w / h; mapCamera.top = 8; mapCamera.bottom = -8; mapCamera.updateProjectionMatrix(); cinematicCamera.aspect = w / h; cinematicCamera.updateProjectionMatrix(); }
-buildRoom(); setupLighting(); isoCamera.position.set(8, 8, 8); mapCamera.position.set(0, 14, 0.01); mapCamera.lookAt(0, 0, 0); cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); resize(); addEventListener("resize", resize); syncPeople(defaultState()); pollMatrix(); setInterval(pollMatrix, 2500);
+buildRoom(); setupLighting(); isoCamera.position.set(8, 8, 8); mapCamera.position.set(0, 14, 0.01); mapCamera.lookAt(0, 0, 0); cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); if (topDown) { activeCamera = mapCamera; mapMarkers.visible = true; mapButton.textContent = "Room view"; } resize(); addEventListener("resize", resize); syncPeople(defaultState()); pollMatrix(); setInterval(pollMatrix, 2500);
 function animate() { requestAnimationFrame(animate); const now = clock.elapsedTime; participantLayer.children.forEach((figure) => { const person = figure.userData.person; if (person && (!roomState || demoCrowd)) { const motion = figure.userData.motion; const phase = figure.userData.phase; person.x = motion.x + Math.sin(now * (.16 + (figure.userData.index % 3) * .025) + phase) * .7; person.z = motion.z + Math.cos(now * (.13 + (figure.userData.index % 4) * .02) + phase) * .42; person.state = Math.floor(now / 8 + phase) % 5 === 0 ? "speak" : Math.floor(now / 5 + phase) % 4 === 0 ? "gesture" : Math.floor(now / 3 + phase) % 3 === 0 ? "walk" : "idle"; updateFigure(figure, person, now); } figure.lookAt(activeCamera.position.x, figure.position.y, activeCamera.position.z); }); controls.update(); renderer.render(scene, activeCamera); }
 animate();
