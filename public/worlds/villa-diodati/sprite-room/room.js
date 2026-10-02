@@ -106,16 +106,12 @@ function buildRoom() {
     painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.83); painting.renderOrder = 2; room.add(painting);
     room.userData.occludingDecor.push(frame, painting);
   }
-  box("fireplace", [2.35, 2.2, .5], [0, 1.1, -3.72], 0x71645c);
-  box("fire opening", [1.35, .9, .04], [0, .75, -3.99], 0x241916);
   const fireplaceTexture = textureLoader.load("../art/fireplace-v1.png");
   fireplaceTexture.colorSpace = THREE.SRGBColorSpace;
-  const fireplaceArt = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 1.57), new THREE.MeshBasicMaterial({ map: fireplaceTexture, transparent: true }));
-  fireplaceArt.name = "generated fireplace surround"; fireplaceArt.position.set(0, 1.1, -4.005); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
+  const fireplaceArt = new THREE.Mesh(new THREE.PlaneGeometry(3.05, 1.985), new THREE.MeshBasicMaterial({ map: fireplaceTexture, transparent: true, depthWrite: false }));
+  fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.99); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
-  fireLight = new THREE.PointLight(0xff9b43, 4, 5); fireLight.position.set(0, .8, -3.1); room.add(fireLight);
-  const fireOuter = new THREE.Mesh(new THREE.ConeGeometry(.48, 1.15, 7), new THREE.MeshBasicMaterial({ color: 0xff6b2e, transparent: true, opacity: .9 })); fireOuter.position.set(0, .82, -4.05); room.add(fireOuter); flames.push(fireOuter);
-  const fireInner = new THREE.Mesh(new THREE.ConeGeometry(.24, .72, 7), new THREE.MeshBasicMaterial({ color: 0xffe28a, transparent: true, opacity: .95 })); fireInner.position.set(0, .72, -4.08); room.add(fireInner); flames.push(fireInner);
+  fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
   box("rug", [6.3, .035, 2.3], [0, .02, 1.1], 0x583743);
   loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.35, 0, .25], 1.16, 0);
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom window armchair", [3.75, 0, .25], 1.12, -Math.PI / 2);
