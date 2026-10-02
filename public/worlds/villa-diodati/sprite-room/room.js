@@ -32,6 +32,10 @@ const mapMarkers = new THREE.Group(); mapMarkers.visible = false; scene.add(mapM
 const clock = new THREE.Clock();
 const figures = new Map();
 const textureCache = new Map();
+let fireLight;
+let lightningLight;
+const candleLights = [];
+const flames = [];
 const sheetFiles = {
   byron: "byron.png", mary: "mary-godwin.png", claire: "claire-clairmont.png", percy: "percy-shelley.png", polidori: "john-polidori.png"
 };
@@ -56,10 +60,22 @@ function buildRoom() {
   box("rear wall", [12, 4.3, .18], [0, 2.05, -4], 0x3d3435);
   box("left wall", [.18, 4.3, 8.2], [-6, 2.05, .1], 0x4a3a38);
   box("right wall", [.18, 4.3, 8.2], [6, 2.05, .1], 0x4a3a38);
+  for (const x of [-4.25, 4.25]) {
+    box("window recess", [.08, 2.35, 1.65], [x, 2.45, -1.05], 0x182b3c, x < 0 ? 0 : 0);
+    box("window mullion", [.1, 2.1, .06], [x, 2.45, -1.05], 0x9d704d);
+    box("window sill", [.22, .12, 1.9], [x, 1.25, -1.05], 0xb3875c);
+    box("curtain", [.18, 3.1, .32], [x + (x < 0 ? .18 : -.18), 2.45, -.2], 0x80605b);
+  }
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
+  for (const x of [-3.8, 3.8]) {
+    box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.88], 0xa47a50);
+    box("wall painting", [1.02, 1.3, .03], [x, 2.55, -3.94], x < 0 ? 0x34495b : 0x5e3b42);
+  }
   box("fireplace", [2.35, 2.2, .5], [0, 1.1, -3.72], 0x71645c);
   box("fire opening", [1.35, .9, .04], [0, .75, -3.99], 0x241916);
-  const fire = new THREE.PointLight(0xff9b43, 4, 5); fire.position.set(0, .8, -3.1); room.add(fire);
+  fireLight = new THREE.PointLight(0xff9b43, 4, 5); fireLight.position.set(0, .8, -3.1); room.add(fireLight);
+  const fireOuter = new THREE.Mesh(new THREE.ConeGeometry(.48, 1.15, 7), new THREE.MeshBasicMaterial({ color: 0xff6b2e, transparent: true, opacity: .9 })); fireOuter.position.set(0, .82, -4.05); room.add(fireOuter); flames.push(fireOuter);
+  const fireInner = new THREE.Mesh(new THREE.ConeGeometry(.24, .72, 7), new THREE.MeshBasicMaterial({ color: 0xffe28a, transparent: true, opacity: .95 })); fireInner.position.set(0, .72, -4.08); room.add(fireInner); flames.push(fireInner);
   box("rug", [6.3, .035, 2.3], [0, .02, 1.1], 0x583743);
   box("sofa", [3.2, .9, .9], [-3.35, .48, .25], 0x70454a, 0);
   box("sofa back", [3.2, 1.3, .22], [-3.35, 1.05, -.18], 0x70454a);
@@ -67,7 +83,8 @@ function buildRoom() {
   box("chair right", [1.15, .85, 1.15], [2.55, .45, 1.35], 0x704b42, -Math.PI / 2);
   box("reading chair", [1.15, .85, 1.15], [-1.95, .45, 1.65], 0x704b42, Math.PI / 2);
   box("writing table", [1.8, .45, 1.1], [.15, .38, 1.55], 0x51352c);
-  for (const x of [-.48, -.18, .18, .48]) { const candle = new THREE.PointLight(0xffc77c, 1.2, 1.5); candle.position.set(x, 1.1, 1.55); room.add(candle); box("candle", [.05, .65, .05], [x, .86, 1.55], 0xe8d0a4); }
+  for (const x of [-.48, -.18, .18, .48]) { const candle = new THREE.PointLight(0xffc77c, 1.2, 1.5); candle.position.set(x, 1.1, 1.55); room.add(candle); candleLights.push(candle); box("candle", [.05, .65, .05], [x, .86, 1.55], 0xe8d0a4); const flame = new THREE.Mesh(new THREE.ConeGeometry(.06, .2, 5), new THREE.MeshBasicMaterial({ color: 0xffd37a })); flame.position.set(x, 1.22, 1.55); room.add(flame); flames.push(flame); }
+  lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
 }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
@@ -108,5 +125,5 @@ cameraButton.addEventListener("click", () => { topDown = false; mapMarkers.visib
 mapButton.addEventListener("click", () => { topDown = !topDown; cinematic = false; mapMarkers.visible = topDown; activeCamera = topDown ? mapCamera : isoCamera; controls.object = activeCamera; mapButton.textContent = topDown ? "Room view" : "Top-down map"; cameraButton.textContent = "Cinematic view"; resize(); });
 function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); isoCamera.left = -8 * w / h; isoCamera.right = 8 * w / h; isoCamera.top = 5; isoCamera.bottom = -5; isoCamera.updateProjectionMatrix(); mapCamera.left = -8 * w / h; mapCamera.right = 8 * w / h; mapCamera.top = 8; mapCamera.bottom = -8; mapCamera.updateProjectionMatrix(); cinematicCamera.aspect = w / h; cinematicCamera.updateProjectionMatrix(); }
 buildRoom(); setupLighting(); isoCamera.position.set(8, 8, 8); mapCamera.position.set(0, 14, 0.01); mapCamera.lookAt(0, 0, 0); cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); if (topDown) { activeCamera = mapCamera; mapMarkers.visible = true; mapButton.textContent = "Room view"; } resize(); addEventListener("resize", resize); syncPeople(defaultState()); pollMatrix(); setInterval(pollMatrix, 2500);
-function animate() { requestAnimationFrame(animate); const now = clock.elapsedTime; participantLayer.children.forEach((figure) => { const person = figure.userData.person; if (person && (!roomState || demoCrowd)) { const motion = figure.userData.motion; const phase = figure.userData.phase; person.x = motion.x + Math.sin(now * (.16 + (figure.userData.index % 3) * .025) + phase) * .7; person.z = motion.z + Math.cos(now * (.13 + (figure.userData.index % 4) * .02) + phase) * .42; person.state = Math.floor(now / 8 + phase) % 5 === 0 ? "speak" : Math.floor(now / 5 + phase) % 4 === 0 ? "gesture" : Math.floor(now / 3 + phase) % 3 === 0 ? "walk" : "idle"; updateFigure(figure, person, now); } figure.lookAt(activeCamera.position.x, figure.position.y, activeCamera.position.z); }); controls.update(); renderer.render(scene, activeCamera); }
+function animate() { requestAnimationFrame(animate); const now = clock.elapsedTime; if (fireLight) fireLight.intensity = 3.5 + Math.sin(now * 7.1) * .45 + Math.sin(now * 11.7) * .25; flames.forEach((flame, index) => { const pulse = 1 + Math.sin(now * (5 + index) + index) * .08; flame.scale.set(pulse, 1 + Math.sin(now * 8 + index) * .12, pulse); }); candleLights.forEach((light, index) => { light.intensity = 1.05 + Math.sin(now * 6 + index * 1.9) * .18; }); if (lightningLight) { const flash = Math.max(0, Math.sin(now * .19 + 2.4) - .995) * 140; lightningLight.intensity = flash; } participantLayer.children.forEach((figure) => { const person = figure.userData.person; if (person && (!roomState || demoCrowd)) { const motion = figure.userData.motion; const phase = figure.userData.phase; person.x = motion.x + Math.sin(now * (.16 + (figure.userData.index % 3) * .025) + phase) * .7; person.z = motion.z + Math.cos(now * (.13 + (figure.userData.index % 4) * .02) + phase) * .42; person.state = Math.floor(now / 8 + phase) % 5 === 0 ? "speak" : Math.floor(now / 5 + phase) % 4 === 0 ? "gesture" : Math.floor(now / 3 + phase) % 3 === 0 ? "walk" : "idle"; updateFigure(figure, person, now); } figure.lookAt(activeCamera.position.x, figure.position.y, activeCamera.position.z); }); controls.update(); renderer.render(scene, activeCamera); }
 animate();
