@@ -143,7 +143,7 @@ function buildUpperFloors() {
   addStairFlight(upperFloors[1], 7.72, "attic floor");
   for (const z of [2.2, 2.8, 3.4]) addUpperProp(upperFloors[1], "attic storage chest", 0, z, 1.4, .42, .65, 0x5b3828);
 }
-function setFloorLevel(level) { floorLevel = level; room.visible = level === 1; lowerFloor.visible = level === 0; upperFloors.forEach((layer, index) => { layer.visible = level === index + 2; }); for (const figure of figures.values()) { const person = figure.userData.person; if (person) figure.visible = person.floor === floorLevel && (!pov || person.id === localPlayer.id); } if (floorButton) floorButton.textContent = level === 0 ? "Ground floor" : `Floor ${level}`; }
+function setFloorLevel(level) { floorLevel = Number(level); room.visible = floorLevel === 1; lowerFloor.visible = floorLevel === 0; upperFloors.forEach((layer, index) => { layer.visible = floorLevel === index + 2; }); for (const figure of figures.values()) { const person = figure.userData.person; if (person) figure.visible = Number(person.floor ?? 1) === floorLevel && (!pov || person.id === localPlayer.id); } if (floorButton) floorButton.textContent = floorLevel === 0 ? "Ground floor" : `Floor ${floorLevel}`; }
 function buildRoom() {
   const floor = box("oak parquet floor", [16, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
   for (let x = -7.5; x <= 7.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
