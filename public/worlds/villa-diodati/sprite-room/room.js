@@ -98,10 +98,22 @@ function box(name, size, position, color, rotation = 0) {
 }
 function windowViewTexture() { const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512; const ctx = canvas.getContext("2d"); const sky = ctx.createLinearGradient(0, 0, 0, 512); sky.addColorStop(0, "#0b1830"); sky.addColorStop(.58, "#243d58"); sky.addColorStop(1, "#151b24"); ctx.fillStyle = sky; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = "rgba(232,241,255,.9)"; ctx.beginPath(); ctx.arc(390, 92, 42, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "rgba(11,24,48,.9)"; ctx.beginPath(); ctx.arc(407, 80, 39, 0, Math.PI * 2); ctx.fill(); for (let i = 0; i < 45; i++) { const x = (i * 83) % 512; const y = 24 + ((i * 47) % 250); ctx.fillStyle = `rgba(220,235,255,${.35 + (i % 4) * .12})`; ctx.fillRect(x, y, 2, 2); } ctx.fillStyle = "#101923"; ctx.beginPath(); ctx.moveTo(0, 390); ctx.lineTo(100, 320); ctx.lineTo(175, 370); ctx.lineTo(280, 290); ctx.lineTo(390, 370); ctx.lineTo(512, 300); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.fill(); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture; }
 function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); room.add(model); }); }
+function addStairFlight(layer, baseY, name) {
+  const stairMat = mat(0x806445);
+  for (let step = 0; step < 6; step++) {
+    const tread = new THREE.Mesh(new THREE.BoxGeometry(2.1, .12 + step * .02, .42), stairMat);
+    tread.name = `${name} stair ${step + 1}`;
+    tread.position.set(0, baseY + step * .18, -5.65 + step * .42);
+    tread.castShadow = true; tread.receiveShadow = true; layer.add(tread);
+  }
+  const landing = new THREE.Mesh(new THREE.BoxGeometry(2.7, .12, .9), stairMat);
+  landing.name = `${name} stair landing`; landing.position.set(0, baseY + 1.08, -3.95); landing.castShadow = true; landing.receiveShadow = true; layer.add(landing);
+}
 function buildLowerFloor() {
   const floorMat = mat(0x6c5542); const wallMat = mat(0x49362d);
   const room = (name, x, z, width, depth) => { const floor = new THREE.Mesh(new THREE.BoxGeometry(width, .12, depth), floorMat); floor.name = `${name} floor`; floor.position.set(x, -3.7, z); lowerFloor.add(floor); const gap = Math.min(1.15, width - .4); const sideGap = Math.min(1.15, depth - .4); const horizontal = (centerX, centerZ) => { const segment = (width - gap) / 2; for (const offset of [-(gap + segment) / 2, (gap + segment) / 2]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(segment, .82, .12), wallMat); wall.name = `${name} wall`; wall.position.set(centerX + offset, -3.29, centerZ); lowerFloor.add(wall); } }; const vertical = (centerX, centerZ) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(.12, .82, segment), wallMat); wall.name = `${name} wall`; wall.position.set(centerX, -3.29, centerZ + offset); lowerFloor.add(wall); } }; horizontal(x, z - depth / 2); horizontal(x, z + depth / 2); vertical(x - width / 2, z); vertical(x + width / 2, z); };
   room("entrance hall", 0, -.8, 5.8, 5.5); room("kitchen", -6.2, -.8, 5.5, 5.5); room("pantry", -10.5, -.8, 2.5, 5.5); room("servants hall", 6.2, -.8, 5.5, 5.5); room("storage and cellar", 10.5, -.8, 2.5, 5.5); room("wine cellar", -5.5, -5.5, 5.5, 2.8); room("stores", 5.5, -5.5, 5.5, 2.8);
+  addStairFlight(lowerFloor, -3.68, "ground floor");
   for (const x of [-7.3, -5.5, -3.7]) { const counter = new THREE.Mesh(new THREE.BoxGeometry(1.2, .65, .55), mat(0x5b3828)); counter.position.set(x, -3.2, -.8); lowerFloor.add(counter); }
 }
 function buildUpperFloors() {
@@ -127,6 +139,8 @@ function buildUpperFloors() {
   for (const layer of upperFloors) {
     const shaft = new THREE.Mesh(new THREE.BoxGeometry(2.2, .18, 2.2), mat(0x806445)); shaft.name = "stair landing opening"; shaft.position.set(0, layer === upperFloors[0] ? 3.98 : 7.78, -1.9); layer.add(shaft);
   }
+  addStairFlight(upperFloors[0], 3.92, "upper floor");
+  addStairFlight(upperFloors[1], 7.72, "attic floor");
   for (const z of [2.2, 2.8, 3.4]) addUpperProp(upperFloors[1], "attic storage chest", 0, z, 1.4, .42, .65, 0x5b3828);
 }
 function setFloorLevel(level) { floorLevel = level; room.visible = level === 1; lowerFloor.visible = level === 0; upperFloors.forEach((layer, index) => { layer.visible = level === index + 2; }); for (const figure of figures.values()) { const person = figure.userData.person; if (person) figure.visible = person.floor === floorLevel && (!pov || person.id === localPlayer.id); } if (floorButton) floorButton.textContent = level === 0 ? "Ground floor" : `Floor ${level}`; }
