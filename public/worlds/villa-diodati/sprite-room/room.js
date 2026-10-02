@@ -106,6 +106,18 @@ function buildRoom() {
   const crownMolding = box("white crown molding", [15.7, .14, .12], [0, 4.08, -3.91], 0xf2eee5);
   const chairRail = box("white chair rail", [15.7, .12, .12], [0, .72, -3.91], 0xf2eee5);
   room.userData.occludingDecor.push(crownMolding, chairRail);
+  const sideTrim = [];
+  for (const x of [-7.91, 7.91]) {
+    sideTrim.push(
+      box("side wall crown molding", [.12, .14, 9.0], [x, 4.08, .5], 0xf2eee5),
+      box("side wall chair rail", [.12, .12, 9.0], [x, .72, .5], 0xf2eee5),
+    );
+  }
+  const frontTrim = [
+    box("front wall crown molding", [15.7, .14, .12], [0, 4.08, 4.91], 0xf2eee5),
+    box("front wall chair rail", [15.7, .12, .12], [0, .72, 4.91], 0xf2eee5),
+  ];
+  room.userData.occludingDecor.push(...sideTrim, ...frontTrim);
   const door = box("front wall door", [1.35, 2.55, .08], [0, 1.3, 4.87], 0x402a24);
   const doorFrameLeft = box("front door frame left", [.12, 2.8, .12], [-.72, 1.42, 4.8], 0xb3875c);
   const doorFrameRight = box("front door frame right", [.12, 2.8, .12], [.72, 1.42, 4.8], 0xb3875c);
