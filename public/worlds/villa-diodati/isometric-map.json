@@ -273,9 +273,9 @@
     {
       "id": "kitchen",
       "floor": 0,
-      "x": -6.2,
+      "x": -6.075,
       "z": -0.8,
-      "width": 5.5,
+      "width": 6.35,
       "depth": 5.5,
       "connections": ["entrance-hall", "pantry", "wine-cellar"]
     },
@@ -291,9 +291,9 @@
     {
       "id": "servants-hall",
       "floor": 0,
-      "x": 6.2,
+      "x": 6.075,
       "z": -0.8,
-      "width": 5.5,
+      "width": 6.35,
       "depth": 5.5,
       "connections": ["entrance-hall", "storage-cellar", "stores"]
     },
