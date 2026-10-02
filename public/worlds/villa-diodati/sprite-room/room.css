@@ -7,7 +7,7 @@ canvas { display: block; width: 100%; height: calc(100% - 156px); }
 .script-heading { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #b7915d; margin-bottom: 8px; }
 .script-heading span { color: #8ba5aa; margin-left: 8px; text-transform: none; letter-spacing: 0; }
 #script-lines { display: grid; gap: 5px; max-width: 1100px; overflow: hidden; }
-.script-line { display: grid; grid-template-columns: 120px 1fr; gap: 12px; font-size: 13px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.script-line { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; font-size: 13px; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; }
 .script-speaker { color: #bfeeff; }
 #rewind-control { position: fixed; right: 22px; bottom: 166px; z-index: 13; width: min(360px, 38vw); padding: 9px 12px; border: 1px solid rgba(183,145,93,.55); border-radius: 12px; background: rgba(28,20,18,.9); color: #ead9bb; font-size: 11px; }
 #rewind-control label { display: flex; justify-content: space-between; margin-bottom: 5px; color: #b7915d; letter-spacing: .05em; }
