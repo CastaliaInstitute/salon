@@ -582,6 +582,54 @@ controls.maxDistance = 18;
 controls.maxPolarAngle = Math.PI * 0.48;
 controls.update();
 
+const pickerRaycaster = new THREE.Raycaster();
+const pickerPointer = new THREE.Vector2();
+let pickerDown = null;
+let highlightedObject = null;
+let highlightedMaterials = [];
+function clearObjectHighlight() {
+  for (const [material, emissive] of highlightedMaterials) {
+    if (material.emissive) material.emissive.copy(emissive);
+  }
+  highlightedMaterials = [];
+  highlightedObject = null;
+}
+function highlightObject(object) {
+  clearObjectHighlight();
+  highlightedObject = object;
+  object.traverse((child) => {
+    if (!child.isMesh) return;
+    const material = child.material;
+    if (!material || !material.emissive) return;
+    highlightedMaterials.push([material, material.emissive.clone()]);
+    material.emissive.set(0xffcc33);
+    material.emissiveIntensity = 0.8;
+  });
+  const path = [];
+  let node = object;
+  while (node && path.length < 5) {
+    if (node.name) path.unshift(node.name);
+    node = node.parent;
+  }
+  status.textContent = `Selected object: ${path.join(" / ") || "unnamed mesh"}`;
+}
+function pickObject(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  pickerPointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pickerPointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  pickerRaycaster.setFromCamera(pickerPointer, camera);
+  const hits = pickerRaycaster.intersectObjects(scene.children, true);
+  const hit = hits.find((entry) => entry.object.isMesh && entry.object !== floor && entry.object !== ceiling && entry.object !== lakeBackdrop);
+  if (hit) highlightObject(hit.object);
+}
+canvas.addEventListener("pointerdown", (event) => { pickerDown = { x: event.clientX, y: event.clientY }; });
+canvas.addEventListener("pointerup", (event) => {
+  if (!pickerDown) return;
+  const distance = Math.hypot(event.clientX - pickerDown.x, event.clientY - pickerDown.y);
+  if (distance < 10) pickObject(event.clientX, event.clientY);
+  pickerDown = null;
+});
+
 let cameraFocus = null;
 function focusFigure(indexOrName) {
   const names = { byron: 0, claire: 1, clairmont: 1, mary: 2, percy: 3, shelley: 4 };
