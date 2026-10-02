@@ -7,6 +7,7 @@ let RAPIER = null;
 
 const canvas = document.querySelector("#scene");
 const status = document.querySelector("#status");
+const objectIdentification = document.querySelector("#object-identification");
 const chatPanel = document.querySelector("#chat-panel");
 const closeChat = document.querySelector("#close-chat");
 const openChat = document.querySelector("#open-chat");
@@ -612,6 +613,7 @@ function highlightObject(object) {
     node = node.parent;
   }
   status.textContent = `Selected object: ${path.join(" / ") || "unnamed mesh"}`;
+  if (objectIdentification) objectIdentification.textContent = `HIGHLIGHTED: ${path.join(" / ") || "unnamed mesh"}`;
 }
 function pickObject(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
