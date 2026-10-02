@@ -19,6 +19,12 @@ for (const room of rooms) {
   }
 }
 
+for (const transition of map.floorTransitions || []) {
+  if (!transition.id || !Number.isFinite(transition.x) || !Number.isFinite(transition.z)) errors.push(`invalid floor transition: ${transition.id || "<unnamed>"}`);
+  if (transition.x < map.bounds.minX || transition.x > map.bounds.maxX || transition.z < map.bounds.minZ || transition.z > map.bounds.maxZ) errors.push(`floor transition outside bounds: ${transition.id}`);
+  if (!Array.isArray(transition.levels) || transition.levels.length < 2 || transition.levels.some((level) => ![0, 1, 2, 3].includes(level))) errors.push(`invalid transition levels: ${transition.id}`);
+}
+
 const reachable = new Set(["salon"]);
 const queue = ["salon"];
 while (queue.length) {
