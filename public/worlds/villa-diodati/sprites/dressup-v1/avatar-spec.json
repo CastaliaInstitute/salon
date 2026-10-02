@@ -1,0 +1,32 @@
+{
+  "schema": "castalia-dressable-avatar-v1",
+  "atlas": {
+    "columns": 8,
+    "rows": 5,
+    "directions": ["south", "southwest", "west", "northwest", "north", "northeast", "east", "southeast"],
+    "states": ["idle", "walk", "gesture", "hold", "speak"],
+    "frameAspect": 0.636,
+    "safeInset": { "left": 0.04, "right": 0.04, "top": 0.04, "bottom": 0.08 },
+    "anchor": { "x": 0.5, "y": 0.92 },
+    "floorContact": "bottom-center"
+  },
+  "layers": {
+    "body": { "required": true, "recolorable": ["skin", "accent"] },
+    "hair": { "required": false, "recolorable": ["hair"] },
+    "clothing": { "required": false, "recolorable": ["coat", "waistcoat", "accent"] },
+    "held": { "required": false, "recolorable": ["metal", "wood", "glass"] }
+  },
+  "appearance": {
+    "heightCm": { "min": 150, "max": 205, "default": 175 },
+    "weightKg": { "min": 45, "max": 130, "default": 75 },
+    "scaleClamp": [0.78, 1.08],
+    "widthClamp": [0.82, 1.08]
+  },
+  "rendering": {
+    "billboard": "y-axis",
+    "cameraDirections": 8,
+    "topDownMarker": "face-placeholder",
+    "neverCrop": true,
+    "feetMustTouchFloor": true
+  }
+}

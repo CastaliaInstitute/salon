@@ -52,6 +52,10 @@ const requestedFloor = Number(new URLSearchParams(location.search).get("floor"))
 let floorLevel = Number.isInteger(requestedFloor) && requestedFloor >= 0 && requestedFloor <= 3 ? requestedFloor : 1;
 const clock = new THREE.Clock();
 const figures = new Map();
+// Dressable avatar contract: every source sheet uses the same safe frame and
+// bottom-center floor anchor. Clothing/skin changes must never change this
+// placement, which prevents the recurring cropped-head and floating-feet bugs.
+const DRESSUP_ATLAS = { columns: 8, rows: 5, safeInset: { left: .04, right: .04, top: .04, bottom: .08 }, anchorY: .92 };
 const textureCache = new Map();
 let fireLight;
 let lightningLight;
@@ -375,10 +379,11 @@ function makeFigure(id, name, style, x, z, state = "idle", index = 0, wardrobe =
   // headroom prevents the top row from clipping hair/hat pixels, while the
   // bottom anchor keeps every pair of feet on the floor.
   const spriteHeight = 2.36;
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.5, spriteHeight), material); mesh.position.set(x, spriteHeight / 2, z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: spriteHeight / 2, phase: index * .7, motion: { x, z } }; mesh.castShadow = true; mesh.renderOrder = 5; setHeldProp(mesh, wardrobe.held); mesh.userData.heldKind = wardrobe.held || null;
+  const spriteWidth = spriteHeight * DRESSUP_ATLAS.frameAspect;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth, spriteHeight), material); mesh.position.set(x, spriteHeight * (1 - DRESSUP_ATLAS.anchorY), z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: mesh.position.y, phase: index * .7, motion: { x, z }, floorAnchor: DRESSUP_ATLAS.anchorY }; mesh.castShadow = true; mesh.renderOrder = 5; setHeldProp(mesh, wardrobe.held); mesh.userData.heldKind = wardrobe.held || null;
   if (id.startsWith("a.")) {
     const auraMaterial = material.clone(); auraMaterial.depthTest = true; auraMaterial.uniforms.ghostStrength.value = .22; auraMaterial.uniforms.ghost.value.set(0xb8f3ff);
-    const aura = new THREE.Mesh(new THREE.PlaneGeometry(1.56, spriteHeight * 1.03), auraMaterial); aura.position.z = -.012; aura.renderOrder = 4; mesh.add(aura); mesh.userData.glowMesh = aura;
+    const aura = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth * 1.04, spriteHeight * 1.03), auraMaterial); aura.position.z = -.012; aura.renderOrder = 4; mesh.add(aura); mesh.userData.glowMesh = aura;
   }
   const marker = new THREE.Mesh(new THREE.PlaneGeometry(.58, .58), faceMaterial(sheetFiles[style] || sheetFiles.byron)); marker.rotation.x = -Math.PI / 2; marker.position.set(x, .035, z); marker.renderOrder = 20; marker.userData.figure = mesh; mapMarkers.add(marker); mesh.userData.mapMarker = marker;
   participantLayer.add(mesh); figures.set(id, mesh); return mesh;
