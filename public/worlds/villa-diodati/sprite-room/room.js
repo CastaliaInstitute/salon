@@ -116,6 +116,9 @@ function buildUpperFloors() {
     addUpperProp(upperFloors[0], "upper floor writing desk", x + .7, z + .85, .7, .5, .42, 0x5b3828);
   }
   for (const x of [-6.2, 6.2]) addUpperProp(upperFloors[1], "servants room bed", x, -.4, 1.1, .22, 1.8, 0x6a493b);
+  for (const layer of upperFloors) {
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(2.2, .18, 2.2), mat(0x806445)); shaft.name = "stair landing opening"; shaft.position.set(0, layer === upperFloors[0] ? 3.98 : 7.78, -1.9); layer.add(shaft);
+  }
   for (const z of [2.2, 2.8, 3.4]) addUpperProp(upperFloors[1], "attic storage chest", 0, z, 1.4, .42, .65, 0x5b3828);
 }
 function setFloorLevel(level) { floorLevel = level; room.visible = level === 1; upperFloors.forEach((layer, index) => { layer.visible = level === index + 2; }); for (const figure of figures.values()) { const person = figure.userData.person; if (person) figure.visible = person.floor === floorLevel && (!pov || person.id === localPlayer.id); } if (floorButton) floorButton.textContent = `Floor ${level}`; }
@@ -212,6 +215,11 @@ function buildRoom() {
   planRoom("dining room", 12.1, -.9, 7.8, 5.8, 0x80634d);
   planRoom("cabinet and guest room", 12.1, 3.4, 7.8, 2.6, 0x80634d);
   planRoom("rear service hall", 0, -6.2, 15.8, 3.8, 0x705640);
+  // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
+  box("west room connector", [1.4, .1, 2.4], [-8.0, -.02, .1], 0xa28662);
+  box("east room connector", [1.4, .1, 2.4], [8.0, -.02, .1], 0xa28662);
+  box("rear hall connector", [2.8, .1, 1.5], [0, -.02, -4.45], 0xa28662);
+  box("terrace threshold", [2.8, .1, 1.2], [0, -.02, 4.75], 0xa28662);
   // Room-specific anchors make the inferred plan legible and give the characters places to visit.
   box("drawing room piano", [2.3, .9, .75], [-13.7, .42, -1.25], 0x3c2420);
   for (const x of [-11.8, -10.5]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "drawing room armchair", [x, 0, .35], .8, Math.PI);
