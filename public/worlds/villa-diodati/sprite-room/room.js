@@ -47,7 +47,7 @@ const HOUSE_WORLD_SCALE = 3.0;
 const SALON_ORIGIN = { x: -2.1, z: -2.1 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
-const SALON_CONTENT_SCALE = { x: .35, z: .35 };
+const SALON_CONTENT_SCALE = { x: .70, z: .70 };
 const SALON_CONTENT_ROTATION = Math.PI / 2;
 let roomRegions = [];
 let navigationRooms = [];
@@ -141,7 +141,9 @@ function applyTopDownRoomVisibility() {
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
-    if (match) node.visible = topDownRoomVisibility.get(match) !== false;
+    if (match) node.visible = match === "grand salon"
+      ? topDownRoomVisibility.get("salon") === false && topDownRoomVisibility.get(match) !== false
+      : topDownRoomVisibility.get(match) !== false;
   });
 }
 function resetTopDownRoomVisibility() {
@@ -415,8 +417,10 @@ function buildRoom() {
   // North wall is an interior-facing house wall in the salon reconstruction;
   // it has no salon windows. Openings belong on the south veranda wall and
   // the west veranda elevation below.
-  // West wall: two openings, with the right-hand opening leading to the west veranda.
-  addFacadeWindow(-7.86, 2.25, -1.35, Math.PI / 2);
+  // West wall: three bays; the southern and middle bays are windows, while the
+  // northern bay is the door to the west veranda.
+  addFacadeWindow(-7.86, 2.25, -2.65, Math.PI / 2);
+  addFacadeWindow(-7.86, 2.25, -.65, Math.PI / 2);
   const westDoor = box("west veranda door", [.08, 2.55, 1.55], [-7.86, 1.32, 1.35], 0x402a24, Math.PI / 2);
   const westDoorFrameTop = box("west veranda door lintel", [.12, .12, 1.75], [-7.86, 2.72, 1.35], 0xb3875c, Math.PI / 2);
   room.userData.occludingDecor.push(westDoor, westDoorFrameTop);
