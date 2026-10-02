@@ -416,10 +416,10 @@ function buildRoom() {
   // Room 5: paired straight south-to-north flights. The west flight rises;
   // the east flight descends, leaving a clear open center between them.
   for (let index = 0; index < 8; index += 1) {
-    const z = -1.35 + index * .18;
-    const westStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .34), mat(0x6f4934));
+    const z = -1.62 + index * .43;
+    const westStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .36), mat(0x6f4934));
     westStep.position.set(-.75, .13 + index * .14, z); westStep.name = "stairs up west flight south north"; room.add(westStep);
-    const eastStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .34), mat(0x6f4934));
+    const eastStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .36), mat(0x6f4934));
     eastStep.position.set(.75, .13 + (7 - index) * .14, z); eastStep.name = "stairs down east flight south north"; room.add(eastStep);
   }
   const stairToRoomEightDoors = new THREE.Group(); stairToRoomEightDoors.name = "room 5 to room 8 double doors";
