@@ -193,6 +193,10 @@ function buildRoom() {
   const leftWall = box("left wall", [.18, 4.3, 9.18], [-7.91, 2.05, .5], 0x91adbc);
   const rightWall = box("right wall", [.18, 4.3, 9.18], [7.91, 2.05, .5], 0x91adbc);
   const frontWall = box("camera-side wall", [16.18, 4.3, .18], [0, 2.05, 5], 0x91adbc);
+  frontWall.visible = false;
+  const verandaWallLeft = box("front wall left of veranda door", [7.0, 4.3, .18], [-4.5, 2.05, 5], 0x91adbc);
+  const verandaWallRight = box("front wall right of veranda door", [7.0, 4.3, .18], [4.5, 2.05, 5], 0x91adbc);
+  const verandaLintel = box("veranda door lintel", [2.0, 1.5, .18], [0, 3.35, 5], 0x91adbc);
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
   for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(0x91adbc); wall.material.needsUpdate = true; }
@@ -207,7 +211,7 @@ function buildRoom() {
   const frontTrim = [
     box("front wall crown molding", [15.7, .14, .12], [0, 4.08, 4.91], 0xf2eee5),
   ];
-  room.userData.occludingDecor.push(...sideTrim, ...frontTrim);
+  room.userData.occludingDecor.push(...sideTrim, ...frontTrim, verandaWallLeft, verandaWallRight, verandaLintel);
   // The salon has floor-to-crown wall panels, not a horizontal chair rail. Keep
   // this cleanup broad so an older cached/loaded furnishing cannot reintroduce it.
   room.traverse((node) => {
@@ -291,6 +295,8 @@ function buildRoom() {
   box("east room connector", [1.4, .1, 2.4], [8.0, -.02, .1], 0xa28662);
   box("rear hall connector", [2.8, .1, 1.5], [0, -.02, -4.45], 0xa28662);
   box("terrace threshold", [2.8, .1, 1.2], [0, -.02, 4.75], 0xa28662);
+  box("main floor veranda landing", [5.4, .12, 2.2], [0, -.04, 5.85], 0x8b684b);
+  box("veranda front rail", [5.4, .65, .12], [0, .35, 6.85], 0xf2eee5);
   // Room-specific anchors make the inferred plan legible and give the characters places to visit.
   box("drawing room piano", [2.3, .9, .75], [-13.7, .42, -1.25], 0x3c2420);
   for (const x of [-11.8, -10.5]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "drawing room armchair", [x, 0, .35], .8, Math.PI);
