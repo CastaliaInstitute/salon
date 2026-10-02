@@ -132,10 +132,10 @@
     {
       "id": "drawing-music-room",
       "floor": 1,
-      "x": -12.1,
-      "z": -0.9,
-      "width": 7.8,
-      "depth": 5.8,
+      "x": -5.1,
+      "z": -1.8,
+      "width": 4.8,
+      "depth": 4.8,
       "connections": [
         "salon",
         "library-morning-room",
@@ -145,10 +145,10 @@
     {
       "id": "library-morning-room",
       "floor": 1,
-      "x": -12.1,
-      "z": 3.4,
-      "width": 7.8,
-      "depth": 2.6,
+      "x": -5.1,
+      "z": 2.6,
+      "width": 4.8,
+      "depth": 3.2,
       "connections": [
         "drawing-music-room",
         "byron-study"
@@ -158,9 +158,9 @@
       "id": "salon",
       "floor": 1,
       "x": 0,
-      "z": 0.5,
-      "width": 16,
-      "depth": 9,
+      "z": 2.1,
+      "width": 6.4,
+      "depth": 5.8,
       "connections": [
         "drawing-music-room",
         "dining-room",
@@ -172,10 +172,10 @@
     {
       "id": "dining-room",
       "floor": 1,
-      "x": 12.1,
-      "z": -0.9,
-      "width": 7.8,
-      "depth": 5.8,
+      "x": 5.1,
+      "z": 1.0,
+      "width": 4.8,
+      "depth": 4.8,
       "connections": [
         "salon",
         "cabinet-guest-room"
@@ -184,10 +184,10 @@
     {
       "id": "cabinet-guest-room",
       "floor": 1,
-      "x": 12.1,
-      "z": 3.4,
-      "width": 7.8,
-      "depth": 2.6,
+      "x": 5.1,
+      "z": 4.0,
+      "width": 4.8,
+      "depth": 2.2,
       "connections": [
         "dining-room",
         "ante-room"
@@ -196,9 +196,9 @@
     {
       "id": "byron-study",
       "floor": 1,
-      "x": -4.8,
-      "z": -6.2,
-      "width": 4.2,
+      "x": 5.1,
+      "z": -2.0,
+      "width": 4.8,
       "depth": 3.8,
       "connections": ["drawing-music-room", "library-morning-room", "central-stair-hall"]
     },
@@ -206,18 +206,18 @@
       "id": "central-stair-hall",
       "floor": 1,
       "x": 0,
-      "z": -6.2,
+      "z": -3.2,
       "width": 4.2,
-      "depth": 3.8,
+      "depth": 3.2,
       "connections": ["salon", "byron-study", "ante-room", "entrance-hall"]
     },
     {
       "id": "ante-room",
       "floor": 1,
-      "x": 4.8,
-      "z": -6.2,
-      "width": 4.2,
-      "depth": 3.8,
+      "x": -5.1,
+      "z": -4.8,
+      "width": 4.8,
+      "depth": 2.2,
       "connections": ["central-stair-hall", "cabinet-guest-room"]
     },
     {
@@ -340,6 +340,33 @@
       "connections": ["servants-hall", "wine-cellar"]
     },
     {
+      "id": "laundry",
+      "floor": 0,
+      "x": -6.1,
+      "z": 3.2,
+      "width": 4.8,
+      "depth": 2.8,
+      "connections": ["kitchen", "entrance-hall"]
+    },
+    {
+      "id": "staff-room",
+      "floor": 0,
+      "x": 6.1,
+      "z": 3.2,
+      "width": 4.8,
+      "depth": 2.8,
+      "connections": ["servants-hall", "entrance-hall"]
+    },
+    {
+      "id": "lake-access-storage",
+      "floor": 0,
+      "x": 0,
+      "z": 4.6,
+      "width": 5.8,
+      "depth": 2.2,
+      "connections": ["entrance-hall"]
+    },
+    {
       "id": "byron-bedroom",
       "floor": 2,
       "x": -5.3,
@@ -374,6 +401,15 @@
       "width": 5.1,
       "depth": 3.2,
       "connections": ["polidori-bedroom", "upper-landing"]
+    },
+    {
+      "id": "guest-chamber-south",
+      "floor": 2,
+      "x": 0,
+      "z": 3,
+      "width": 4.2,
+      "depth": 3.2,
+      "connections": ["upper-landing", "guest-chamber-west", "guest-chamber-east"]
     },
     {
       "id": "upper-landing",
@@ -423,7 +459,10 @@
         "servants-hall",
         "storage-cellar",
         "wine-cellar",
-        "stores"
+        "stores",
+        "laundry",
+        "staff-room",
+        "lake-access-storage"
       ]
     },
     {
@@ -451,6 +490,7 @@
         "polidori-bedroom",
         "guest-chamber-west",
         "guest-chamber-east",
+        "guest-chamber-south",
         "upper-landing"
       ]
     },

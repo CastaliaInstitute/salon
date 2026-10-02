@@ -140,7 +140,7 @@ function addStairFlight(layer, baseY, name) {
 function buildLowerFloor() {
   const floorMat = mat(0x6c5542); const wallMat = mat(0x49362d);
   const room = (name, x, z, width, depth) => { const floor = new THREE.Mesh(new THREE.BoxGeometry(width, .12, depth), floorMat); floor.name = `${name} floor`; floor.position.set(x, -3.7, z); lowerFloor.add(floor); const gap = Math.min(1.15, width - .4); const sideGap = Math.min(1.15, depth - .4); const horizontal = (centerX, centerZ) => { const segment = (width - gap) / 2; for (const offset of [-(gap + segment) / 2, (gap + segment) / 2]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(segment, .82, .12), wallMat); wall.name = `${name} wall`; wall.position.set(centerX + offset, -3.29, centerZ); lowerFloor.add(wall); } }; const vertical = (centerX, centerZ) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(.12, .82, segment), wallMat); wall.name = `${name} wall`; wall.position.set(centerX, -3.29, centerZ + offset); lowerFloor.add(wall); } }; horizontal(x, z - depth / 2); horizontal(x, z + depth / 2); vertical(x - width / 2, z); vertical(x + width / 2, z); };
-  room("entrance hall", 0, -.8, 5.85, 5.5); room("kitchen", -6.075, -.8, 6.35, 5.5); room("pantry", -10.5, -.8, 2.5, 5.5); room("servants hall", 6.075, -.8, 6.35, 5.5); room("storage and cellar", 10.5, -.8, 2.5, 5.5); room("wine cellar", -5.5, -5.5, 5.5, 2.8); room("stores", 5.5, -5.5, 5.5, 2.8);
+  room("entrance hall", 0, -.8, 5.85, 5.5); room("kitchen", -6.075, -.8, 6.35, 5.5); room("pantry", -10.5, -.8, 2.5, 5.5); room("servants hall", 6.075, -.8, 6.35, 5.5); room("storage and cellar", 10.5, -.8, 2.5, 5.5); room("laundry", -6.1, 3.2, 4.8, 2.8); room("staff room", 6.1, 3.2, 4.8, 2.8); room("lake access storage", 0, 4.6, 5.8, 2.2); room("wine cellar", -5.5, -5.5, 5.5, 2.8); room("stores", 5.5, -5.5, 5.5, 2.8);
   addStairFlight(lowerFloor, -3.68, "ground floor");
   for (const x of [-7.3, -5.5, -3.7]) { const counter = new THREE.Mesh(new THREE.BoxGeometry(1.2, .65, .55), mat(0x5b3828)); counter.position.set(x, -3.2, -.8); lowerFloor.add(counter); }
   const lowerProp = (name, size, position, color = 0x5b3828) => { const prop = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color)); prop.name = name; prop.position.set(...position); prop.castShadow = true; prop.receiveShadow = true; lowerFloor.add(prop); return prop; };
@@ -164,6 +164,7 @@ function buildUpperFloors() {
   addRoom(upperFloors[0], "Polidori bedroom", 5.3, -1.4, 5.1, 4.6);
   addRoom(upperFloors[0], "guest chamber west", -5.3, 3.0, 5.1, 3.2);
   addRoom(upperFloors[0], "guest chamber east", 5.3, 3.0, 5.1, 3.2);
+  addRoom(upperFloors[0], "guest chamber south", 0, 3.0, 4.2, 3.2);
   addRoom(upperFloors[1], "servants room west", -5.0, -.4, 5.6, 5.8);
   addRoom(upperFloors[1], "servants room east", 5.0, -.4, 5.6, 5.8);
   addRoom(upperFloors[1], "upper landing", 0, 3.2, 4.2, 3.0);
@@ -300,12 +301,16 @@ function buildRoom() {
     const vertical = (centerX, centerZ, side) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) box(`${name} ${side} wall`, [wall, .28, segment], [centerX, .28, centerZ + offset], 0x5b4035); };
     horizontal(x, z - depth / 2, "north"); horizontal(x, z + depth / 2, "south"); vertical(x - width / 2, z, "west"); vertical(x + width / 2, z, "east");
   };
-  planRoom("Byron study", -4.8, -6.2, 4.2, 3.8, 0x705640);
-  planRoom("central stair hall", 0, -6.2, 4.2, 3.8, 0x80634d);
-  planRoom("ante room", 4.8, -6.2, 4.2, 3.8, 0x705640);
+  planRoom("drawing room", -5.1, -1.8, 4.8, 4.8, 0x705640);
+  planRoom("library study", -5.1, 2.6, 4.8, 3.2, 0x80634d);
+  planRoom("grand salon", 0, 2.1, 6.4, 5.8, 0x80634d);
+  planRoom("dining room", 5.1, 1.0, 4.8, 4.8, 0x705640);
+  planRoom("Byron study", 5.1, -2.0, 4.8, 3.8, 0x705640);
+  planRoom("central stair hall", 0, -3.2, 4.2, 3.2, 0x80634d);
+  planRoom("ante room", -5.1, -4.8, 4.8, 2.2, 0x705640);
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
-  box("west room connector", [1.4, .1, 2.4], [-8.0, -.02, .1], 0xa28662);
-  box("east room connector", [1.4, .1, 2.4], [8.0, -.02, .1], 0xa28662);
+  box("west room connector", [1.4, .1, 2.4], [-2.7, -.02, .1], 0xa28662);
+  box("east room connector", [1.4, .1, 2.4], [2.7, -.02, .1], 0xa28662);
   box("rear hall connector", [2.8, .1, 1.5], [0, -.02, -4.45], 0xa28662);
   box("terrace threshold", [2.8, .1, 1.2], [0, -.02, 4.75], 0xa28662);
   box("main floor veranda landing", [5.4, .12, 2.2], [0, -.04, 5.85], 0x8b684b);
