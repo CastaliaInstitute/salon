@@ -409,17 +409,18 @@ function buildRoom() {
     if (!openSides.includes("north")) horizontal(x, z - depth / 2, "north"); if (!openSides.includes("south")) horizontal(x, z + depth / 2, "south"); if (!openSides.includes("west")) vertical(x - width / 2, z, "west"); if (!openSides.includes("east")) vertical(x + width / 2, z, "east");
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
-  planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
-  planRoom("foyer", 0, 4.2, 4.0, 4.0, 0x705640);
-  planRoom("cabinet guest room", 4.2, 4.2, 4.0, 4.0, 0x705640);
-  planRoom("central stair hall", 0, 0, 4.0, 4.0, 0x80634d);
-  // Room 5: paired straight flights. West rises away from the landing;
-  // east descends away from the landing.
+  planRoom("library study", -4.2, 4.2, 4.2, 4.2, 0x80634d);
+  planRoom("foyer", 0, 4.2, 4.2, 4.2, 0x705640);
+  planRoom("cabinet guest room", 4.2, 4.2, 4.2, 4.2, 0x705640);
+  planRoom("central stair hall", 0, 0, 4.2, 4.2, 0x80634d);
+  // Room 5: paired straight south-to-north flights. The west flight rises;
+  // the east flight descends, leaving a clear open center between them.
   for (let index = 0; index < 8; index += 1) {
-    const westStep = new THREE.Mesh(new THREE.BoxGeometry(.34, .14, 1.0), mat(0x6f4934));
-    westStep.position.set(-.75 - index * .18, .13 + index * .14, 0); westStep.name = "stairs up west flight"; room.add(westStep);
-    const eastStep = new THREE.Mesh(new THREE.BoxGeometry(.34, .14, 1.0), mat(0x6f4934));
-    eastStep.position.set(.75 + index * .18, .13 + (7 - index) * .14, 0); eastStep.name = "stairs down east flight"; room.add(eastStep);
+    const z = -1.35 + index * .18;
+    const westStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .34), mat(0x6f4934));
+    westStep.position.set(-.75, .13 + index * .14, z); westStep.name = "stairs up west flight south north"; room.add(westStep);
+    const eastStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .34), mat(0x6f4934));
+    eastStep.position.set(.75, .13 + (7 - index) * .14, z); eastStep.name = "stairs down east flight south north"; room.add(eastStep);
   }
   const stairToRoomEightDoors = new THREE.Group(); stairToRoomEightDoors.name = "room 5 to room 8 double doors";
   for (const x of [-.45, .45]) {
@@ -428,13 +429,22 @@ function buildRoom() {
     stairToRoomEightDoors.add(box("room 5 to room 8 door handle", [.08, .08, .1], [x + (x < 0 ? .22 : -.22), 1.25, -2.12], 0xd6b16d));
   }
   room.add(stairToRoomEightDoors);
-  planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
+  planRoom("dining room", 4.2, 0, 4.2, 4.2, 0x705640);
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
-  planRoom("room four", -4.2, 0, 4.0, 4.0, 0x80634d);
-  planRoom("ante room", -4.2, -4.2, 4.0, 4.0, 0x705640, false, ["east"]);
-  planRoom("Byron study", 0, -4.2, 4.0, 4.0, 0x705640, false, ["west"]);
-  planRoom("guest chamber", 4.2, -4.2, 4.0, 4.0, 0x705640);
+  planRoom("room four", -4.2, 0, 4.2, 4.2, 0x80634d);
+  planRoom("ante room", -4.2, -4.2, 4.2, 4.2, 0x705640, false, ["east"]);
+  planRoom("Byron study", 0, -4.2, 4.2, 4.2, 0x705640, false, ["west"]);
+  planRoom("guest chamber", 4.2, -4.2, 4.2, 4.2, 0x705640);
+  // Room builders intentionally describe both sides of a boundary. Keep one
+  // coincident mesh only; this prevents z-fighting and visibly doubled walls.
+  const uniqueWalls = new Set();
+  room.traverse((node) => {
+    if (!node.isMesh || !/ wall$/.test(node.name || "") || !node.geometry?.parameters) return;
+    const p = node.geometry.parameters;
+    const key = [node.position.x, node.position.y, node.position.z, p.width, p.height, p.depth].map((value) => Number(value).toFixed(3)).join(":");
+    if (uniqueWalls.has(key)) { node.userData.structuralOpening = true; node.visible = false; } else uniqueWalls.add(key);
+  });
   // Rooms 7 and 8 are opened into one salon. Remove both wall segments at
   // their shared boundary and replace the 8/9 boundary with double doors.
   room.traverse((node) => {
@@ -446,37 +456,37 @@ function buildRoom() {
   });
   const morningDoors = new THREE.Group(); morningDoors.name = "room 9 morning room double doors";
   for (const z of [-4.68, -3.72]) {
-    const panel = box("morning room double door panel", [.08, 2.4, .86], [2.18, 1.25, z], 0x4a3027);
+    const panel = box("morning room double door panel", [.08, 2.4, .86], [2.10, 1.25, z], 0x4a3027);
     panel.userData.openableDoor = true; morningDoors.add(panel);
-    const handle = box("morning room double door handle", [.11, .08, .08], [2.10, 1.25, z + (z < -4 ? .28 : -.28)], 0xd6b16d);
+    const handle = box("morning room double door handle", [.11, .08, .08], [2.02, 1.25, z + (z < -4 ? .28 : -.28)], 0xd6b16d);
     morningDoors.add(handle);
   }
   room.add(morningDoors);
   // Room 2 is the foyer: put the principal front door in its north wall.
-  const foyerDoor = box("foyer front door", [1.35, 2.55, .08], [0, 1.28, 6.18], 0x402a24);
-  const foyerDoorTop = box("foyer front door lintel", [1.55, .12, .12], [0, 2.72, 6.16], 0xb3875c);
+  const foyerDoor = box("foyer front door", [1.35, 2.55, .08], [0, 1.28, 6.28], 0x402a24);
+  const foyerDoorTop = box("foyer front door lintel", [1.55, .12, .12], [0, 2.72, 6.26], 0xb3875c);
   room.userData.occludingDecor.push(foyerDoor, foyerDoorTop);
-  const doorFourToSeven = box("door between rooms 4 and 7", [1.35, 2.45, .08], [-4.2, 1.22, -2.18], 0x4a3027);
-  const doorFourToSevenTop = box("door 4 to 7 lintel", [1.55, .12, .12], [-4.2, 2.58, -2.18], 0xb3875c);
-  const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, -2.10], 0xd6b16d);
+  const doorFourToSeven = box("door between rooms 4 and 7", [1.35, 2.45, .08], [-4.2, 1.22, -2.10], 0x4a3027);
+  const doorFourToSevenTop = box("door 4 to 7 lintel", [1.55, .12, .12], [-4.2, 2.58, -2.10], 0xb3875c);
+  const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, -2.02], 0xd6b16d);
   doorFourToSeven.userData.openableDoor = true;
   room.userData.occludingDecor.push(doorFourToSeven, doorFourToSevenTop, doorFourToSevenHandle);
   // South-wall fireplace centered on the 7/8 junction.
-  const shellFireplace = box("south wall fireplace surround", [1.8, 1.55, .28], [-2.1, .78, -6.18], 0x6b5548);
-  const shellMantel = box("south wall fireplace mantel", [2.35, .18, .42], [-2.1, 1.62, -6.12], 0x8a6a4b);
+  const shellFireplace = box("south wall fireplace surround", [1.8, 1.55, .28], [-2.1, .78, -6.28], 0x6b5548);
+  const shellMantel = box("south wall fireplace mantel", [2.35, .18, .42], [-2.1, 1.62, -6.22], 0x8a6a4b);
   const shellFire = new THREE.Mesh(new THREE.PlaneGeometry(.68, .78), new THREE.MeshBasicMaterial({ color: 0xff6c2e, transparent: true, opacity: .95 }));
-  shellFire.name = "south wall fireplace flame"; shellFire.position.set(-2.1, .72, -6.02); room.add(shellFire);
+  shellFire.name = "south wall fireplace flame"; shellFire.position.set(-2.1, .72, -6.12); room.add(shellFire);
   room.userData.occludingDecor.push(shellFireplace, shellMantel, shellFire);
   // Basic shell test: exactly three evenly spaced windows on each exterior
   // elevation of the nine-room grid.
   activeBuildGroup = room;
   for (const x of [-4.2, 0, 4.2]) {
-    addFacadeWindow(x, 2.25, -6.22);
-    addFacadeWindow(x, 2.25, 6.22);
+    addFacadeWindow(x, 2.25, -6.32);
+    addFacadeWindow(x, 2.25, 6.32);
   }
   for (const z of [-4.2, 0, 4.2]) {
-    addFacadeWindow(-6.22, 2.25, z, Math.PI / 2);
-    addFacadeWindow(6.22, 2.25, z, Math.PI / 2);
+    addFacadeWindow(-6.32, 2.25, z, Math.PI / 2);
+    addFacadeWindow(6.32, 2.25, z, Math.PI / 2);
   }
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
   box("west room threshold", [1.4, .1, 2.4], [-2.7, -.02, .1], 0xa28662);

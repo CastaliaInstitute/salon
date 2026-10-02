@@ -134,8 +134,8 @@
       "floor": 1,
       "x": 0,
       "z": 4.2,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": [
         "salon",
         "library-morning-room",
@@ -149,8 +149,8 @@
       "floor": 1,
       "x": -4.2,
       "z": 4.2,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": [
         "drawing-music-room",
         "salon"
@@ -161,8 +161,8 @@
       "floor": 1,
       "x": -4.2,
       "z": 0,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": [
         "drawing-music-room",
         "library-morning-room",
@@ -177,8 +177,8 @@
       "floor": 1,
       "x": 4.2,
       "z": 0,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": [
         "drawing-music-room",
         "cabinet-guest-room",
@@ -190,8 +190,8 @@
       "floor": 1,
       "x": 4.2,
       "z": 4.2,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": [
         "dining-room",
         "drawing-music-room"
@@ -202,8 +202,8 @@
       "floor": 1,
       "x": 0,
       "z": -4.2,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": ["ante-room", "central-stair-hall", "dining-room", "guest-chamber"]
     },
     {
@@ -211,8 +211,8 @@
       "floor": 1,
       "x": 0,
       "z": 0,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": ["salon", "drawing-music-room", "byron-study", "ante-room", "entrance-hall"]
     },
     {
@@ -220,8 +220,8 @@
       "floor": 1,
       "x": -4.2,
       "z": -4.2,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": ["salon", "central-stair-hall", "byron-study"]
     },
     {
@@ -229,8 +229,8 @@
       "floor": 1,
       "x": 4.2,
       "z": -4.2,
-      "width": 4.0,
-      "depth": 4.0,
+      "width": 4.2,
+      "depth": 4.2,
       "connections": ["byron-study"]
     },
     {
