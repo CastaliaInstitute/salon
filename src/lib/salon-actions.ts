@@ -6,6 +6,7 @@ export type SalonAction =
   | { type: 'say'; character: string; text: string }
   | { type: 'sit'; character: string; seat: string }
   | { type: 'stand'; character: string }
+  | { type: 'hold'; character: string; item?: 'book' | 'cup' | 'glass' | 'candelabra' }
   | { type: 'set_avatar'; character: string; avatar: NonNullable<SalonRoomState['avatars']>[string] }
 
 export interface SalonMapContract {
@@ -53,6 +54,7 @@ export function applySalonAction(action: SalonAction, input: SalonRoomState, map
   if (action.type === 'say') { state.activeSpeaker = action.character; current.animation_state = 'speak' }
   if (action.type === 'sit') { Object.assign(current, { x: map.seats[action.seat].x, z: map.seats[action.seat].z, direction: map.seats[action.seat].direction, seat: action.seat, animation_state: 'sit' }) }
   if (action.type === 'stand') { delete current.seat; current.animation_state = 'idle' }
+  if (action.type === 'hold') current.held = action.item
   if (action.type === 'set_avatar') state.avatars = { ...(state.avatars ?? {}), [action.character]: action.avatar }
   state.updatedAt = new Date().toISOString()
   return state
