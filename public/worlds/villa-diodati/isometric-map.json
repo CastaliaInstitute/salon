@@ -40,7 +40,7 @@
     {
       "id": "central-stair",
       "x": 0,
-      "z": -5,
+      "z": 0,
       "levels": [0, 1, 2, 3]
     }
   ],
@@ -132,7 +132,7 @@
     {
       "id": "drawing-music-room",
       "floor": 1,
-      "x": 4.2,
+      "x": 0,
       "z": 4.2,
       "width": 4.0,
       "depth": 4.0,
@@ -158,8 +158,8 @@
       "id": "salon",
       "floor": 1,
       "x": -4.2,
-      "z": -4.2,
-      "width": 8.4,
+      "z": -2.1,
+      "width": 4.0,
       "depth": 8.4,
       "connections": [
         "drawing-music-room",
@@ -173,7 +173,7 @@
       "id": "dining-room",
       "floor": 1,
       "x": 4.2,
-      "z": 0,
+      "z": 4.2,
       "width": 4.0,
       "depth": 4.0,
       "connections": [
@@ -197,7 +197,7 @@
       "id": "byron-study",
       "floor": 1,
       "x": 4.2,
-      "z": -4.2,
+      "z": 0,
       "width": 4.0,
       "depth": 4.0,
       "connections": ["drawing-music-room", "library-morning-room", "central-stair-hall"]
@@ -206,7 +206,7 @@
       "id": "central-stair-hall",
       "floor": 1,
       "x": 0,
-      "z": -6.3,
+      "z": 0,
       "width": 4.0,
       "depth": 1.8,
       "connections": ["salon", "byron-study", "ante-room", "entrance-hall"]
@@ -214,8 +214,8 @@
     {
       "id": "ante-room",
       "floor": 1,
-      "x": -4.2,
-      "z": -6.3,
+      "x": 0,
+      "z": -4.2,
       "width": 4.0,
       "depth": 1.8,
       "connections": ["central-stair-hall", "cabinet-guest-room"]

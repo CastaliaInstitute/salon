@@ -44,10 +44,9 @@ const HOUSE_WORLD_SCALE = 3.0;
 // Principal floor bay grid: three 4.2 m bays in each direction. The salon
 // occupies the southwest 2 x 2 block; the remaining bay is circulation and
 // service space rather than another copy of the salon.
-// The authored salon floor is centered at local z=.5. With the uniform .5
-// fit scale, this origin places its world center exactly at the southwest
-// 2x2 bay center (-4.2, -4.2).
-const SALON_ORIGIN = { x: -4.2, z: -4.45 };
+// Principal floor is a 3x3 bay grid. The salon occupies the southwest
+// column across two bays: one bay wide, two bays deep.
+const SALON_ORIGIN = { x: -4.2, z: -4.2 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
 const SALON_CONTENT_SCALE = { x: .50, z: .50 };
@@ -58,7 +57,7 @@ let roomRegions = [];
 let navigationRooms = [];
 let walkRoute = [];
 let currentRoomId = "";
-const stair = { x: 0, z: -5 };
+const stair = { x: 0, z: 0 };
 const requestedRoom = new URLSearchParams(location.search).get("room");
 function focusHouseLocation(x, z, floor) { const y = [-3.64, 0, 3.96, 7.76][Math.max(0, Math.min(3, Number(floor) || 1))] * HOUSE_WORLD_SCALE; const worldX = x * HOUSE_WORLD_SCALE; const worldZ = z * HOUSE_WORLD_SCALE; controls.target.set(worldX, y + .8, worldZ); if (topDown) { mapCamera.position.set(worldX, 24, worldZ + 11); mapCamera.lookAt(worldX, 0, worldZ); } else { isoCamera.position.set(worldX + 8, y + 8, worldZ + 8); isoCamera.lookAt(worldX, y + .8, worldZ); } }
 fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => {
@@ -406,15 +405,31 @@ function buildRoom() {
     horizontal(x, z - depth / 2, "north"); horizontal(x, z + depth / 2, "south"); vertical(x - width / 2, z, "west"); vertical(x + width / 2, z, "east");
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
-  planRoom("drawing room", 4.2, 4.2, 4.0, 4.0, 0x705640);
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
-  // One continuous southwest 2x2 block: it is not four rooms and must not be
-  // subdivided by the stair/ante-room placeholder shells.
-  planRoom("grand salon", -4.2, -4.2, 8.4, 8.4, 0x80634d, true);
-  planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
-  planRoom("Byron study", 4.2, -4.2, 4.0, 4.0, 0x705640);
-  box("central stair hall floor", [3.8, .1, 1.2], [0, -.08, -6.0], 0x80634d);
-  box("ante room floor", [3.8, .1, 1.2], [-4.2, -.08, -6.0], 0x705640);
+  planRoom("drawing room", 0, 4.2, 4.0, 4.0, 0x705640);
+  planRoom("dining room", 4.2, 4.2, 4.0, 4.0, 0x705640);
+  box("central landing floor", [4.0, .1, 4.0], [0, -.08, 0], 0x80634d);
+  // Open circulation ring around the stair; the four radial approaches remain
+  // clear so the landing connects the perimeter rooms instead of becoming a
+  // sealed central room.
+  const landingRing = new THREE.Mesh(new THREE.RingGeometry(1.35, 1.95, 32), mat(0x9b7956));
+  landingRing.rotation.x = -Math.PI / 2; landingRing.position.set(0, .015, 0); landingRing.name = "central stair circulation walkway"; room.add(landingRing);
+  for (const [x, z, width, depth] of [[0, -1.95, 1.2, 1.3], [0, 1.95, 1.2, 1.3], [-1.95, 0, 1.3, 1.2], [1.95, 0, 1.3, 1.2]]) box("central stair radial walkway", [width, .06, depth], [x, .01, z], 0x9b7956);
+  const stairSteps = 16;
+  for (let index = 0; index < stairSteps; index += 1) {
+    const angle = index / stairSteps * Math.PI * 2;
+    const radius = .62;
+    const step = new THREE.Mesh(new THREE.BoxGeometry(.56, .11, .34), mat(0x6f4934));
+    step.position.set(Math.cos(angle) * radius, .12 + index * .12, Math.sin(angle) * radius);
+    step.rotation.y = -angle; step.name = "central spiral stair step"; room.add(step);
+  }
+  const stairNewel = new THREE.Mesh(new THREE.CylinderGeometry(.12, .15, 2.15, 12), mat(0x4b3028));
+  stairNewel.position.set(0, 1.08, 0); stairNewel.name = "central spiral stair newel"; room.add(stairNewel);
+  planRoom("Byron study", 4.2, 0, 4.0, 4.0, 0x705640);
+  // The salon is exactly one bay wide and two bays deep in the southwest
+  // corner. Its perimeter is continuous; no other shell may overlap it.
+  planRoom("grand salon", -4.2, -2.1, 4.0, 8.4, 0x80634d, true);
+  planRoom("ante room", 0, -4.2, 4.0, 4.0, 0x705640);
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
   box("west room threshold", [1.4, .1, 2.4], [-2.7, -.02, .1], 0xa28662);
   box("east room threshold", [1.4, .1, 2.4], [2.7, -.02, .1], 0xa28662);
@@ -439,7 +454,9 @@ function buildRoom() {
   room.userData.occludingDecor.push(westDoor, westDoorFrameTop);
   // East elevation retains its regular window rhythm.
   for (const z of [-2.15, .55, 3.15]) addFacadeWindow(7.86, 2.25, z, Math.PI / 2);
-  for (const x of [-5.9, 5.9]) {
+  // South wall composition: the fireplace remains centered, with one door
+  // and one window flanking it inside the one-bay salon width.
+  for (const x of [-2.7, 2.7]) {
     if (x < 0) {
       const southDoor = box("south veranda door", [1.55, 2.55, .08], [x, 1.32, -3.86], 0x402a24);
       const southDoorFrameLeft = box("south veranda door frame left", [.12, 2.8, .12], [x - .88, 1.42, -3.82], 0xb3875c);
