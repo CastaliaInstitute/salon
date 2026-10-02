@@ -156,7 +156,8 @@
         "drawing-music-room",
         "dining-room",
         "rear-service-hall",
-        "terrace"
+        "terrace",
+        "entrance-hall"
       ]
     },
     {
@@ -258,7 +259,7 @@
       "z": -0.8,
       "width": 5.8,
       "depth": 5.5,
-      "connections": ["kitchen", "servants-hall", "salon"]
+      "connections": ["kitchen", "servants-hall", "salon", "upper-landing"]
     },
     {
       "id": "kitchen",
@@ -357,7 +358,7 @@
       "z": 3.2,
       "width": 4.2,
       "depth": 3,
-      "connections": ["byron-bedroom", "polidori-bedroom", "guest-chamber-west", "guest-chamber-east", "servants-room-west", "servants-room-east"]
+      "connections": ["byron-bedroom", "polidori-bedroom", "guest-chamber-west", "guest-chamber-east", "servants-room-west", "servants-room-east", "entrance-hall", "attic-landing"]
     },
     {
       "id": "servants-room-west",
@@ -384,7 +385,7 @@
       "z": 3.2,
       "width": 4.2,
       "depth": 3,
-      "connections": ["servants-room-west", "servants-room-east"]
+      "connections": ["servants-room-west", "servants-room-east", "upper-landing"]
     }
   ],
   "floors": [
