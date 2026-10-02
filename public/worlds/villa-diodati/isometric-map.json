@@ -359,7 +359,7 @@
       "z": 3.2,
       "width": 4.8,
       "depth": 2.8,
-      "connections": ["kitchen", "entrance-hall"]
+      "connections": ["kitchen", "entrance-hall", "lower-terrace"]
     },
     {
       "id": "staff-room",
@@ -377,7 +377,34 @@
       "z": 4.6,
       "width": 5.8,
       "depth": 2.2,
-      "connections": ["entrance-hall"]
+      "connections": ["entrance-hall", "lower-terrace"]
+    },
+    {
+      "id": "lower-terrace",
+      "floor": 0,
+      "x": 0,
+      "z": 6.8,
+      "width": 12.8,
+      "depth": 2.8,
+      "connections": ["laundry", "lake-access-storage", "lower-garden"]
+    },
+    {
+      "id": "lower-garden",
+      "floor": 0,
+      "x": 0,
+      "z": 11.6,
+      "width": 12.8,
+      "depth": 6.2,
+      "connections": ["lower-terrace", "lower-shore"]
+    },
+    {
+      "id": "lower-shore",
+      "floor": 0,
+      "x": 0,
+      "z": 19.8,
+      "width": 12.8,
+      "depth": 1.4,
+      "connections": ["lower-garden"]
     },
     {
       "id": "byron-bedroom",
@@ -475,7 +502,10 @@
         "stores",
         "laundry",
         "staff-room",
-        "lake-access-storage"
+        "lake-access-storage",
+        "lower-terrace",
+        "lower-garden",
+        "lower-shore"
       ]
     },
     {

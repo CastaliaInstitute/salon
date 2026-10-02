@@ -268,6 +268,14 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   layerBox(layer, `${levelName} room 4 to room 7 door`, [1.35, 2.45, .08], [-4.2, baseY + 1.22, 2.1], doorColor);
   for (const z of [3.72, 4.68]) layerBox(layer, `${levelName} room 8 to room 9 door`, [.08, 2.4, .86], [2.1, baseY + 1.25, z], doorColor);
   layerBox(layer, `${levelName} room 8 south veranda door`, [1.35, 2.45, .08], [0, baseY + 1.22, 6.28], doorColor);
+  if (levelName === "ground") {
+    // The service/garden level sits below the piano nobile on the lake-facing
+    // slope. Give it real outward exits rather than treating the south edge
+    // as another enclosed wall.
+    for (const x of [-4.2, 0, 4.2]) layerBox(layer, "ground floor garden exit door", [1.18, 2.35, .08], [x, baseY + 1.18, 6.28], doorColor);
+    for (let step = 0; step < 8; step++) layerBox(layer, "ground floor garden stair", [7.6 - step * .35, .14, .42], [0, baseY + .08 - step * .12, 6.75 + step * .42], 0x8b725a);
+    layerBox(layer, "ground floor lower terrace", [12.8, .16, 2.8], [0, baseY - .78, 9.6], 0x8b725a);
+  }
   const addWindow = (x, z, rotation = 0) => {
     // A side window is already modeled as a thin X-facing pane.  Rotating that
     // box as well would turn its sill-length dimension into X and make it
