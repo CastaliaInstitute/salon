@@ -32,14 +32,10 @@ await addCopies('furniture/armchair-01/ArmChair_01.gltf', [
 // Turn the sofa toward the fireplace on the rear wall.
 // Keep the sofa behind the standing speaker, outside the speaking circle.
 await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -2.1, Math.PI, 0.8]]);
-// Free downloaded props: a traditional fireplace and two mantel candelabra.
+// Free downloaded prop: a traditional fireplace. The scanned candelabrum is
+// intentionally not baked: its source contains oversized dark geometry that
+// reads as a black panel in the salon.
 await addCopies('furniture/fireplace/traditional-cast-stone-fireplace.glb', [[0, -0.22, -3.86, 0, 1.7]]);
-await addCopies('furniture/candelabrum/candelabrum.glb', [
-  // This scan has very large internal coordinates; 0.0025 brings it to a
-  // realistic ~0.5 m mantel prop instead of a room-sized black silhouette.
-  [-0.58, 2.18, -3.55, Math.PI, 0.0025],
-  [0.58, 2.18, -3.55, Math.PI, 0.0025],
-]);
 
 await target.transform(unpartition());
 await io.write(file('salon.glb'), target);
