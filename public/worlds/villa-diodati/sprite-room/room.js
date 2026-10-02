@@ -118,6 +118,15 @@ function buildLowerFloor() {
   room("entrance hall", 0, -.8, 5.8, 5.5); room("kitchen", -6.2, -.8, 5.5, 5.5); room("pantry", -10.5, -.8, 2.5, 5.5); room("servants hall", 6.2, -.8, 5.5, 5.5); room("storage and cellar", 10.5, -.8, 2.5, 5.5); room("wine cellar", -5.5, -5.5, 5.5, 2.8); room("stores", 5.5, -5.5, 5.5, 2.8);
   addStairFlight(lowerFloor, -3.68, "ground floor");
   for (const x of [-7.3, -5.5, -3.7]) { const counter = new THREE.Mesh(new THREE.BoxGeometry(1.2, .65, .55), mat(0x5b3828)); counter.position.set(x, -3.2, -.8); lowerFloor.add(counter); }
+  const lowerProp = (name, size, position, color = 0x5b3828) => { const prop = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color)); prop.name = name; prop.position.set(...position); prop.castShadow = true; prop.receiveShadow = true; lowerFloor.add(prop); return prop; };
+  lowerProp("kitchen work island", [2.3, .72, .72], [-6.2, -3.18, .7]);
+  lowerProp("kitchen hearth", [1.1, .9, .38], [-7.9, -3.1, -3.0], 0x3b2924);
+  for (const z of [-2.0, -.6, .8, 2.2]) lowerProp("pantry shelf", [1.9, .12, .34], [-10.5, -2.95, z], 0x704b35);
+  lowerProp("servants hall table", [2.2, .12, .85], [6.2, -2.78, -.8]);
+  for (const x of [5.3, 7.1]) lowerProp("servants hall bench", [.42, .42, 1.7], [x, -3.28, -.8], 0x6b4937);
+  for (const x of [-6.35, -4.65, 4.65, 6.35, 10.5]) {
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.32, .36, .7, 12), mat(0x62402e)); barrel.name = "cellar barrel"; barrel.rotation.z = Math.PI / 2; barrel.position.set(x, -3.22, -5.5); barrel.castShadow = true; lowerFloor.add(barrel);
+  }
 }
 function buildUpperFloors() {
   const floorMat = mat(0x8b725a);
