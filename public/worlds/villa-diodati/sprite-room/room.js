@@ -93,6 +93,10 @@ function buildRoom() {
   }
   box("fireplace", [2.35, 2.2, .5], [0, 1.1, -3.72], 0x71645c);
   box("fire opening", [1.35, .9, .04], [0, .75, -3.99], 0x241916);
+  const fireplaceTexture = textureLoader.load("../art/fireplace-v1.png");
+  fireplaceTexture.colorSpace = THREE.SRGBColorSpace;
+  const fireplaceArt = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 1.57), new THREE.MeshBasicMaterial({ map: fireplaceTexture, transparent: true }));
+  fireplaceArt.name = "generated fireplace surround"; fireplaceArt.position.set(0, 1.1, -4.005); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 4, 5); fireLight.position.set(0, .8, -3.1); room.add(fireLight);
   const fireOuter = new THREE.Mesh(new THREE.ConeGeometry(.48, 1.15, 7), new THREE.MeshBasicMaterial({ color: 0xff6b2e, transparent: true, opacity: .9 })); fireOuter.position.set(0, .82, -4.05); room.add(fireOuter); flames.push(fireOuter);
   const fireInner = new THREE.Mesh(new THREE.ConeGeometry(.24, .72, 7), new THREE.MeshBasicMaterial({ color: 0xffe28a, transparent: true, opacity: .95 })); fireInner.position.set(0, .72, -4.08); room.add(fireInner); flames.push(fireInner);
