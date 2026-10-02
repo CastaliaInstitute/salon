@@ -236,6 +236,19 @@
   ],
   "floors": [
     {
+      "level": 0,
+      "name": "Ground floor",
+      "rooms": [
+        "entrance-hall",
+        "kitchen",
+        "pantry",
+        "servants-hall",
+        "storage-cellar",
+        "wine-cellar",
+        "stores"
+      ]
+    },
+    {
       "level": 1,
       "name": "Principal floor / piano nobile",
       "rooms": [

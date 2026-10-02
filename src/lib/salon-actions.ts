@@ -1,7 +1,7 @@
 import type { SalonRoomState } from './matrix-room-client'
 
 export type SalonAction =
-  | { type: 'move'; character: string; x: number; z: number; floor?: 1 | 2 | 3; direction?: string }
+  | { type: 'move'; character: string; x: number; z: number; floor?: 0 | 1 | 2 | 3; direction?: string }
   | { type: 'gesture'; character: string; gesture: 'idle' | 'gesture' | 'speak' }
   | { type: 'say'; character: string; text: string }
   | { type: 'sit'; character: string; seat: string }
@@ -30,7 +30,7 @@ export function validateSalonAction(action: SalonAction, state: SalonRoomState, 
 
   if (action.type === 'move') {
     if (![action.x, action.z].every(Number.isFinite)) return { ok: false, reason: 'Move coordinates must be finite' }
-    if (action.floor != null && ![1, 2, 3].includes(action.floor)) return { ok: false, reason: 'Move floor must be 1, 2, or 3' }
+    if (action.floor != null && ![0, 1, 2, 3].includes(action.floor)) return { ok: false, reason: 'Move floor must be 0, 1, 2, or 3' }
     const { minX, maxX, minZ, maxZ } = map.bounds
     if (action.x < minX || action.x > maxX || action.z < minZ || action.z > maxZ) return { ok: false, reason: 'Move target is outside the salon map' }
   }
