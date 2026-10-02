@@ -137,7 +137,6 @@
       "width": 4.2,
       "depth": 4.2,
       "connections": [
-        "salon",
         "library-morning-room",
         "central-stair-hall",
         "cabinet-guest-room",
@@ -152,24 +151,20 @@
       "width": 4.2,
       "depth": 4.2,
       "connections": [
-        "drawing-music-room",
-        "salon"
+        "drawing-music-room"
       ]
     },
     {
       "id": "salon",
       "floor": 1,
-      "x": -4.2,
-      "z": 0,
-      "width": 4.2,
+      "x": -2.1,
+      "z": 4.2,
+      "width": 8.4,
       "depth": 4.2,
       "connections": [
-        "drawing-music-room",
-        "library-morning-room",
         "central-stair-hall",
-        "ante-room",
-        "terrace",
-        "entrance-hall"
+        "guest-chamber",
+        "terrace"
       ]
     },
     {
@@ -182,7 +177,8 @@
       "connections": [
         "drawing-music-room",
         "cabinet-guest-room",
-        "byron-study"
+        "central-stair-hall",
+        "guest-chamber"
       ]
     },
     {
@@ -198,31 +194,13 @@
       ]
     },
     {
-      "id": "byron-study",
-      "floor": 1,
-      "x": 0,
-      "z": 4.2,
-      "width": 4.2,
-      "depth": 4.2,
-      "connections": ["ante-room", "central-stair-hall", "dining-room", "guest-chamber"]
-    },
-    {
       "id": "central-stair-hall",
       "floor": 1,
       "x": 0,
       "z": 0,
       "width": 4.2,
       "depth": 4.2,
-      "connections": ["salon", "drawing-music-room", "byron-study", "ante-room", "entrance-hall"]
-    },
-    {
-      "id": "ante-room",
-      "floor": 1,
-      "x": -4.2,
-      "z": 4.2,
-      "width": 4.2,
-      "depth": 4.2,
-      "connections": ["salon", "central-stair-hall", "byron-study"]
+      "connections": ["salon", "drawing-music-room", "dining-room", "entrance-hall"]
     },
     {
       "id": "guest-chamber",
@@ -231,7 +209,7 @@
       "z": 4.2,
       "width": 4.2,
       "depth": 4.2,
-      "connections": ["byron-study"]
+      "connections": ["salon", "dining-room"]
     },
     {
       "id": "terrace",
@@ -296,7 +274,7 @@
       "z": -0.8,
       "width": 5.8,
       "depth": 5.5,
-      "connections": ["kitchen", "servants-hall", "salon", "upper-landing", "central-stair-hall", "laundry", "staff-room", "lake-access-storage"]
+      "connections": ["kitchen", "servants-hall", "upper-landing", "central-stair-hall", "laundry", "staff-room", "lake-access-storage"]
     },
     {
       "id": "kitchen",
@@ -517,9 +495,7 @@
         "salon",
         "dining-room",
         "cabinet-guest-room",
-        "byron-study",
         "central-stair-hall",
-        "ante-room",
         "terrace",
         "garden",
         "shore"

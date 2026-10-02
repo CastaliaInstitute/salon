@@ -56,10 +56,12 @@ const FLOOR_BASE_Y = [-CEILING_HEIGHT, 0, CEILING_HEIGHT, CEILING_HEIGHT * 2];
 // Villa plan datum: three 4.2 m bays in each direction.  The architectural
 // shell is kept independent of the salon set so the same grid can be rendered
 // on ground, principal, second, and attic levels.
-const SALON_ORIGIN = { x: -4.2, z: 4.2 };
+// Rooms 7 and 8 are one salon: a two-bay room across the southwest and
+// south-center cells of the principal-floor grid.
+const SALON_ORIGIN = { x: -2.1, z: 3.97 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
-const SALON_CONTENT_SCALE = { x: .50, z: .50 };
+const SALON_CONTENT_SCALE = { x: .52, z: .46 };
 // The salon geometry is already authored with its fireplace on local south;
 // rotating the whole group moves it out of the southwest 2x2 bay block.
 const SALON_CONTENT_ROTATION = 0;
@@ -135,8 +137,8 @@ const tapRaycaster = new THREE.Raycaster();
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function changeFloor(now = clock.elapsedTime) { if (now - lastFloorChange < 1.2) return false; const nextFloor = floorLevel >= 3 ? 0 : floorLevel + 1; lastFloorChange = now; localPlayer.floor = nextFloor; localPlayer.z = stair.z + 1.0; walkRoute = []; setFloorLevel(nextFloor); focusHouseLocation(stair.x, localPlayer.z, nextFloor); return true; }
 function roomAtPoint(x, z) { return navigationRooms.find((room) => Number(room.floor) === floorLevel && x >= Number(room.x) - Number(room.width) / 2 && x <= Number(room.x) + Number(room.width) / 2 && z >= Number(room.z) - Number(room.depth) / 2 && z <= Number(room.z) + Number(room.depth) / 2) || null; }
-const planShellByRoom = { "drawing-music-room": "foyer", "library-morning-room": "library study", salon: "room four", "dining-room": "dining room", "cabinet-guest-room": "cabinet guest room", "byron-study": "Byron study", "central-stair-hall": "central stair hall", "ante-room": "ante room", "guest-chamber": "guest chamber" };
-const planShellNames = ["library study", "foyer", "cabinet guest room", "room four", "central stair hall", "dining room", "ante room", "Byron study", "guest chamber"];
+const planShellByRoom = { "drawing-music-room": "foyer", "library-morning-room": "library study", salon: "salon", "dining-room": "dining room", "cabinet-guest-room": "cabinet guest room", "central-stair-hall": "central stair hall", "guest-chamber": "guest chamber" };
+const planShellNames = ["library study", "foyer", "cabinet guest room", "central stair hall", "dining room", "salon", "guest chamber"];
 const exteriorRoomMesh = /^(villa front terrace|terrace board|terrace steps|garden lawn|main garden path|east garden path|west garden path|basin|pond|fountain|vine|orchard|lake shore path|stone seawall|Lake Geneva|trunk|crown)$/i;
 function updateExteriorRoomMeshes(visible) {
   room.traverse((node) => { if (!node.isMesh) return; const name = node.name || ""; const outdoorClutter = exteriorRoomMesh.test(name) || /^(trunk|crown)$/i.test(name) || node.position.z > 8 || Math.abs(node.position.x) > 8; if (outdoorClutter) node.visible = visible; });
@@ -147,7 +149,7 @@ function updatePlanRoomVisibility(roomId) {
   if (!salonRoot.visible) return;
   // The salon has a real architectural room root. Its inferred `grand salon`
   // shell is only a navigation placeholder and must never double-render walls.
-  const activeName = roomId === "salon" ? null : (planShellByRoom[roomId] || null);
+  const activeName = planShellByRoom[roomId] || null;
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     if (node.userData.structuralOpening) { node.visible = false; return; }
@@ -250,16 +252,16 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   const wallColor = WALL_PLASTER_COLOR;
   const wallHeight = CEILING_HEIGHT;
   const rooms = [
-    ["library study", -4.2, -4.2, []], ["foyer", 0, -4.2, ["south"]], ["cabinet guest room", 4.2, -4.2, []],
-    ["room four", -4.2, 0, ["south"]], ["central stair hall", 0, 0, ["north", "south"]], ["dining room", 4.2, 0, []],
-    ["ante room", -4.2, 4.2, ["north", "east"]], ["Byron study", 0, 4.2, ["north", "west", "east", "south"]], ["guest chamber", 4.2, 4.2, ["west"]],
+    ["library study", -4.2, -4.2, 4.2, 4.2, []], ["foyer", 0, -4.2, 4.2, 4.2, ["south"]], ["cabinet guest room", 4.2, -4.2, 4.2, 4.2, []],
+    ["room four", -4.2, 0, 4.2, 4.2, ["south"]], ["central stair hall", 0, 0, 4.2, 4.2, ["north", "south"]], ["dining room", 4.2, 0, 4.2, 4.2, []],
+    ["salon", -2.1, 4.2, 8.4, 4.2, ["north", "south", "east"]], ["guest chamber", 4.2, 4.2, 4.2, 4.2, ["west"]],
   ];
-  for (const [name, x, z, openSides] of rooms) {
-    layerBox(layer, `${name} floor`, [4.2, .1, 4.2], [x, baseY - .08, z], floorColor);
-    if (!openSides.includes("north")) layerBox(layer, `${name} north wall`, [4.2, wallHeight, .16], [x, baseY + wallHeight / 2, z - 2.1], wallColor);
-    if (!openSides.includes("south")) layerBox(layer, `${name} south wall`, [4.2, wallHeight, .16], [x, baseY + wallHeight / 2, z + 2.1], wallColor);
-    if (!openSides.includes("west")) layerBox(layer, `${name} west wall`, [.16, wallHeight, 4.2], [x - 2.1, baseY + wallHeight / 2, z], wallColor);
-    if (!openSides.includes("east")) layerBox(layer, `${name} east wall`, [.16, wallHeight, 4.2], [x + 2.1, baseY + wallHeight / 2, z], wallColor);
+  for (const [name, x, z, width, depth, openSides] of rooms) {
+    layerBox(layer, `${name} floor`, [width, .1, depth], [x, baseY - .08, z], floorColor);
+    if (!openSides.includes("north")) layerBox(layer, `${name} north wall`, [width, wallHeight, .16], [x, baseY + wallHeight / 2, z - depth / 2], wallColor);
+    if (!openSides.includes("south")) layerBox(layer, `${name} south wall`, [width, wallHeight, .16], [x, baseY + wallHeight / 2, z + depth / 2], wallColor);
+    if (!openSides.includes("west")) layerBox(layer, `${name} west wall`, [.16, wallHeight, depth], [x - width / 2, baseY + wallHeight / 2, z], wallColor);
+    if (!openSides.includes("east")) layerBox(layer, `${name} east wall`, [.16, wallHeight, depth], [x + width / 2, baseY + wallHeight / 2, z], wallColor);
   }
   const addHorizontalDoorWall = (name, centerX, centerZ, length, opening) => {
     const segment = (length - opening) / 2; const offset = (opening + segment) / 2;
@@ -271,13 +273,14 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   };
   addHorizontalDoorWall("room four south", -4.2, 2.1, 4.2, 1.35);
   addHorizontalDoorWall("central stair hall south", 0, 2.1, 4.2, 1.82);
-  addVerticalDoorWall("Byron study east", 2.1, 4.2, 4.2, 1.82);
+  addVerticalDoorWall("salon east", 2.1, 4.2, 4.2, 1.82);
+  addHorizontalDoorWall("salon south veranda", 0, 6.3, 8.4, 1.35);
   const doorColor = 0x4a3027;
   layerBox(layer, `${levelName} foyer front door`, [1.35, 2.45, .08], [0, baseY + 1.22, -6.28], doorColor);
   for (const x of [-.45, .45]) layerBox(layer, `${levelName} room 5 to room 8 double door`, [.82, 2.4, .08], [x, baseY + 1.25, 2.1], doorColor);
   layerBox(layer, `${levelName} room 4 to room 7 door`, [1.35, 2.45, .08], [-4.2, baseY + 1.22, 2.1], doorColor);
   for (const z of [3.72, 4.68]) layerBox(layer, `${levelName} room 8 to room 9 door`, [.08, 2.4, .86], [2.1, baseY + 1.25, z], doorColor);
-  layerBox(layer, `${levelName} room 8 south veranda door`, [1.35, 2.45, .08], [0, baseY + 1.22, 6.28], doorColor);
+  layerBox(layer, `${levelName} salon south veranda door`, [1.35, 2.45, .08], [0, baseY + 1.22, 6.28], doorColor);
   if (levelName === "ground") {
     // The service/garden level sits below the piano nobile on the lake-facing
     // slope. Give it real outward exits rather than treating the south edge
@@ -499,8 +502,10 @@ function buildRoom() {
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
   planRoom("room four", -4.2, 0, 4.2, 4.2, 0x80634d, false, ["south"]);
-  planRoom("ante room", -4.2, 4.2, 4.2, 4.2, 0x705640, false, ["north", "east"]);
-  planRoom("Byron study", 0, 4.2, 4.2, 4.2, 0x705640, false, ["north", "west", "east", "south"]);
+  // Rooms 7 and 8 are opened into one 1x2 salon.  The shared 7/8 wall is
+  // intentionally absent; the north, east, and south boundaries are added
+  // below with their actual doors and wall segments.
+  planRoom("salon", -2.1, 4.2, 8.4, 4.2, 0x705640, false, ["north", "south", "east"]);
   planRoom("guest chamber", 4.2, 4.2, 4.2, 4.2, 0x705640, false, ["west"]);
   // 4–7 and 8–9 are closed boundaries with a real doorway, not open-plan
   // passages.  Add one shared wall around each doorway so the adjoining rooms
@@ -517,7 +522,8 @@ function buildRoom() {
     for (const z of [centerZ - offset, centerZ + offset]) box(`${name} wall segment`, [.16, doorWallHeight, segment], [centerX, doorWallHeight / 2, z], WALL_PLASTER_COLOR);
   };
   addHorizontalDoorWall("room four south", -4.2, 2.1, 4.2, 1.35);
-  addVerticalDoorWall("Byron study east", 2.1, 4.2, 4.2, 1.82);
+  addVerticalDoorWall("salon east", 2.1, 4.2, 4.2, 1.82);
+  addHorizontalDoorWall("salon south veranda", 0, 6.3, 8.4, 1.35);
   // Room builders intentionally describe both sides of a boundary. Keep one
   // coincident mesh only; this prevents z-fighting and visibly doubled walls.
   const uniqueWalls = new Set();
