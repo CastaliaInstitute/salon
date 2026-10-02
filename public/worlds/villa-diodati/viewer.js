@@ -681,6 +681,13 @@ resize();
 const matrixFigureOrder = ["a.byron", "a.maryshelley", "a.clairmont", "a.shelley", "a.polidori"];
 let matrixRoomId = null;
 let matrixAccessToken = null;
+let villaIsometricMap = null;
+fetch("./isometric-map.json", { cache: "no-cache" })
+  .then((response) => response.ok ? response.json() : null)
+  .then((map) => {
+    if (map?.coordinateSystem === "villa-diodati-isometric-v1") villaIsometricMap = map;
+  })
+  .catch(() => {});
 async function matrixRoomState() {
   try {
     if (!matrixAccessToken) {
@@ -698,6 +705,9 @@ async function matrixRoomState() {
     const event = (await response.json()).find((item) => item.type === "org.castalia.salon.room" && (item.state_key || "") === "");
     const state = event?.content;
     if (!state) return;
+    // The Matrix event may identify the map explicitly; otherwise the shared
+    // Villa contract remains the default for this viewer.
+    if (state.map && villaIsometricMap && state.map !== villaIsometricMap.id) return;
     const figures = [...seatedFigures.map((entry) => entry.figure), ...standingFigures];
     matrixFigureOrder.forEach((id, index) => {
       const figure = figures[index];
