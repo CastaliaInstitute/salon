@@ -120,26 +120,6 @@ function buildRoom() {
     box("window sill", [2.15, .12, .22], [x, .78, -3.72], 0xf2eee5);
     box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.7], 0x5e7080);
   }
-  const shelfX = -5.72;
-  box("built-in bookshelf backing", [.12, 3.05, 3.55], [shelfX, 1.95, -1.55], 0x3b2925);
-  box("built-in bookshelf left stile", [.28, 3.35, 3.75], [shelfX - .1, 1.95, -1.55], 0x8b5d40);
-  box("built-in bookshelf right stile", [.28, 3.35, 3.75], [shelfX + .1, 1.95, -1.55], 0x8b5d40);
-  for (const y of [.52, 1.3, 2.08, 2.86, 3.64]) box("built-in bookshelf shelf", [.38, .12, 3.75], [shelfX, y, -1.55], 0x9b6846);
-  const bookColors = [0x6e3030, 0x284b59, 0x68502e, 0x4b315c, 0x9a7044, 0x334b36, 0x7b4034];
-  const bookRows = [.61, 1.39, 2.17, 2.95, 3.73];
-  bookRows.forEach((y, row) => {
-    let z = -3.18 + (row % 2) * .05;
-    let index = 0;
-    while (z < .05) {
-      const width = .16 + ((row + index) % 3) * .045;
-      const height = .5 + ((row * 2 + index) % 3) * .07;
-      const book = box("individual book", [.24, height, width], [shelfX - .22, y + height / 2, z + width / 2], bookColors[(row * 3 + index) % bookColors.length], 0);
-      book.rotation.x = ((index + row) % 4 === 0 ? -.035 : 0);
-      book.rotation.y = ((index + row) % 5 === 0 ? .08 : 0);
-      z += width + .045;
-      index += 1;
-    }
-  });
   const writingDeskX = 4.55;
   const writingDeskZ = -1.8;
   box("antique writing desk top", [1.25, .12, 1.15], [writingDeskX, 1.02, writingDeskZ], 0x6b402d);
