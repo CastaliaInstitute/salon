@@ -40,7 +40,7 @@ const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
 const stair = { x: 0, z: -5 };
 const requestedRoom = new URLSearchParams(location.search).get("room");
 fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => {
-  if (contract?.coordinateSystem === "villa-diodati-isometric-v1") { Object.assign(map, contract.bounds || {}); const transition = contract.floorTransitions?.find((candidate) => candidate.id === "central-stair"); if (transition) { stair.x = Number(transition.x); stair.z = Number(transition.z); } const destination = requestedRoom ? contract.rooms?.find((room) => room.id === requestedRoom) : null; if (destination && localPlayerEnabled) { localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); localPlayer.floor = Number(destination.floor); setFloorLevel(localPlayer.floor); } }
+  if (contract?.coordinateSystem === "villa-diodati-isometric-v1") { Object.assign(map, contract.bounds || {}); const transition = contract.floorTransitions?.find((candidate) => candidate.id === "central-stair"); if (transition) { stair.x = Number(transition.x); stair.z = Number(transition.z); } const destination = requestedRoom ? contract.rooms?.find((room) => room.id === requestedRoom) : null; if (destination && localPlayerEnabled) { localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); localPlayer.floor = Number(destination.floor); walkTarget = null; setFloorLevel(localPlayer.floor); const figure = figures.get(localPlayer.id); if (figure) updateFigure(figure, localPlayer, clock.elapsedTime); } }
 }).catch(() => {});
 const room = new THREE.Group(); scene.add(room);
 const participantLayer = new THREE.Group(); scene.add(participantLayer);
