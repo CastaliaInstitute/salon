@@ -398,7 +398,7 @@ function buildRoom() {
     room.userData.occludingDecor.push(recess, pane, ...frame);
   };
   // Principal-floor reconstruction surrounding the salon.
-  const planRoom = (name, x, z, width, depth, color = 0x80634d, continuous = false) => {
+  const planRoom = (name, x, z, width, depth, color = 0x80634d, continuous = false, openSides = []) => {
     box(`${name} floor`, [width, .1, depth], [x, -.08, z], color);
     const wall = 0.16;
     const wallHeight = 3.048;
@@ -406,7 +406,7 @@ function buildRoom() {
     const gap = continuous ? 0 : Math.min(1.35, width - .4); const sideGap = continuous ? 0 : Math.min(1.35, depth - .4);
     const horizontal = (centerX, centerZ, side) => { const segment = (width - gap) / 2; for (const offset of [-(gap + segment) / 2, (gap + segment) / 2]) box(`${name} ${side} wall`, [segment, wallHeight, wall], [centerX + offset, wallCenter, centerZ], 0x91adbc); };
     const vertical = (centerX, centerZ, side) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) box(`${name} ${side} wall`, [wall, wallHeight, segment], [centerX, wallCenter, centerZ + offset], 0x91adbc); };
-    horizontal(x, z - depth / 2, "north"); horizontal(x, z + depth / 2, "south"); vertical(x - width / 2, z, "west"); vertical(x + width / 2, z, "east");
+    if (!openSides.includes("north")) horizontal(x, z - depth / 2, "north"); if (!openSides.includes("south")) horizontal(x, z + depth / 2, "south"); if (!openSides.includes("west")) vertical(x - width / 2, z, "west"); if (!openSides.includes("east")) vertical(x + width / 2, z, "east");
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
@@ -432,8 +432,8 @@ function buildRoom() {
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
   planRoom("room four", -4.2, 0, 4.0, 4.0, 0x80634d);
-  planRoom("ante room", -4.2, -4.2, 4.0, 4.0, 0x705640);
-  planRoom("Byron study", 0, -4.2, 4.0, 4.0, 0x705640);
+  planRoom("ante room", -4.2, -4.2, 4.0, 4.0, 0x705640, false, ["east"]);
+  planRoom("Byron study", 0, -4.2, 4.0, 4.0, 0x705640, false, ["west"]);
   planRoom("guest chamber", 4.2, -4.2, 4.0, 4.0, 0x705640);
   // Rooms 7 and 8 are opened into one salon. Remove both wall segments at
   // their shared boundary and replace the 8/9 boundary with double doors.
