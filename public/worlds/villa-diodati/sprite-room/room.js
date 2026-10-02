@@ -461,6 +461,12 @@ function buildRoom() {
   const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, -2.10], 0xd6b16d);
   doorFourToSeven.userData.openableDoor = true;
   room.userData.occludingDecor.push(doorFourToSeven, doorFourToSevenTop, doorFourToSevenHandle);
+  // South-wall fireplace centered on the 7/8 junction.
+  const shellFireplace = box("south wall fireplace surround", [1.8, 1.55, .28], [-2.1, .78, -6.18], 0x6b5548);
+  const shellMantel = box("south wall fireplace mantel", [2.35, .18, .42], [-2.1, 1.62, -6.12], 0x8a6a4b);
+  const shellFire = new THREE.Mesh(new THREE.PlaneGeometry(.68, .78), new THREE.MeshBasicMaterial({ color: 0xff6c2e, transparent: true, opacity: .95 }));
+  shellFire.name = "south wall fireplace flame"; shellFire.position.set(-2.1, .72, -6.02); room.add(shellFire);
+  room.userData.occludingDecor.push(shellFireplace, shellMantel, shellFire);
   // Basic shell test: exactly three evenly spaced windows on each exterior
   // elevation of the nine-room grid.
   activeBuildGroup = room;
