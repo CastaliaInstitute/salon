@@ -80,8 +80,8 @@ function makeFigure(id, name, style, x, z, state = "idle", index = 0, wardrobe =
   material.uniforms.coat.value.set(wardrobe.coat || "#ffffff"); material.uniforms.waistcoat.value.set(wardrobe.waistcoat || "#ffffff"); material.uniforms.accent.value.set(wardrobe.accent || "#ffffff"); material.uniforms.skin.value.set(wardrobe.skin || "#d5a07c");
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.65, 2.65), material); mesh.position.set(x, 1.325, z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: 1.325, phase: index * .7 }; mesh.castShadow = true; mesh.renderOrder = 5;
   if (id.startsWith("a.")) {
-    const auraMaterial = material.clone(); auraMaterial.uniforms.ghostStrength.value = .78; auraMaterial.uniforms.ghost.value.set(0x78bfff);
-    const aura = new THREE.Mesh(new THREE.PlaneGeometry(1.82, 2.92), auraMaterial); aura.position.z = -.012; aura.renderOrder = 4; mesh.add(aura); mesh.userData.glowMesh = aura;
+    const auraMaterial = material.clone(); auraMaterial.uniforms.ghostStrength.value = .26; auraMaterial.uniforms.ghost.value.set(0x78bfff);
+    const aura = new THREE.Mesh(new THREE.PlaneGeometry(1.72, 2.72), auraMaterial); aura.position.z = -.012; aura.renderOrder = 4; mesh.add(aura); mesh.userData.glowMesh = aura;
   }
   participantLayer.add(mesh); figures.set(id, mesh); return mesh;
 }
