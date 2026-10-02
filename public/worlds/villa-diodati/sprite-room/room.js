@@ -121,7 +121,7 @@ function buildRoom() {
   for (let x = -7.4; x <= 7.4; x += .65) box("terrace board", [.025, .018, 3.55], [x, -.045, 6.9], 0xb28a62);
   box("terrace steps", [4.2, .28, .7], [0, -.02, 5.05], 0x76513e);
   for (const x of [-5.6, -3.7, -1.8, 1.8, 3.7, 5.6]) {
-    const column = new THREE.Mesh(new THREE.CylinderGeometry(.18, .22, 2.7, 12), mat(0xe6dfd2)); column.position.set(x, 1.25, 5.55); column.castShadow = true; room.add(column);
+    const column = new THREE.Mesh(new THREE.CylinderGeometry(.18, .22, 2.7, 12), mat(0xe6dfd2)); column.position.set(x, 1.25, 5.55); column.castShadow = true; room.add(column); room.userData.occludingDecor.push(column);
   }
   box("garden lawn", [15.8, .08, 9.8], [0, -.16, 13.4], 0x52694d);
   const path = box("main garden path", [1.15, .1, 14.5], [0, -.08, 13.8], 0xc0a477, 0);
