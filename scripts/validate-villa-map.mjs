@@ -25,6 +25,14 @@ for (const transition of map.floorTransitions || []) {
   if (!Array.isArray(transition.levels) || transition.levels.length < 2 || transition.levels.some((level) => ![0, 1, 2, 3].includes(level))) errors.push(`invalid transition levels: ${transition.id}`);
 }
 
+for (const floor of map.floors || []) {
+  for (const id of floor.rooms || []) {
+    const room = rooms.find((candidate) => candidate.id === id);
+    if (!room) errors.push(`floor references unknown room: ${floor.level}:${id}`);
+    else if (room.floor !== floor.level) errors.push(`room listed on wrong floor: ${id} (${room.floor} != ${floor.level})`);
+  }
+}
+
 const reachable = new Set(["salon"]);
 const queue = ["salon"];
 while (queue.length) {
