@@ -57,6 +57,14 @@ const DIODATI_SPEAKERS: Record<string, SpeakerIdentity> = {
   'salon.web': { name: 'A visitor', palette: { coat: 0x84708b, waistcoat: 0x5a4350, accent: 0xc0aaba } },
 }
 
+const DEFAULT_ROOM_POSITIONS: Record<string, { x: number; z: number; animation_state: 'idle' | 'sit' }> = {
+  'a.byron': { x: 0, z: -1.7, animation_state: 'idle' },
+  'a.maryshelley': { x: -3.85, z: 0.35, animation_state: 'sit' },
+  'a.clairmont': { x: -2.65, z: 0.45, animation_state: 'sit' },
+  'a.shelley': { x: 3.75, z: 0.2, animation_state: 'sit' },
+  'a.polidori': { x: -2.05, z: 1.65, animation_state: 'sit' },
+}
+
 function speakerIdentity(message: MatrixMessage): SpeakerIdentity {
   const localpart = message.sender.replace(/^@/, '').split(':', 1)[0].toLowerCase()
   if (!message.cycleId) {
@@ -309,7 +317,7 @@ export function SalonLiveRoom({
     .filter(([id], index, entries) => entries.findIndex(([candidate]) => DIODATI_SPEAKERS[candidate].name === DIODATI_SPEAKERS[id].name) === index && id !== 'salon.web')
     .map(([id, speaker]) => {
       const style = roomState?.avatars?.[id]
-      return { id, name: speaker.name, palette: { coat: style?.coat ?? speaker.palette.coat, waistcoat: style?.waistcoat ?? speaker.palette.waistcoat, accent: style?.accent ?? speaker.palette.accent }, bodyType: style?.body ?? (id === 'a.maryshelley' || id === 'a.clairmont' ? 'feminine' as const : 'masculine' as const), skin: style?.skin, hair: style?.hair, accessories: style?.accessories, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position: roomState?.positions?.[id] }
+      return { id, name: speaker.name, palette: { coat: style?.coat ?? speaker.palette.coat, waistcoat: style?.waistcoat ?? speaker.palette.waistcoat, accent: style?.accent ?? speaker.palette.accent }, bodyType: style?.body ?? (id === 'a.maryshelley' || id === 'a.clairmont' ? 'feminine' as const : 'masculine' as const), skin: style?.skin, hair: style?.hair, accessories: style?.accessories, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position: roomState?.positions?.[id] ?? DEFAULT_ROOM_POSITIONS[id] }
     }), [roomState])
 
   useEffect(() => {

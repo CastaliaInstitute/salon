@@ -57,6 +57,8 @@ export function SalonPhaserView({ characters, furniture, onSelect }: Props) {
           g.lineStyle(2, 0xb58b59, .35).lineBetween(w * .5, h * .17, w * .5, h * .31)
           g.fillStyle(0x1d1721, 1).fillRect(w * .44, h * .32, w * .12, h * .07)
           g.fillStyle(0x6c4036, 1).fillRect(w * .46, h * .34, w * .08, h * .05)
+          g.fillStyle(0xffb04a, .9).fillTriangle(w * .5, h * .315, w * .475, h * .37, w * .525, h * .37)
+          g.fillStyle(0xffe4a3, .95).fillTriangle(w * .5, h * .33, w * .488, h * .37, w * .512, h * .37)
           const floor: Array<{ x: number; y: number }> = [{ x: w * .08, y: h * .23 }, { x: w * .92, y: h * .23 }, { x: w * .80, y: h * .87 }, { x: w * .20, y: h * .87 }]
           g.fillStyle(0x3b2930, 1).fillPoints(floor as any, true)
           g.lineStyle(2, 0xb58b59, .55).strokePoints([...floor, floor[0]] as any, true)
