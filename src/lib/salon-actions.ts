@@ -13,6 +13,7 @@ export interface SalonMapContract {
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number }
   seats: Record<string, { x: number; z: number; direction?: string }>
   rooms?: Array<{ id: string; floor: 0 | 1 | 2 | 3; x: number; z: number }>
+  floorTransitions?: Array<{ id: string; x: number; z: number; levels: Array<0 | 1 | 2 | 3> }>
 }
 
 export interface SalonActionResult {
