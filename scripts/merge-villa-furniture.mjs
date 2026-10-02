@@ -23,12 +23,8 @@ async function addCopies(path, placements) {
   }
 }
 
-await addCopies('furniture/armchair-01/ArmChair_01.gltf', [
-  [-2.15, 0, 0.35, Math.PI * 0.08, 0.88],
-  [2.15, 0, 0.35, -Math.PI * 0.08, 0.88],
-  [-3.95, 0, 0.34, Math.PI / 2, 0.94],
-  [3.95, 0, 1.02, -Math.PI / 2, 0.94],
-]);
+// ArmChair_01 is staged separately but not baked: its tall black back/seat
+// intersects the mannequin view at mobile camera angles.
 // Turn the sofa toward the fireplace on the rear wall.
 // Keep the sofa behind the standing speaker, outside the speaking circle.
 await addCopies('furniture/sofa-03/sofa_03.gltf', [[0, -0.02, -2.1, Math.PI, 0.8]]);
