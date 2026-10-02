@@ -131,6 +131,9 @@ function updateExteriorRoomMeshes(visible) {
   room.traverse((node) => { if (node.isMesh && exteriorRoomMesh.test(node.name || "")) node.visible = visible; });
 }
 function updatePlanRoomVisibility(roomId) {
+  // The salon contents are currently disabled while the architectural shell
+  // is being verified. Do not scope the whole house down to the hidden salon.
+  if (!salonRoot.visible) return;
   // The salon has a real architectural room root. Its inferred `grand salon`
   // shell is only a navigation placeholder and must never double-render walls.
   const activeName = roomId === "salon" ? null : (planShellByRoom[roomId] || null);
