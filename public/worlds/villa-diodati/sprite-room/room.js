@@ -49,6 +49,7 @@ const HOUSE_WORLD_SCALE = 3.0;
 // place so camera focus, pointer picking, avatars, and duplicate floor shells
 // cannot drift apart vertically.
 const CEILING_HEIGHT = 4.8768; // 16 feet
+const WALL_PLASTER_COLOR = 0xf2eee5;
 const FLOOR_BASE_Y = [-CEILING_HEIGHT, 0, CEILING_HEIGHT, CEILING_HEIGHT * 2];
 // Villa plan datum: three 4.2 m bays in each direction.  The architectural
 // shell is kept independent of the salon set so the same grid can be rendered
@@ -234,7 +235,7 @@ function layerBox(layer, name, size, position, color, rotation = 0) {
 function buildPlanFloorShell(layer, baseY, levelName) {
   layer.clear();
   const floorColor = levelName === "ground" ? 0x6f5846 : levelName === "attic" ? 0x89745f : 0x80634d;
-  const wallColor = 0x91adbc;
+  const wallColor = WALL_PLASTER_COLOR;
   const wallHeight = CEILING_HEIGHT;
   const rooms = [
     ["library study", -4.2, -4.2, []], ["foyer", 0, -4.2, ["south"]], ["cabinet guest room", 4.2, -4.2, []],
@@ -338,19 +339,19 @@ function buildRoom() {
   const floor = box("oak parquet floor", [16, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
   for (let x = -7.5; x <= 7.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
   for (let z = -3.5; z <= 4.5; z += .55) box("floor inlay", [15.5, .015, .018], [0, -.04, z], 0x5f3f36);
-  const rearWall = box("rear wall", [16.18, SALON_WALL_HEIGHT, .18], [0, SALON_WALL_CENTER, -4], 0x91adbc);
-  const leftWall = box("left wall", [.18, SALON_WALL_HEIGHT, 9.18], [-7.91, SALON_WALL_CENTER, .5], 0x91adbc);
-  const rightWall = box("right wall", [.18, SALON_WALL_HEIGHT, 9.18], [7.91, SALON_WALL_CENTER, .5], 0x91adbc);
-  const frontWall = box("camera-side wall", [16.18, SALON_WALL_HEIGHT, .18], [0, SALON_WALL_CENTER, 5], 0x91adbc);
+  const rearWall = box("rear wall", [16.18, SALON_WALL_HEIGHT, .18], [0, SALON_WALL_CENTER, -4], WALL_PLASTER_COLOR);
+  const leftWall = box("left wall", [.18, SALON_WALL_HEIGHT, 9.18], [-7.91, SALON_WALL_CENTER, .5], WALL_PLASTER_COLOR);
+  const rightWall = box("right wall", [.18, SALON_WALL_HEIGHT, 9.18], [7.91, SALON_WALL_CENTER, .5], WALL_PLASTER_COLOR);
+  const frontWall = box("camera-side wall", [16.18, SALON_WALL_HEIGHT, .18], [0, SALON_WALL_CENTER, 5], WALL_PLASTER_COLOR);
   // The camera-side wall is hidden for perspective views, but remains part of
   // the architectural footprint and is shown in the top-down map.
   frontWall.visible = topDown;
-  const verandaWallLeft = box("front wall left of veranda door", [7.0, SALON_WALL_HEIGHT, .18], [-4.5, SALON_WALL_CENTER, 5], 0x91adbc);
-  const verandaWallRight = box("front wall right of veranda door", [7.0, SALON_WALL_HEIGHT, .18], [4.5, SALON_WALL_CENTER, 5], 0x91adbc);
-  const verandaLintel = box("veranda door lintel", [2.0, 1.5, .18], [0, 3.35, 5], 0x91adbc);
+  const verandaWallLeft = box("front wall left of veranda door", [7.0, SALON_WALL_HEIGHT, .18], [-4.5, SALON_WALL_CENTER, 5], WALL_PLASTER_COLOR);
+  const verandaWallRight = box("front wall right of veranda door", [7.0, SALON_WALL_HEIGHT, .18], [4.5, SALON_WALL_CENTER, 5], WALL_PLASTER_COLOR);
+  const verandaLintel = box("veranda door lintel", [2.0, 1.5, .18], [0, 3.35, 5], WALL_PLASTER_COLOR);
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
-  for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(0x91adbc); wall.material.needsUpdate = true; }
+  for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(WALL_PLASTER_COLOR); wall.material.needsUpdate = true; }
   const crownMolding = box("white crown molding", [15.7, .14, .12], [0, 4.08, -3.91], 0xf2eee5);
   room.userData.occludingDecor.push(crownMolding);
   const sideTrim = [];
@@ -441,8 +442,8 @@ function buildRoom() {
     const wall = 0.16;
     const wallHeight = CEILING_HEIGHT;
     const wallCenter = wallHeight / 2;
-    const horizontal = (centerX, centerZ, side) => box(`${name} ${side} wall`, [width, wallHeight, wall], [centerX, wallCenter, centerZ], 0x91adbc);
-    const vertical = (centerX, centerZ, side) => box(`${name} ${side} wall`, [wall, wallHeight, depth], [centerX, wallCenter, centerZ], 0x91adbc);
+    const horizontal = (centerX, centerZ, side) => box(`${name} ${side} wall`, [width, wallHeight, wall], [centerX, wallCenter, centerZ], WALL_PLASTER_COLOR);
+    const vertical = (centerX, centerZ, side) => box(`${name} ${side} wall`, [wall, wallHeight, depth], [centerX, wallCenter, centerZ], WALL_PLASTER_COLOR);
     if (!openSides.includes("north")) horizontal(x, z - depth / 2, "north"); if (!openSides.includes("south")) horizontal(x, z + depth / 2, "south"); if (!openSides.includes("west")) vertical(x - width / 2, z, "west"); if (!openSides.includes("east")) vertical(x + width / 2, z, "east");
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
@@ -480,12 +481,12 @@ function buildRoom() {
   const addHorizontalDoorWall = (name, centerX, centerZ, length, opening) => {
     const segment = (length - opening) / 2;
     const offset = (opening + segment) / 2;
-    for (const x of [centerX - offset, centerX + offset]) box(`${name} wall segment`, [segment, doorWallHeight, .16], [x, doorWallHeight / 2, centerZ], 0x91adbc);
+    for (const x of [centerX - offset, centerX + offset]) box(`${name} wall segment`, [segment, doorWallHeight, .16], [x, doorWallHeight / 2, centerZ], WALL_PLASTER_COLOR);
   };
   const addVerticalDoorWall = (name, centerX, centerZ, length, opening) => {
     const segment = (length - opening) / 2;
     const offset = (opening + segment) / 2;
-    for (const z of [centerZ - offset, centerZ + offset]) box(`${name} wall segment`, [.16, doorWallHeight, segment], [centerX, doorWallHeight / 2, z], 0x91adbc);
+    for (const z of [centerZ - offset, centerZ + offset]) box(`${name} wall segment`, [.16, doorWallHeight, segment], [centerX, doorWallHeight / 2, z], WALL_PLASTER_COLOR);
   };
   addHorizontalDoorWall("room four south", -4.2, 2.1, 4.2, 1.35);
   addVerticalDoorWall("Byron study east", 2.1, 4.2, 4.2, 1.82);
