@@ -3,18 +3,76 @@
   "coordinate_system": "villa-diodati-isometric-v1",
   "scene": "storm-bound-salon",
   "positions": {
-    "a.byron": { "x": 0, "z": -2, "direction": "south", "animation_state": "idle", "held": "candelabra" },
-    "a.maryshelley": { "x": -4, "z": 1, "direction": "east", "animation_state": "idle" },
-    "a.clairmont": { "x": -3, "z": 1, "direction": "east", "animation_state": "idle" },
-    "a.shelley": { "x": 3, "z": 1, "direction": "west", "animation_state": "idle", "held": "book" },
-    "a.polidori": { "x": -1, "z": 2, "direction": "north", "animation_state": "idle", "held": "cup" }
+    "a.byron": {
+      "x": 0,
+      "z": -2,
+      "direction": "south",
+      "animation_state": "idle",
+      "held": "candelabra",
+      "floor": 1
+    },
+    "a.maryshelley": {
+      "x": -4,
+      "z": 1,
+      "direction": "east",
+      "animation_state": "idle",
+      "floor": 1
+    },
+    "a.clairmont": {
+      "x": -3,
+      "z": 1,
+      "direction": "east",
+      "animation_state": "idle",
+      "floor": 1
+    },
+    "a.shelley": {
+      "x": 3,
+      "z": 1,
+      "direction": "west",
+      "animation_state": "idle",
+      "held": "book",
+      "floor": 1
+    },
+    "a.polidori": {
+      "x": -1,
+      "z": 2,
+      "direction": "north",
+      "animation_state": "idle",
+      "held": "cup",
+      "floor": 1
+    }
   },
   "avatars": {
-    "a.byron": { "coat": 4004648, "waistcoat": 10050882, "accent": 11940427, "skin": 14033023 },
-    "a.maryshelley": { "coat": 15392712, "waistcoat": 16249053, "accent": 7438429, "skin": 15053261 },
-    "a.clairmont": { "coat": 15392712, "waistcoat": 16249053, "accent": 10111030, "skin": 13205544 },
-    "a.shelley": { "coat": 3237755, "waistcoat": 15392772, "accent": 9548764, "skin": 13934716 },
-    "a.polidori": { "coat": 1516844, "waistcoat": 6762806, "accent": 10252370, "skin": 11169616 }
+    "a.byron": {
+      "coat": 4004648,
+      "waistcoat": 10050882,
+      "accent": 11940427,
+      "skin": 14033023
+    },
+    "a.maryshelley": {
+      "coat": 15392712,
+      "waistcoat": 16249053,
+      "accent": 7438429,
+      "skin": 15053261
+    },
+    "a.clairmont": {
+      "coat": 15392712,
+      "waistcoat": 16249053,
+      "accent": 10111030,
+      "skin": 13205544
+    },
+    "a.shelley": {
+      "coat": 3237755,
+      "waistcoat": 15392772,
+      "accent": 9548764,
+      "skin": 13934716
+    },
+    "a.polidori": {
+      "coat": 1516844,
+      "waistcoat": 6762806,
+      "accent": 10252370,
+      "skin": 11169616
+    }
   },
   "updatedAt": "seed"
 }
