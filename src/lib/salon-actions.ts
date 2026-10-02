@@ -1,7 +1,7 @@
 import type { SalonRoomState } from './matrix-room-client'
 
 export type SalonAction =
-  | { type: 'move'; character: string; x: number; z: number; floor?: 0 | 1 | 2 | 3; direction?: string }
+  | { type: 'move'; character: string; x?: number; z?: number; room?: string; floor?: 0 | 1 | 2 | 3; direction?: string }
   | { type: 'gesture'; character: string; gesture: 'idle' | 'gesture' | 'speak' }
   | { type: 'say'; character: string; text: string }
   | { type: 'sit'; character: string; seat: string }
@@ -12,6 +12,7 @@ export type SalonAction =
 export interface SalonMapContract {
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number }
   seats: Record<string, { x: number; z: number; direction?: string }>
+  rooms?: Array<{ id: string; floor: 0 | 1 | 2 | 3; x: number; z: number }>
 }
 
 export interface SalonActionResult {
@@ -29,7 +30,9 @@ export function validateSalonAction(action: SalonAction, state: SalonRoomState, 
   if (!position && !state.participants?.[action.character]) return { ok: false, reason: `Unknown character: ${action.character}` }
 
   if (action.type === 'move') {
-    if (![action.x, action.z].every(Number.isFinite)) return { ok: false, reason: 'Move coordinates must be finite' }
+    const room = action.room ? map.rooms?.find((candidate) => candidate.id === action.room) : undefined
+    if (action.room && !room) return { ok: false, reason: `Unknown room: ${action.room}` }
+    if (!room && ![action.x, action.z].every(Number.isFinite)) return { ok: false, reason: 'Move coordinates or a room are required' }
     if (action.floor != null && ![0, 1, 2, 3].includes(action.floor)) return { ok: false, reason: 'Move floor must be 0, 1, 2, or 3' }
     const { minX, maxX, minZ, maxZ } = map.bounds
     if (action.x < minX || action.x > maxX || action.z < minZ || action.z > maxZ) return { ok: false, reason: 'Move target is outside the salon map' }
@@ -50,7 +53,8 @@ export function applySalonAction(action: SalonAction, input: SalonRoomState, map
   if (!result.ok) throw new Error(result.reason)
   const state: SalonRoomState = structuredClone(input)
   const current = state.positions[action.character] ?? (state.positions[action.character] = { x: 0, z: 0 })
-  if (action.type === 'move') Object.assign(current, { x: action.x, z: action.z, floor: action.floor ?? current.floor ?? 1, direction: action.direction, animation_state: 'walk' })
+  if (action.type === 'move') const destination = action.room ? map.rooms?.find((candidate) => candidate.id === action.room) : undefined
+  if (action.type === 'move') Object.assign(current, { x: destination?.x ?? action.x, z: destination?.z ?? action.z, floor: destination?.floor ?? action.floor ?? current.floor ?? 1, direction: action.direction, animation_state: 'walk' })
   if (action.type === 'gesture') current.animation_state = action.gesture
   if (action.type === 'say') { state.activeSpeaker = action.character; current.animation_state = 'speak' }
   if (action.type === 'sit') { Object.assign(current, { x: map.seats[action.seat].x, z: map.seats[action.seat].z, direction: map.seats[action.seat].direction, seat: action.seat, animation_state: 'sit' }) }
