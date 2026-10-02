@@ -234,6 +234,24 @@
       ]
     },
     {
+      "id": "vineyard",
+      "floor": 1,
+      "x": 0,
+      "z": 20.8,
+      "width": 15.8,
+      "depth": 6.8,
+      "connections": ["garden", "shore"]
+    },
+    {
+      "id": "lake",
+      "floor": 1,
+      "x": 0,
+      "z": 32,
+      "width": 36,
+      "depth": 8,
+      "connections": ["shore"]
+    },
+    {
       "id": "entrance-hall",
       "floor": 0,
       "x": 0,
@@ -358,6 +376,15 @@
       "width": 5.6,
       "depth": 5.8,
       "connections": ["upper-landing", "servants-room-west"]
+    },
+    {
+      "id": "attic-landing",
+      "floor": 3,
+      "x": 0,
+      "z": 3.2,
+      "width": 4.2,
+      "depth": 3,
+      "connections": ["servants-room-west", "servants-room-east"]
     }
   ],
   "floors": [
@@ -406,7 +433,7 @@
       "rooms": [
         "servants-room-west",
         "servants-room-east",
-        "upper-landing"
+        "attic-landing"
       ]
     }
   ]
