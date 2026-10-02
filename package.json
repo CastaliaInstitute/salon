@@ -19,6 +19,7 @@
     "@dimforge/rapier3d-compat": "^0.21.0",
     "@supabase/supabase-js": "^2.112.4",
     "astro": "^5.16.16",
+    "phaser": "^4.2.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^6.28.0",

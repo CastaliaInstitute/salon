@@ -31,6 +31,17 @@ export default function SalonLiveApp() {
             />
           }
         />
+        <Route
+          path="/villa-diodati/2.5D"
+          element={
+            <SalonLiveRoom
+              roomRef="#villa-diodati:matrix.castalia.institute"
+              initialView="room"
+              salonTitle="Villa Diodati · 2.5D"
+              salonSubtitle="A Matrix-backed isometric view of the Villa Diodati salon."
+            />
+          }
+        />
         <Route path="/live/*" element={<SalonLiveRoom />} />
       </Routes>
     </BrowserRouter>

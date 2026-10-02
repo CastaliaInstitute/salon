@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import SalonLiveApp from '../../../components/SalonLiveApp.tsx';
+---
+
+<BaseLayout
+  title="Villa Diodati · 2.5D"
+  description="A Matrix-backed isometric view of the Villa Diodati salon."
+>
+  <SalonLiveApp client:only="react" />
+</BaseLayout>

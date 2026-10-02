@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Villa Diodati · 3D"
+  description="The interactive 3D Villa Diodati room."
+>
+  <iframe
+    title="Villa Diodati 3D room"
+    src="/worlds/villa-diodati/"
+    class="villa-3d-frame"
+    allow="fullscreen"
+  ></iframe>
+</BaseLayout>
+
+<style>
+  :global(body) { margin: 0; }
+  .villa-3d-frame {
+    display: block;
+    width: 100%;
+    height: calc(100dvh - 4rem);
+    min-height: 36rem;
+    border: 0;
+    background: #171513;
+  }
+</style>

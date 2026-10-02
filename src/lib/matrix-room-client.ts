@@ -14,6 +14,14 @@ export interface MatrixMessage {
   event?: unknown;
 }
 
+export interface SalonRoomState {
+  positions: Record<string, { x: number; z: number; rotation?: number }>
+  furniture?: Record<string, { kind: 'sofa' | 'armchair' | 'table'; x: number; z: number; rotation?: number }>
+  activeSpeaker?: string
+  scene?: string
+  updatedAt?: string
+}
+
 export interface DiodatiDraft {
   stage: 'friday' | 'saturday' | 'sunday';
   revision: number;
@@ -69,9 +77,11 @@ async function matrixRead(path: string): Promise<Response> {
 export class MatrixRoomClient {
   private roomId: string;
   private onMessageCallbacks = new Set<(message: MatrixMessage) => void>();
+  private onStateCallbacks = new Set<(state: SalonRoomState | null) => void>();
   private isConnected = false;
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private seenMessageIds = new Set<string>();
+  private lastStateJson = '';
 
   constructor(roomId: string) {
     this.roomId = roomId;
@@ -90,6 +100,11 @@ export class MatrixRoomClient {
   }
 
   private async pollMessages(): Promise<void> {
+    try {
+      await this.pollState();
+    } catch (e) {
+      console.error('Error polling Matrix room state:', e);
+    }
     try {
       const response = await matrixRead(
         `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/messages?dir=b&limit=50`
@@ -137,6 +152,18 @@ export class MatrixRoomClient {
     }
   }
 
+  private async pollState(): Promise<void> {
+    const response = await matrixRead(`/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state`)
+    if (!response.ok) return
+    const events = await response.json() as Array<{ type?: string; state_key?: string; content?: SalonRoomState }>
+    const event = events.find((candidate) => candidate.type === 'org.castalia.salon.room' && (candidate.state_key ?? '') === '')
+    const state = event?.content ?? null
+    const serialized = JSON.stringify(state)
+    if (serialized === this.lastStateJson) return
+    this.lastStateJson = serialized
+    this.onStateCallbacks.forEach((callback) => callback(state))
+  }
+
   async sendMessage(content: string, memberAccessToken?: string): Promise<string> {
     if (!this.isConnected) throw new Error('Not connected to Matrix room');
 
@@ -172,6 +199,18 @@ export class MatrixRoomClient {
   onMessage(callback: (message: MatrixMessage) => void): () => void {
     this.onMessageCallbacks.add(callback);
     return () => this.onMessageCallbacks.delete(callback);
+  }
+
+  onState(callback: (state: SalonRoomState | null) => void): () => void {
+    this.onStateCallbacks.add(callback)
+    return () => this.onStateCallbacks.delete(callback)
+  }
+
+  async getRoomState(): Promise<SalonRoomState | null> {
+    const response = await matrixRead(`/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state`)
+    if (!response.ok) return null
+    const events = await response.json() as Array<{ type?: string; state_key?: string; content?: SalonRoomState }>
+    return events.find((event) => event.type === 'org.castalia.salon.room' && (event.state_key ?? '') === '')?.content ?? null
   }
 
   async getRecentMessages(limit = 50): Promise<MatrixMessage[]> {
@@ -232,7 +271,9 @@ export class MatrixRoomClient {
     }
     this.isConnected = false;
     this.onMessageCallbacks.clear();
+    this.onStateCallbacks.clear();
     this.seenMessageIds.clear();
+    this.lastStateJson = '';
   }
 }
 

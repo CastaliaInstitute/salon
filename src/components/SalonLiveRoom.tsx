@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { MatrixRoomClient, resolveRoomAlias, type MatrixMessage } from '../lib/matrix-room-client'
+import { MatrixRoomClient, resolveRoomAlias, type MatrixMessage, type SalonRoomState } from '../lib/matrix-room-client'
 import {
   activeSalonAccess,
   getSalonAuthClient,
   sendSalonMagicLink,
   signInToSalonWithGoogle,
 } from '../lib/salon-auth'
+import { SalonPhaserView } from './SalonPhaserView'
 
 const THREE_DAYS_MS = 72 * 60 * 60 * 1000
 const EVENT_HOUR_MOUNTAIN = 18
@@ -208,12 +209,14 @@ interface SalonLiveRoomProps {
   roomRef?: string
   salonTitle?: string
   salonSubtitle?: string
+  initialView?: 'transcript' | 'room'
 }
 
 export function SalonLiveRoom({
   roomRef,
   salonTitle = 'Salon room',
   salonSubtitle = 'This page mirrors a Matrix room: agents and guests chat here.',
+  initialView = 'transcript',
 }: SalonLiveRoomProps) {
   const params = useParams()
   const splat = params['*'] ?? ''
@@ -233,6 +236,8 @@ export function SalonLiveRoom({
   const [authError, setAuthError] = useState<string | null>(null)
   const [selectedDraft, setSelectedDraft] = useState<MatrixMessage | null>(null)
   const [wallClock, setWallClock] = useState(() => Date.now())
+  const [viewMode, setViewMode] = useState<'transcript' | 'room'>(initialView)
+  const [roomState, setRoomState] = useState<SalonRoomState | null>(null)
   const clientRef = useRef<MatrixRoomClient | null>(null)
   const transcriptRef = useRef<HTMLDivElement | null>(null)
   const transcriptHydratedRef = useRef(false)
@@ -297,6 +302,10 @@ export function SalonLiveRoom({
     )
   }, [messages, salonWindow])
 
+  const roomCharacters = useMemo(() => Object.entries(DIODATI_SPEAKERS)
+    .filter(([id], index, entries) => entries.findIndex(([candidate]) => DIODATI_SPEAKERS[candidate].name === DIODATI_SPEAKERS[id].name) === index && id !== 'salon.web')
+    .map(([id, speaker]) => ({ id, name: speaker.name, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position: roomState?.positions?.[id] })), [roomState])
+
   useEffect(() => {
     const transcript = transcriptRef.current
     if (!transcript || !visibleMessages.length) return
@@ -350,6 +359,7 @@ export function SalonLiveRoom({
       clientRef.current?.disconnect()
       clientRef.current = null
       setMessages([])
+      setRoomState(null)
       return
     }
 
@@ -362,8 +372,10 @@ export function SalonLiveRoom({
       try {
         setStatus('connecting')
         await client.connect()
+        const initialRoomState = await client.getRoomState()
         const initial = await client.getRecentMessages(500)
         if (!cancelled) {
+          setRoomState(initialRoomState)
           // Joining a live salon begins at its present turn. History remains in
           // Matrix for audit. Weekend manuscript artifacts remain available,
           // while ordinary conversation is never machine-replayed.
@@ -391,10 +403,12 @@ export function SalonLiveRoom({
         return [...prev, msg]
       })
     })
+    const unsubState = client.onState((state) => setRoomState(state))
 
     return () => {
       cancelled = true
       unsub()
+      unsubState()
       client.disconnect()
       clientRef.current = null
     }
@@ -486,9 +500,17 @@ export function SalonLiveRoom({
                   : 'THE OCTOBER 2026 SEASON HAS CLOSED'
                 : `${salonWindow.accessTier === 'registered-preview' ? 'NEXT FREE PREVIEW' : 'NEXT MEMBERS’ SALON'} · ${formatOpening(salonWindow.nextStart).toUpperCase()} MOUNTAIN TIME`}
           </div>
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2">
+            <span className="text-xs uppercase tracking-[0.18em] text-slate-500">The room remembers the positions</span>
+            <div className="flex gap-1 rounded-md border border-slate-200 bg-white p-1" role="group" aria-label="Salon view">
+              <button type="button" onClick={() => setViewMode('transcript')} className={`rounded px-2 py-1 text-xs ${viewMode === 'transcript' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>Transcript</button>
+              <button type="button" onClick={() => setViewMode('room')} className={`rounded px-2 py-1 text-xs ${viewMode === 'room' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>Room</button>
+            </div>
+          </div>
+          {viewMode === 'room' ? <SalonPhaserView characters={roomCharacters} furniture={roomState?.furniture} /> : null}
           <div
             ref={transcriptRef}
-            className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5"
+            className={`${viewMode === 'room' ? 'hidden' : 'flex'} min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5`}
             aria-live="polite"
             aria-relevant="additions"
           >
