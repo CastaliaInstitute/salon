@@ -9,6 +9,8 @@ interface ImportMetaEnv {
    */
   readonly PUBLIC_SUPABASE_URL?: string;
   readonly PUBLIC_SUPABASE_ANON_KEY?: string;
+  /** Server-side AI Studio/Gemini adapter; never expose its provider key here. */
+  readonly PUBLIC_SALON_DIRECTOR_URL?: string;
   readonly PUBLIC_DIODATI_TEST_OPENING_AT?: string;
 }
 
