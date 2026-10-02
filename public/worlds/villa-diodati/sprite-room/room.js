@@ -91,7 +91,7 @@ function box(name, size, position, color, rotation = 0) {
   mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; room.add(mesh); return mesh;
 }
 function windowViewTexture() { const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512; const ctx = canvas.getContext("2d"); const sky = ctx.createLinearGradient(0, 0, 0, 512); sky.addColorStop(0, "#0b1830"); sky.addColorStop(.58, "#243d58"); sky.addColorStop(1, "#151b24"); ctx.fillStyle = sky; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = "rgba(232,241,255,.9)"; ctx.beginPath(); ctx.arc(390, 92, 42, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "rgba(11,24,48,.9)"; ctx.beginPath(); ctx.arc(407, 80, 39, 0, Math.PI * 2); ctx.fill(); for (let i = 0; i < 45; i++) { const x = (i * 83) % 512; const y = 24 + ((i * 47) % 250); ctx.fillStyle = `rgba(220,235,255,${.35 + (i % 4) * .12})`; ctx.fillRect(x, y, 2, 2); } ctx.fillStyle = "#101923"; ctx.beginPath(); ctx.moveTo(0, 390); ctx.lineTo(100, 320); ctx.lineTo(175, 370); ctx.lineTo(280, 290); ctx.lineTo(390, 370); ctx.lineTo(512, 300); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.fill(); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture; }
-function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } }); room.add(model); }); }
+function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); room.add(model); }); }
 function buildRoom() {
   const floor = box("oak parquet floor", [16, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
   for (let x = -7.5; x <= 7.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
@@ -156,12 +156,12 @@ function buildRoom() {
   fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
-  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.1], 2.65, 0);
-  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.45, 0, .65], 1.16, 0);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [3.45, 0, .35], 1.12, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [3.45, 0, 1.85], 1.12, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.95, 0, 1.65], 1.12, Math.PI / 2);
-  loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.1], 1.35, 0);
+  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.05], 2.15, 0);
+  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-2.8, 0, .75], 1.16, 0);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.45, 0, .45], 1.12, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [2.45, 0, 1.75], 1.12, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.65, 0, 1.55], 1.12, Math.PI / 2);
+  loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.05], 1.7, 0);
   const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.35); room.add(tableCandelabra);
   const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.35); room.add(tableCandleLight); candleLights.push(tableCandleLight);
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
