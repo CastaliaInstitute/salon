@@ -158,6 +158,25 @@ function buildRoom() {
   box("front door handle", [.08, .08, .08], [.48, 1.35, 4.76], 0xd8b36e);
   room.userData.occludingDecor.push(door, doorFrameLeft, doorFrameRight, doorLintel);
   const outside = windowViewTexture();
+  const addFacadeWindow = (x, y, z, rotation = 0) => {
+    const recess = box("villa facade window recess", [1.85, 2.65, .08], [x, y, z], 0x182b3c, rotation);
+    const pane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.3), new THREE.MeshBasicMaterial({ map: outside, transparent: true }));
+    pane.name = "villa facade window"; pane.position.set(x, y, z + (rotation ? 0 : -.055)); pane.rotation.y = rotation; pane.renderOrder = 1; room.add(pane);
+    const frame = [
+      box("facade window left", [.08, 2.42, .1], [x - (rotation ? 0 : .82), y, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
+      box("facade window right", [.08, 2.42, .1], [x + (rotation ? 0 : .82), y, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
+      box("facade window top", [1.72, .08, .1], [x, y + 1.22, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
+      box("facade window sill", [1.9, .1, .16], [x, y - 1.22, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
+    ];
+    room.userData.occludingDecor.push(recess, pane, ...frame);
+  };
+  // Principal façade: two windows flanking the entrance.
+  for (const x of [-3.55, 3.55]) addFacadeWindow(x, 2.25, 4.88);
+  // Side elevations: repeated windows along the lake-facing wings.
+  for (const z of [-2.15, .55, 3.15]) {
+    addFacadeWindow(-7.86, 2.25, z, Math.PI / 2);
+    addFacadeWindow(7.86, 2.25, z, Math.PI / 2);
+  }
   for (const x of [-5.9, 5.9]) {
     const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.91], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
