@@ -87,6 +87,22 @@ function limitPoseRotation(name, value, axis) {
   return limit ? THREE.MathUtils.clamp(value, limit[0], limit[1]) : value;
 }
 
+const neckLimits = {
+  spine_01: { x: [-0.34, 0.34], y: [-0.24, 0.24], z: [-0.16, 0.16] },
+  spine_02: { x: [-0.28, 0.28], y: [-0.22, 0.22], z: [-0.14, 0.14] },
+  neck: { x: [-0.24, 0.24], y: [-0.42, 0.42], z: [-0.12, 0.12] },
+};
+
+function applyNeckLimits(figure) {
+  figure.traverse((bone) => {
+    const limits = neckLimits[bone.name];
+    if (!bone.isBone || !limits) return;
+    bone.rotation.x = THREE.MathUtils.clamp(bone.rotation.x, limits.x[0], limits.x[1]);
+    bone.rotation.y = THREE.MathUtils.clamp(bone.rotation.y, limits.y[0], limits.y[1]);
+    bone.rotation.z = THREE.MathUtils.clamp(bone.rotation.z, limits.z[0], limits.z[1]);
+  });
+}
+
 function refreshSkinnedPose(figure) {
   figure.updateMatrixWorld(true);
   figure.traverse((object) => {
@@ -349,6 +365,7 @@ function stepPhysics(delta) {
       ragdoll.head.parent.getWorldQuaternion(parentQuaternion);
       ragdoll.head.quaternion.copy(parentQuaternion.invert().multiply(ragdoll.head.userData.physicsHeadWorldBase));
     }
+    applyNeckLimits(ragdoll.figure);
     refreshSkinnedPose(ragdoll.figure);
   }
 }
