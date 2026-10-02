@@ -21,6 +21,7 @@ export interface SalonRoomState {
     name?: string
     x: number
     z: number
+    floor?: 1 | 2 | 3
     direction?: string
     state?: 'idle' | 'walk' | 'gesture' | 'sit' | 'speak'
     seat?: string
@@ -29,7 +30,7 @@ export interface SalonRoomState {
     weight?: number
     held?: 'book' | 'cup' | 'glass' | 'candelabra'
   }>
-  positions: Record<string, { x: number; z: number; rotation?: number; animation_state?: 'idle' | 'walk' | 'gesture' | 'sit' | 'speak'; direction?: string; seat?: string; scale?: number; height?: number; weight?: number; held?: 'book' | 'cup' | 'glass' | 'candelabra' }>
+  positions: Record<string, { x: number; z: number; floor?: 1 | 2 | 3; rotation?: number; animation_state?: 'idle' | 'walk' | 'gesture' | 'sit' | 'speak'; direction?: string; seat?: string; scale?: number; height?: number; weight?: number; held?: 'book' | 'cup' | 'glass' | 'candelabra' }>
   avatars?: Record<string, { body?: 'feminine' | 'masculine'; skin?: number; hair?: number; coat?: number; waistcoat?: number; accent?: number; accessories?: string[] }>
   furniture?: Record<string, { kind: 'sofa' | 'armchair' | 'table'; x: number; z: number; rotation?: number }>
   activeSpeaker?: string

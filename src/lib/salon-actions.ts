@@ -1,7 +1,7 @@
 import type { SalonRoomState } from './matrix-room-client'
 
 export type SalonAction =
-  | { type: 'move'; character: string; x: number; z: number; direction?: string }
+  | { type: 'move'; character: string; x: number; z: number; floor?: 1 | 2 | 3; direction?: string }
   | { type: 'gesture'; character: string; gesture: 'idle' | 'gesture' | 'speak' }
   | { type: 'say'; character: string; text: string }
   | { type: 'sit'; character: string; seat: string }
@@ -30,6 +30,7 @@ export function validateSalonAction(action: SalonAction, state: SalonRoomState, 
 
   if (action.type === 'move') {
     if (![action.x, action.z].every(Number.isFinite)) return { ok: false, reason: 'Move coordinates must be finite' }
+    if (action.floor != null && ![1, 2, 3].includes(action.floor)) return { ok: false, reason: 'Move floor must be 1, 2, or 3' }
     const { minX, maxX, minZ, maxZ } = map.bounds
     if (action.x < minX || action.x > maxX || action.z < minZ || action.z > maxZ) return { ok: false, reason: 'Move target is outside the salon map' }
   }
@@ -49,7 +50,7 @@ export function applySalonAction(action: SalonAction, input: SalonRoomState, map
   if (!result.ok) throw new Error(result.reason)
   const state: SalonRoomState = structuredClone(input)
   const current = state.positions[action.character] ?? (state.positions[action.character] = { x: 0, z: 0 })
-  if (action.type === 'move') Object.assign(current, { x: action.x, z: action.z, direction: action.direction, animation_state: 'walk' })
+  if (action.type === 'move') Object.assign(current, { x: action.x, z: action.z, floor: action.floor ?? current.floor ?? 1, direction: action.direction, animation_state: 'walk' })
   if (action.type === 'gesture') current.animation_state = action.gesture
   if (action.type === 'say') { state.activeSpeaker = action.character; current.animation_state = 'speak' }
   if (action.type === 'sit') { Object.assign(current, { x: map.seats[action.seat].x, z: map.seats[action.seat].z, direction: map.seats[action.seat].direction, seat: action.seat, animation_state: 'sit' }) }
