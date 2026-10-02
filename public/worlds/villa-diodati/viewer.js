@@ -707,6 +707,18 @@ async function matrixRoomState() {
       figure.position.z = position.z;
       if (Number.isFinite(position.rotation)) figure.rotation.y = position.rotation;
     });
+    if (state.furniture) {
+      scene.traverse((object) => {
+        const lowerName = object.name.toLowerCase();
+        const kind = lowerName.includes("sofa") ? "sofa" : lowerName.includes("armchair") ? "armchair" : null;
+        if (!kind) return;
+        const placement = Object.values(state.furniture).find((item) => item.kind === kind);
+        if (!placement) return;
+        object.position.x = placement.x;
+        object.position.z = placement.z;
+        if (Number.isFinite(placement.rotation)) object.rotation.y = placement.rotation;
+      });
+    }
     if (state.activeSpeaker) {
       const activeId = String(state.activeSpeaker).replace(/^@/, "").split(":", 1)[0].toLowerCase();
       const activeIndex = matrixFigureOrder.findIndex((id) => id === activeId || id.split(".").pop() === activeId);
