@@ -3,11 +3,11 @@
   "coordinate_system": "villa-diodati-isometric-v1",
   "scene": "storm-bound-salon",
   "positions": {
-    "a.byron": { "x": 0, "z": -1.7, "direction": "south", "animation_state": "idle", "scale": 1.1, "width": 1.02, "held": "candelabra" },
-    "a.maryshelley": { "x": -4.25, "z": 0.9, "direction": "east", "animation_state": "idle" },
-    "a.clairmont": { "x": -3.15, "z": 1.15, "direction": "east", "animation_state": "idle" },
-    "a.shelley": { "x": 3.35, "z": 0.95, "direction": "west", "animation_state": "idle", "scale": 0.91, "width": 0.88, "held": "book" },
-    "a.polidori": { "x": -1.25, "z": 2.25, "direction": "north", "animation_state": "idle", "held": "cup" }
+    "a.byron": { "x": 0, "z": -2, "direction": "south", "animation_state": "idle", "held": "candelabra" },
+    "a.maryshelley": { "x": -4, "z": 1, "direction": "east", "animation_state": "idle" },
+    "a.clairmont": { "x": -3, "z": 1, "direction": "east", "animation_state": "idle" },
+    "a.shelley": { "x": 3, "z": 1, "direction": "west", "animation_state": "idle", "held": "book" },
+    "a.polidori": { "x": -1, "z": 2, "direction": "north", "animation_state": "idle", "held": "cup" }
   },
   "avatars": {
     "a.byron": { "coat": 4004648, "waistcoat": 10050882, "accent": 11940427, "skin": 14033023 },
