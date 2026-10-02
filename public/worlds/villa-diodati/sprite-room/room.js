@@ -96,15 +96,15 @@ function buildRoom() {
   const floor = box("oak parquet floor", [16, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
   for (let x = -7.5; x <= 7.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
   for (let z = -3.5; z <= 4.5; z += .55) box("floor inlay", [15.5, .015, .018], [0, -.04, z], 0x5f3f36);
-  const rearWall = box("rear wall", [16, 4.3, .18], [0, 2.05, -4], 0x91adbc);
+  const rearWall = box("rear wall", [16.18, 4.3, .18], [0, 2.05, -4], 0x91adbc);
   const leftWall = box("left wall", [.18, 4.3, 9.18], [-7.91, 2.05, .5], 0x91adbc);
   const rightWall = box("right wall", [.18, 4.3, 9.18], [7.91, 2.05, .5], 0x91adbc);
   const frontWall = box("camera-side wall", [16, 4.3, .18], [0, 2.05, 5], 0x91adbc);
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
   for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(0x91adbc); wall.material.needsUpdate = true; }
-  const crownMolding = box("white crown molding", [15.7, .14, .12], [0, 4.08, -3.82], 0xf2eee5);
-  const chairRail = box("white chair rail", [15.7, .12, .12], [0, .72, -3.82], 0xf2eee5);
+  const crownMolding = box("white crown molding", [15.7, .14, .12], [0, 4.08, -3.91], 0xf2eee5);
+  const chairRail = box("white chair rail", [15.7, .12, .12], [0, .72, -3.91], 0xf2eee5);
   room.userData.occludingDecor.push(crownMolding, chairRail);
   const door = box("front wall door", [1.35, 2.55, .08], [0, 1.3, 4.87], 0x402a24);
   const doorFrameLeft = box("front door frame left", [.12, 2.8, .12], [-.72, 1.42, 4.8], 0xb3875c);
@@ -114,12 +114,12 @@ function buildRoom() {
   room.userData.occludingDecor.push(door, doorFrameLeft, doorFrameRight, doorLintel);
   const outside = windowViewTexture();
   for (const x of [-5.9, 5.9]) {
-    const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.88], 0x182b3c);
+    const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.91], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
     const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshBasicMaterial({ map: outside, transparent: true })); windowPane.name = "tall window to the storm outside"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; room.add(windowPane); room.userData.occludingDecor.push(windowPane);
-    const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, -3.8], 0xf2eee5);
-    const windowSill = box("window sill", [2.15, .12, .22], [x, .78, -3.72], 0xf2eee5);
-    const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.7], 0x5e7080);
+    const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, -3.90], 0xf2eee5);
+    const windowSill = box("window sill", [2.15, .12, .22], [x, .78, -3.82], 0xf2eee5);
+    const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.86], 0x5e7080);
     room.userData.occludingDecor.push(windowMullion, windowSill, curtain);
   }
   const writingDeskX = 4.55;
@@ -130,24 +130,24 @@ function buildRoom() {
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
   const largeArt = textureLoader.load("../art/wall-triptych-v1.png");
   largeArt.colorSpace = THREE.SRGBColorSpace;
-  const largeFrame = box("large painting frame above fireplace", [3.9, 2.05, .1], [0, 3.02, -3.68], 0x8a633d);
+  const largeFrame = box("large painting frame above fireplace", [3.9, 2.05, .1], [0, 3.02, -3.90], 0x8a633d);
   const largePainting = new THREE.Mesh(new THREE.PlaneGeometry(3.45, 1.62), new THREE.MeshBasicMaterial({ map: largeArt }));
   largePainting.name = "large painting above fireplace"; largePainting.position.set(0, 3.02, -3.61); largePainting.renderOrder = 2; room.add(largePainting);
   room.userData.occludingDecor.push(largeFrame, largePainting);
   for (const x of [-2.35, 2.35]) {
     const framePieces = [
-      box("art frame top", [1.18, .08, .1], [x, 3.24, -3.68], 0xa47a50),
-      box("art frame bottom", [1.18, .08, .1], [x, 1.86, -3.68], 0xa47a50),
-      box("art frame left", [.08, 1.46, .1], [x - .55, 2.55, -3.68], 0xa47a50),
-      box("art frame right", [.08, 1.46, .1], [x + .55, 2.55, -3.68], 0xa47a50),
+      box("art frame top", [1.18, .08, .1], [x, 3.24, -3.90], 0xa47a50),
+      box("art frame bottom", [1.18, .08, .1], [x, 1.86, -3.90], 0xa47a50),
+      box("art frame left", [.08, 1.46, .1], [x - .55, 2.55, -3.90], 0xa47a50),
+      box("art frame right", [.08, 1.46, .1], [x + .55, 2.55, -3.90], 0xa47a50),
     ];
     const art = textureLoader.load("../art/wall-triptych-v1.png");
     art.colorSpace = THREE.SRGBColorSpace; art.wrapS = THREE.ClampToEdgeWrapping; art.repeat.set(1 / 3, 1); art.offset.set(x < 0 ? 0 : 2 / 3, 0);
     const painting = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.3), new THREE.MeshBasicMaterial({ map: art }));
     painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.7); painting.renderOrder = 2; room.add(painting);
     room.userData.occludingDecor.push(...framePieces, painting);
-    const sconceBack = box("wall sconce backplate", [.12, .42, .08], [x, 3.15, -3.62], 0xb08a55);
-    const sconceArm = box("wall sconce arm", [.22, .06, .1], [x, 2.98, -3.56], 0xb08a55);
+    const sconceBack = box("wall sconce backplate", [.12, .42, .08], [x, 3.15, -3.90], 0xb08a55);
+    const sconceArm = box("wall sconce arm", [.22, .06, .1], [x, 2.98, -3.86], 0xb08a55);
     const sconceFlame = new THREE.Mesh(new THREE.ConeGeometry(.055, .18, 8), new THREE.MeshBasicMaterial({ color: 0xffd58a }));
     sconceFlame.name = "wall sconce flame"; sconceFlame.position.set(x, 3.08, -3.5); room.add(sconceFlame);
     const sconceLight = new THREE.PointLight(0xffc277, .48, 2.2); sconceLight.position.set(x, 3.08, -3.35); room.add(sconceLight);
