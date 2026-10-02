@@ -283,7 +283,7 @@
       "z": -0.8,
       "width": 5.8,
       "depth": 5.5,
-      "connections": ["kitchen", "servants-hall", "salon", "upper-landing", "central-stair-hall"]
+      "connections": ["kitchen", "servants-hall", "salon", "upper-landing", "central-stair-hall", "laundry", "staff-room", "lake-access-storage"]
     },
     {
       "id": "kitchen",
@@ -292,7 +292,7 @@
       "z": -0.8,
       "width": 6.35,
       "depth": 5.5,
-      "connections": ["entrance-hall", "pantry", "wine-cellar"]
+      "connections": ["entrance-hall", "pantry", "wine-cellar", "laundry"]
     },
     {
       "id": "pantry",
@@ -310,7 +310,7 @@
       "z": -0.8,
       "width": 6.35,
       "depth": 5.5,
-      "connections": ["entrance-hall", "storage-cellar", "stores"]
+      "connections": ["entrance-hall", "storage-cellar", "stores", "staff-room"]
     },
     {
       "id": "storage-cellar",
@@ -391,7 +391,7 @@
       "z": 3,
       "width": 5.1,
       "depth": 3.2,
-      "connections": ["byron-bedroom", "upper-landing"]
+      "connections": ["byron-bedroom", "upper-landing", "guest-chamber-south"]
     },
     {
       "id": "guest-chamber-east",
@@ -400,7 +400,7 @@
       "z": 3,
       "width": 5.1,
       "depth": 3.2,
-      "connections": ["polidori-bedroom", "upper-landing"]
+      "connections": ["polidori-bedroom", "upper-landing", "guest-chamber-south"]
     },
     {
       "id": "guest-chamber-south",
@@ -418,7 +418,7 @@
       "z": 3.2,
       "width": 4.2,
       "depth": 3,
-      "connections": ["byron-bedroom", "polidori-bedroom", "guest-chamber-west", "guest-chamber-east", "servants-room-west", "servants-room-east", "entrance-hall", "attic-landing"]
+      "connections": ["byron-bedroom", "polidori-bedroom", "guest-chamber-west", "guest-chamber-east", "guest-chamber-south", "servants-room-west", "servants-room-east", "entrance-hall", "attic-landing"]
     },
     {
       "id": "servants-room-west",
