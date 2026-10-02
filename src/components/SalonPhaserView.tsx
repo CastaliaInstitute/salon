@@ -7,7 +7,7 @@ export interface SalonPhaserCharacter {
   id: string
   name: string
   active?: boolean
-  position?: { x: number; z: number; rotation?: number; animation_state?: 'idle' | 'walk' | 'gesture' | 'sit' | 'speak'; direction?: string; scale?: number; height?: number; weight?: number }
+  position?: { x: number; z: number; rotation?: number; animation_state?: 'idle' | 'walk' | 'gesture' | 'sit' | 'speak'; direction?: string; scale?: number; height?: number; weight?: number; held?: 'book' | 'cup' | 'glass' | 'candelabra' }
   palette: { coat: number; waistcoat: number; accent: number }
   bodyType?: 'feminine' | 'masculine'
   skin?: number
