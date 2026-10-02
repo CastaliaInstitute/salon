@@ -677,6 +677,47 @@ const resize = () => {
 window.addEventListener("resize", resize);
 resize();
 
+// Matrix room state is the authoritative scene layer for the 3D view.
+const matrixFigureOrder = ["a.byron", "a.maryshelley", "a.clairmont", "a.shelley", "a.polidori"];
+let matrixRoomId = null;
+let matrixAccessToken = null;
+async function matrixRoomState() {
+  try {
+    if (!matrixAccessToken) {
+      const registration = await fetch("https://matrix.castalia.institute/_matrix/client/v3/register?kind=guest", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      if (!registration.ok) return;
+      matrixAccessToken = (await registration.json()).access_token;
+    }
+    if (!matrixRoomId) {
+      const directory = await fetch("https://matrix.castalia.institute/_matrix/client/v3/directory/room/%23villa-diodati%3Amatrix.castalia.institute", { headers: { Authorization: `Bearer ${matrixAccessToken}` } });
+      if (!directory.ok) return;
+      matrixRoomId = (await directory.json()).room_id;
+    }
+    const response = await fetch(`https://matrix.castalia.institute/_matrix/client/v3/rooms/${encodeURIComponent(matrixRoomId)}/state`, { headers: { Authorization: `Bearer ${matrixAccessToken}` }, cache: "no-store" });
+    if (!response.ok) return;
+    const event = (await response.json()).find((item) => item.type === "org.castalia.salon.room" && (item.state_key || "") === "");
+    const state = event?.content;
+    if (!state) return;
+    const figures = [...seatedFigures.map((entry) => entry.figure), ...standingFigures];
+    matrixFigureOrder.forEach((id, index) => {
+      const figure = figures[index];
+      const position = state.positions?.[id] || state.positions?.[id.split(".").pop()];
+      if (!figure || !position) return;
+      figure.position.x = position.x;
+      figure.position.z = position.z;
+      if (Number.isFinite(position.rotation)) figure.rotation.y = position.rotation;
+    });
+    if (state.activeSpeaker) {
+      const activeId = String(state.activeSpeaker).replace(/^@/, "").split(":", 1)[0].toLowerCase();
+      const activeIndex = matrixFigureOrder.findIndex((id) => id === activeId || id.split(".").pop() === activeId);
+      if (activeIndex >= 0) figures.forEach((figure, index) => { figure.userData.gesture = { name: index === activeIndex ? "speak" : "look-at-figure", started: animationClock.elapsedTime, attentionTarget: activeIndex }; });
+      if (activeIndex >= 0) status.textContent = `Matrix room · active speaker: ${matrixFigureOrder[activeIndex]}`;
+    }
+  } catch (error) { console.warn("Matrix scene state unavailable; using local defaults", error); }
+}
+matrixRoomState();
+window.setInterval(matrixRoomState, 2000);
+
 new GLTFLoader().load(
   "./salon.glb?v=room-props-9",
   async (gltf) => {
