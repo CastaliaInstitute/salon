@@ -120,14 +120,16 @@ function updateExteriorRoomMeshes(visible) {
   room.traverse((node) => { if (node.isMesh && exteriorRoomMesh.test(node.name || "")) node.visible = visible; });
 }
 function updatePlanRoomVisibility(roomId) {
-  const activeName = planShellByRoom[roomId] || "grand salon";
+  // The salon has a real architectural room root. Its inferred `grand salon`
+  // shell is only a navigation placeholder and must never double-render walls.
+  const activeName = roomId === "salon" ? null : (planShellByRoom[roomId] || null);
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
-    if (match) node.visible = match === activeName;
+    if (match) node.visible = Boolean(activeName && match === activeName);
   });
 }
-function updateRoomScope() { if (topDown || pov || !navigationRooms.length) return; const current = roomAtPoint(localPlayer.x, localPlayer.z); if (!current) return; const outdoors = new Set(["terrace", "garden", "vineyard", "orchard", "shore", "lake"]); const outside = outdoors.has(current.id); exteriorLayer.visible = outside; updateExteriorRoomMeshes(outside); for (const wall of Object.values(room.userData.walls || {})) wall.visible = !outside; for (const item of room.userData.occludingDecor || []) item.visible = !outside; if (current.id !== currentRoomId) { currentRoomId = current.id; updatePlanRoomVisibility(current.id); const targetZ = outside ? 5.0 : Number(current.z); focusHouseLocation(Number(current.x), targetZ, floorLevel); } for (const figure of figures.values()) { const person = figure.userData.person; if (!person) continue; figure.visible = Number(person.floor ?? 1) === floorLevel; } }
+function updateRoomScope() { if (topDown || pov || !navigationRooms.length) return; const current = requestedRoom && !localPlayerEnabled ? navigationRooms.find((candidate) => candidate.id === requestedRoom) : roomAtPoint(localPlayer.x, localPlayer.z); if (!current) return; const outdoors = new Set(["terrace", "garden", "vineyard", "orchard", "shore", "lake"]); const outside = outdoors.has(current.id); exteriorLayer.visible = outside; updateExteriorRoomMeshes(outside); for (const wall of Object.values(room.userData.walls || {})) wall.visible = !outside; for (const item of room.userData.occludingDecor || []) item.visible = !outside; if (current.id !== currentRoomId) { currentRoomId = current.id; updatePlanRoomVisibility(current.id); const targetZ = outside ? 5.0 : Number(current.z); focusHouseLocation(Number(current.x), targetZ, floorLevel); } for (const figure of figures.values()) { const person = figure.userData.person; if (!person) continue; figure.visible = Number(person.floor ?? 1) === floorLevel; } }
 function roomWaypoints(origin, destination) { if (!origin || !destination || origin.id === destination.id || Number(origin.floor) !== Number(destination.floor)) return []; const rooms = new Map(navigationRooms.filter((room) => Number(room.floor) === floorLevel).map((room) => [room.id, room])); const previous = new Map([[origin.id, null]]); const queue = [origin.id]; while (queue.length) { const id = queue.shift(); if (id === destination.id) break; for (const next of rooms.get(id)?.connections || []) if (rooms.has(next) && !previous.has(next)) { previous.set(next, id); queue.push(next); } } if (!previous.has(destination.id)) return []; const ids = []; for (let id = destination.id; id && id !== origin.id; id = previous.get(id)) ids.unshift(id); return ids.map((id) => { const room = rooms.get(id); return safePosition(Number(room.x), Number(room.z), .22); }); }
 canvas.addEventListener("pointerup", (event) => { if (!localPlayerEnabled || event.button !== 0) return; const rect = canvas.getBoundingClientRect(); const pointer = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); tapRaycaster.setFromCamera(pointer, activeCamera); const point = new THREE.Vector3(); if (!tapRaycaster.ray.intersectPlane(floorPlane, point)) return; const safe = safePosition(point.x / HOUSE_WORLD_SCALE, point.z / HOUSE_WORLD_SCALE, .22); if (Math.hypot(point.x / HOUSE_WORLD_SCALE - stair.x, point.z / HOUSE_WORLD_SCALE - stair.z) < 1.7) changeFloor(); walkTarget = { x: safe.x, z: safe.z }; });
 canvas.addEventListener("pointerup", (event) => { if (!localPlayerEnabled || event.button !== 0 || !navigationRooms.length) return; const rect = canvas.getBoundingClientRect(); const pointer = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); tapRaycaster.setFromCamera(pointer, activeCamera); const point = new THREE.Vector3(); if (!tapRaycaster.ray.intersectPlane(floorPlane, point)) return; const destination = roomAtPoint(point.x / HOUSE_WORLD_SCALE, point.z / HOUSE_WORLD_SCALE); const origin = roomAtPoint(localPlayer.x, localPlayer.z); const route = roomWaypoints(origin, destination); if (route.length) { walkRoute = route.slice(1); walkTarget = route[0]; } });
@@ -329,7 +331,7 @@ function buildRoom() {
   const addFacadeWindow = (x, y, z, rotation = 0) => {
     const recess = box("villa facade window recess", [1.85, 2.65, .08], [x, y, z], 0x182b3c, rotation);
     const pane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.3), new THREE.MeshBasicMaterial({ map: outside, transparent: true }));
-    pane.name = "villa facade window"; pane.position.set(x, y, z + (rotation ? 0 : -.055)); pane.rotation.y = rotation; pane.renderOrder = 1; room.add(pane);
+    pane.name = "villa facade window"; pane.position.set(x, y, z + (rotation ? 0 : -.055)); pane.rotation.y = rotation; pane.renderOrder = 1; activeBuildGroup.add(pane);
     const frame = [
       box("facade window left", [.08, 2.42, .1], [x - (rotation ? 0 : .82), y, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
       box("facade window right", [.08, 2.42, .1], [x + (rotation ? 0 : .82), y, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
@@ -388,7 +390,7 @@ function buildRoom() {
     }
     const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.91], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
-    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshBasicMaterial({ map: outside, transparent: true })); windowPane.name = "tall window to the storm outside"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; room.add(windowPane); room.userData.occludingDecor.push(windowPane);
+    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshBasicMaterial({ map: outside, transparent: true })); windowPane.name = "tall window to the storm outside"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
     const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, -3.90], 0xf2eee5);
     const windowSill = box("window sill", [2.15, .12, .22], [x, .78, -3.82], 0xf2eee5);
     const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.86], 0x5e7080);
@@ -404,7 +406,7 @@ function buildRoom() {
   largeArt.colorSpace = THREE.SRGBColorSpace;
   const largeFrame = box("large painting frame above fireplace", [3.9, 2.05, .1], [0, 3.02, -3.90], 0x8a633d);
   const largePainting = new THREE.Mesh(new THREE.PlaneGeometry(3.45, 1.62), new THREE.MeshBasicMaterial({ map: largeArt }));
-  largePainting.name = "large painting above fireplace"; largePainting.position.set(0, 3.02, -3.61); largePainting.renderOrder = 2; room.add(largePainting);
+  largePainting.name = "large painting above fireplace"; largePainting.position.set(0, 3.02, -3.61); largePainting.renderOrder = 2; salonRoot.add(largePainting);
   room.userData.occludingDecor.push(largeFrame, largePainting);
   for (const x of [-2.35, 2.35]) {
     const framePieces = [
@@ -416,19 +418,19 @@ function buildRoom() {
     const art = textureLoader.load("../art/wall-triptych-v1.png");
     art.colorSpace = THREE.SRGBColorSpace; art.wrapS = THREE.ClampToEdgeWrapping; art.repeat.set(1 / 3, 1); art.offset.set(x < 0 ? 0 : 2 / 3, 0);
     const painting = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.3), new THREE.MeshBasicMaterial({ map: art }));
-    painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.7); painting.renderOrder = 2; room.add(painting);
+    painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.7); painting.renderOrder = 2; salonRoot.add(painting);
     room.userData.occludingDecor.push(...framePieces, painting);
     const sconceBack = box("wall sconce backplate", [.12, .42, .08], [x, 3.15, -3.90], 0xb08a55);
     const sconceArm = box("wall sconce arm", [.22, .06, .1], [x, 2.98, -3.86], 0xb08a55);
     const sconceFlame = new THREE.Mesh(new THREE.ConeGeometry(.055, .18, 8), new THREE.MeshBasicMaterial({ color: 0xffd58a }));
-    sconceFlame.name = "wall sconce flame"; sconceFlame.position.set(x, 3.08, -3.5); room.add(sconceFlame);
-    const sconceLight = new THREE.PointLight(0xffc277, .48, 2.2); sconceLight.position.set(x, 3.08, -3.35); room.add(sconceLight);
+    sconceFlame.name = "wall sconce flame"; sconceFlame.position.set(x, 3.08, -3.5); salonRoot.add(sconceFlame);
+    const sconceLight = new THREE.PointLight(0xffc277, .48, 2.2); sconceLight.position.set(x, 3.08, -3.35); salonRoot.add(sconceLight);
     room.userData.occludingDecor.push(sconceBack, sconceArm, sconceFlame);
   }
   const fireplaceTexture = textureLoader.load("../art/fireplace-v1.png");
   fireplaceTexture.colorSpace = THREE.SRGBColorSpace;
   const fireplaceArt = new THREE.Mesh(new THREE.PlaneGeometry(3.05, 1.985), new THREE.MeshBasicMaterial({ map: fireplaceTexture, transparent: true, depthWrite: false }));
-  fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
+  fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; salonRoot.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
   loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.15], { width: 4.2 }, 0, salonRoot);
@@ -444,7 +446,7 @@ function buildRoom() {
   salonRoot.position.set(SALON_ORIGIN.x, 0, SALON_ORIGIN.z);
   salonRoot.scale.set(SALON_CONTENT_SCALE.x, 1, SALON_CONTENT_SCALE.z);
 }
-function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const center = new THREE.Vector3(); salonRoot.getWorldPosition(center); const position = activeCamera.position; const dx = position.x - center.x; const dz = position.z - center.z; const near = new Set(); if (dx > HOUSE_WORLD_SCALE * 1.2) near.add("right"); if (dx < -HOUSE_WORLD_SCALE * 1.2) near.add("left"); if (dz < -HOUSE_WORLD_SCALE * 1.2) near.add("rear"); if (dz > HOUSE_WORLD_SCALE * 1.2) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .02 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } const decorOpacity = near.size ? .02 : 1; for (const item of decor) { item.material.transparent = true; item.material.opacity = decorOpacity; item.material.depthWrite = !near.size; item.material.needsUpdate = true; } } }
+function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const center = new THREE.Vector3(); salonRoot.getWorldPosition(center); const position = activeCamera.position; const dx = position.x - center.x; const dz = position.z - center.z; const near = new Set(); if (dx > HOUSE_WORLD_SCALE * 1.2) near.add("right"); if (dx < -HOUSE_WORLD_SCALE * 1.2) near.add("left"); if (dz < -HOUSE_WORLD_SCALE * 1.2) near.add("rear"); if (dz > HOUSE_WORLD_SCALE * 1.2) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .02 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; item.material.needsUpdate = true; } } }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
   const key = new THREE.DirectionalLight(0xffe0bd, 2.1); key.position.set(-4, 8, 5); key.castShadow = true; scene.add(key);
