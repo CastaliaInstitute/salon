@@ -1,0 +1,28 @@
+{
+  "id": "villa-diodati-salon-v1",
+  "coordinateSystem": "villa-diodati-isometric-v1",
+  "units": "room-grid",
+  "bounds": { "minX": -6, "maxX": 6, "minZ": -4, "maxZ": 5 },
+  "camera": {
+    "orthographic": { "azimuth": 45, "elevation": 35, "zoom": 1.0 },
+    "perspective": { "position": [0, 5.4, 8.2], "target": [0, 1.0, 0] }
+  },
+  "walkable": [
+    { "id": "salon-floor", "minX": -5.4, "maxX": 5.4, "minZ": -2.8, "maxZ": 4.2 }
+  ],
+  "furniture": [
+    { "id": "sofa-left", "kind": "sofa", "x": -3.35, "z": 0.25, "rotation": 0, "seats": ["sofa-left-01", "sofa-left-02", "sofa-left-03"] },
+    { "id": "chair-by-window", "kind": "armchair", "x": 3.75, "z": 0.25, "rotation": -1.57, "seats": ["chair-window-01"] },
+    { "id": "chair-right", "kind": "armchair", "x": 2.55, "z": 1.35, "rotation": -1.57, "seats": ["chair-right-01"] },
+    { "id": "chair-reading", "kind": "armchair", "x": -1.95, "z": 1.65, "rotation": 1.57, "seats": ["chair-reading-01"] },
+    { "id": "writing-table", "kind": "table", "x": 0.15, "z": 1.55, "rotation": 0, "seats": [] }
+  ],
+  "seats": {
+    "sofa-left-01": { "x": -3.85, "z": 0.45, "direction": "south" },
+    "sofa-left-02": { "x": -3.35, "z": 0.45, "direction": "south" },
+    "sofa-left-03": { "x": -2.85, "z": 0.45, "direction": "south" },
+    "chair-window-01": { "x": 3.75, "z": 0.25, "direction": "west" },
+    "chair-right-01": { "x": 2.55, "z": 1.35, "direction": "west" },
+    "chair-reading-01": { "x": -1.95, "z": 1.65, "direction": "east" }
+  }
+}

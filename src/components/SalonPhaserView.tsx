@@ -13,6 +13,7 @@ export interface SalonPhaserCharacter {
   skin?: number
   hair?: number
   accessories?: string[]
+  depth?: number
 }
 
 interface Props {
@@ -41,18 +42,15 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
         constructor() { super('salon-room') }
         preload() {
           this.load.image('salon-background', '/worlds/villa-diodati/sprites/v1/salon-background.png')
+          this.load.json('salon-map', '/worlds/villa-diodati/isometric-map.json')
         }
         create() {
           this.drawRoom()
-          if (!this.textures.exists('salon-background')) this.drawFurniture()
+          this.drawFurniture()
           this.drawCharacters()
         }
         drawRoom() {
           const { width: w, height: h } = this.scale
-          if (this.textures.exists('salon-background')) {
-            this.add.image(w / 2, h / 2, 'salon-background').setDisplaySize(w, h)
-            return
-          }
           const g = this.add.graphics()
           g.fillStyle(0x0c0b12, 1).fillRect(0, 0, w, h)
           // Isometric room shell: rear wall, side walls, dado, and parquet floor.
@@ -79,13 +77,16 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
           return { x: w * (.5 + x / 12), y: h * (.54 + z / 15 - x / 32) }
         }
         drawFurniture() {
-          const props = furniture ?? {
+          const map = this.cache.json.get('salon-map') as { furniture?: Array<{ kind: 'sofa' | 'armchair' | 'table'; x: number; z: number; rotation?: number }> } | undefined
+          const props = furniture ?? Object.fromEntries((map?.furniture ?? []).map((item, index) => [`map-prop-${index}`, item]))
+          const fallbackProps = {
             'carved-settee': { kind: 'sofa' as const, x: -3.38, z: 0.15, rotation: 0 },
             'byron-chair': { kind: 'armchair' as const, x: 2.55, z: -0.60, rotation: -Math.PI / 2 },
             'reading-chair': { kind: 'armchair' as const, x: 4.12, z: 0.96, rotation: -Math.PI / 2 },
             'window-chair': { kind: 'armchair' as const, x: 0, z: 2.42, rotation: Math.PI },
           }
-          Object.values(props).forEach((prop) => {
+          const renderProps = Object.keys(props).length ? props : fallbackProps
+          Object.values(renderProps).forEach((prop) => {
             const point = this.project(prop.x, prop.z)
             const width = prop.kind === 'sofa' ? 112 : 48
             const height = prop.kind === 'sofa' ? 26 : 36
@@ -98,7 +99,7 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
         }
         drawCharacters() {
           const { width: w, height: h } = this.scale
-          characters.slice(0, ANCHORS.length).forEach((character, index) => {
+          characters.slice().sort((a, b) => (a.depth ?? 0) - (b.depth ?? 0)).forEach((character, index) => {
             const [defaultX, defaultZ] = ANCHORS[index]
             const world = character.position ?? { x: (defaultX - .5) * 12, z: (defaultZ - .54) * 15 }
             const projected = this.project(world.x, world.z)

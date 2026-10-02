@@ -317,8 +317,21 @@ export function SalonLiveRoom({
     .filter(([id], index, entries) => entries.findIndex(([candidate]) => DIODATI_SPEAKERS[candidate].name === DIODATI_SPEAKERS[id].name) === index && id !== 'salon.web')
     .map(([id, speaker]) => {
       const style = roomState?.avatars?.[id]
-      return { id, name: speaker.name, palette: { coat: style?.coat ?? speaker.palette.coat, waistcoat: style?.waistcoat ?? speaker.palette.waistcoat, accent: style?.accent ?? speaker.palette.accent }, bodyType: style?.body ?? (id === 'a.maryshelley' || id === 'a.clairmont' ? 'feminine' as const : 'masculine' as const), skin: style?.skin, hair: style?.hair, accessories: style?.accessories, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position: roomState?.positions?.[id] ?? DEFAULT_ROOM_POSITIONS[id] }
-    }), [roomState])
+      const position = roomState?.positions?.[id] ?? DEFAULT_ROOM_POSITIONS[id]
+      return { id, name: speaker.name, palette: { coat: style?.coat ?? speaker.palette.coat, waistcoat: style?.waistcoat ?? speaker.palette.waistcoat, accent: style?.accent ?? speaker.palette.accent }, bodyType: style?.body ?? (id === 'a.maryshelley' || id === 'a.clairmont' ? 'feminine' as const : 'masculine' as const), skin: style?.skin, hair: style?.hair, accessories: style?.accessories, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position, depth: position.z }
+    })
+    .concat(Object.entries(roomState?.participants ?? {}).map(([id, participant], index) => ({
+      id,
+      name: participant.name ?? 'Guest',
+      palette: { coat: 0x3b4052 + ((index * 0x07110d) & 0x1f1f1f), waistcoat: 0x8b6b52, accent: 0xb58b59 },
+      bodyType: 'masculine' as const,
+      skin: undefined,
+      hair: undefined,
+      accessories: undefined,
+      active: roomState?.activeSpeaker === id,
+      position: { x: participant.x, z: participant.z, animation_state: participant.state, direction: participant.direction, scale: participant.scale, height: participant.height, weight: participant.weight },
+      depth: participant.z,
+    }))), [roomState])
 
   useEffect(() => {
     const transcript = transcriptRef.current
