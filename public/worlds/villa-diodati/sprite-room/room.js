@@ -125,7 +125,7 @@ const tapRaycaster = new THREE.Raycaster();
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function changeFloor(now = clock.elapsedTime) { if (now - lastFloorChange < 1.2) return false; const nextFloor = floorLevel >= 3 ? 0 : floorLevel + 1; lastFloorChange = now; localPlayer.floor = nextFloor; localPlayer.z = stair.z + 1.0; walkRoute = []; setFloorLevel(nextFloor); focusHouseLocation(stair.x, localPlayer.z, nextFloor); return true; }
 function roomAtPoint(x, z) { return navigationRooms.find((room) => Number(room.floor) === floorLevel && x >= Number(room.x) - Number(room.width) / 2 && x <= Number(room.x) + Number(room.width) / 2 && z >= Number(room.z) - Number(room.depth) / 2 && z <= Number(room.z) + Number(room.depth) / 2) || null; }
-const planShellByRoom = { "drawing-music-room": "drawing room", "library-morning-room": "library study", salon: "grand salon", "dining-room": "dining room", "cabinet-guest-room": "cabinet guest room", "byron-study": "Byron study", "central-stair-hall": "central stair hall", "ante-room": "ante room" };
+const planShellByRoom = { "drawing-music-room": "drawing room", "library-morning-room": "library study", salon: "grand salon", "dining-room": "dining room", "cabinet-guest-room": "cabinet guest room", "byron-study": "Byron study", "central-stair-hall": "central stair hall", "ante-room": "ante room", "guest-chamber": "guest chamber" };
 const exteriorRoomMesh = /^(villa front terrace|terrace board|terrace steps|garden lawn|main garden path|east garden path|west garden path|basin|pond|fountain|vine|orchard|lake shore path|stone seawall|Lake Geneva|trunk|crown)$/i;
 function updateExteriorRoomMeshes(visible) {
   room.traverse((node) => { if (node.isMesh && exteriorRoomMesh.test(node.name || "")) node.visible = visible; });
@@ -141,7 +141,9 @@ function updatePlanRoomVisibility(roomId) {
   });
 }
 function applyTopDownRoomVisibility() {
-  salonRoot.visible = topDownRoomVisibility.get("salon") !== false;
+  // The neutral shell test deliberately hides salon-specific contents in the
+  // map view; the grid must be judged without the legacy inset room overlay.
+  salonRoot.visible = !topDown && topDownRoomVisibility.get("salon") !== false;
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
@@ -407,29 +409,24 @@ function buildRoom() {
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
   planRoom("drawing room", 0, 4.2, 4.0, 4.0, 0x705640);
-  planRoom("dining room", 4.2, 4.2, 4.0, 4.0, 0x705640);
-  box("central landing floor", [4.0, .1, 4.0], [0, -.08, 0], 0x80634d);
-  // Open circulation ring around the stair; the four radial approaches remain
-  // clear so the landing connects the perimeter rooms instead of becoming a
-  // sealed central room.
-  const landingRing = new THREE.Mesh(new THREE.RingGeometry(1.35, 1.95, 32), mat(0x9b7956));
-  landingRing.rotation.x = -Math.PI / 2; landingRing.position.set(0, .015, 0); landingRing.name = "central stair circulation walkway"; room.add(landingRing);
-  for (const [x, z, width, depth] of [[0, -1.95, 1.2, 1.3], [0, 1.95, 1.2, 1.3], [-1.95, 0, 1.3, 1.2], [1.95, 0, 1.3, 1.2]]) box("central stair radial walkway", [width, .06, depth], [x, .01, z], 0x9b7956);
-  const stairSteps = 16;
-  for (let index = 0; index < stairSteps; index += 1) {
-    const angle = index / stairSteps * Math.PI * 2;
-    const radius = .62;
-    const step = new THREE.Mesh(new THREE.BoxGeometry(.56, .11, .34), mat(0x6f4934));
-    step.position.set(Math.cos(angle) * radius, .12 + index * .12, Math.sin(angle) * radius);
-    step.rotation.y = -angle; step.name = "central spiral stair step"; room.add(step);
+  planRoom("cabinet guest room", 4.2, 4.2, 4.0, 4.0, 0x705640);
+  planRoom("central stair hall", 0, 0, 4.0, 4.0, 0x80634d);
+  planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
+  planRoom("grand salon", -4.2, 0, 4.0, 4.0, 0x80634d);
+  planRoom("ante room", -4.2, -4.2, 4.0, 4.0, 0x705640);
+  planRoom("Byron study", 0, -4.2, 4.0, 4.0, 0x705640);
+  planRoom("guest chamber", 4.2, -4.2, 4.0, 4.0, 0x705640);
+  // Basic shell test: exactly three evenly spaced windows on each exterior
+  // elevation of the nine-room grid.
+  activeBuildGroup = room;
+  for (const x of [-4.2, 0, 4.2]) {
+    addFacadeWindow(x, 2.25, -6.22);
+    addFacadeWindow(x, 2.25, 6.22);
   }
-  const stairNewel = new THREE.Mesh(new THREE.CylinderGeometry(.12, .15, 2.15, 12), mat(0x4b3028));
-  stairNewel.position.set(0, 1.08, 0); stairNewel.name = "central spiral stair newel"; room.add(stairNewel);
-  planRoom("Byron study", 4.2, 0, 4.0, 4.0, 0x705640);
-  // The salon is exactly one bay wide and two bays deep in the southwest
-  // corner. Its perimeter is continuous; no other shell may overlap it.
-  planRoom("grand salon", -4.2, -2.1, 4.0, 8.4, 0x80634d, true);
-  planRoom("ante room", 0, -4.2, 4.0, 4.0, 0x705640);
+  for (const z of [-4.2, 0, 4.2]) {
+    addFacadeWindow(-6.22, 2.25, z, Math.PI / 2);
+    addFacadeWindow(6.22, 2.25, z, Math.PI / 2);
+  }
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
   box("west room threshold", [1.4, .1, 2.4], [-2.7, -.02, .1], 0xa28662);
   box("east room threshold", [1.4, .1, 2.4], [2.7, -.02, .1], 0xa28662);
@@ -641,7 +638,7 @@ function applyHistorySnapshot(index) { const snapshot = roomHistory[index]; if (
 rewindSlider?.addEventListener("input", () => { rewindPlaying = false; if (rewindPlay) rewindPlay.textContent = "Play"; applyHistorySnapshot(Number(rewindSlider.value)); }); rewindLive?.addEventListener("click", () => { rewindPlaying = false; if (rewindPlay) rewindPlay.textContent = "Play"; rewindIndex = -1; if (roomState) syncPeople(mapState(roomState)); if (rewindLabel) rewindLabel.textContent = "Live"; rewindLive.disabled = true; }); rewindPlay?.addEventListener("click", () => { if (roomHistory.length < 2) return; if (rewindIndex < 0 || rewindIndex >= roomHistory.length - 1) rewindIndex = 0; rewindPlaying = !rewindPlaying; rewindPlay.textContent = rewindPlaying ? "Pause" : "Play"; if (rewindPlaying) { applyHistorySnapshot(rewindIndex); clearInterval(rewindTimer); rewindTimer = setInterval(() => { if (!rewindPlaying) return; if (rewindIndex >= roomHistory.length - 1) { rewindPlaying = false; rewindPlay.textContent = "Play"; clearInterval(rewindTimer); return; } rewindIndex += 1; if (rewindSlider) rewindSlider.value = String(rewindIndex); applyHistorySnapshot(rewindIndex); }, 900); } else clearInterval(rewindTimer); });
 async function pollMatrix() { try { if (!matrixToken) { const reg = await fetch("https://matrix.castalia.institute/_matrix/client/v3/register?kind=guest", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }); if (!reg.ok) throw new Error("guest registration"); matrixToken = (await reg.json()).access_token; } if (!matrixRoomId) { const dir = await fetch("https://matrix.castalia.institute/_matrix/client/v3/directory/room/%23villa-diodati%3Amatrix.castalia.institute", { headers: { Authorization: `Bearer ${matrixToken}` } }); if (!dir.ok) throw new Error("room lookup"); matrixRoomId = (await dir.json()).room_id; } const response = await fetch(`https://matrix.castalia.institute/_matrix/client/v3/rooms/${encodeURIComponent(matrixRoomId)}/state`, { headers: { Authorization: `Bearer ${matrixToken}` }, cache: "no-store" }); if (!response.ok) throw new Error("state fetch"); const event = (await response.json()).find((item) => item.type === "org.castalia.salon.room" && !item.state_key); roomState = compatibleRoomState(event?.content) ? event.content : null; refreshHistory(roomState); const people = mapState(roomState); syncPeople(people); applyCinematography(roomState); status.textContent = roomState ? `Matrix salon · ${people.length} participants` : `Salon preview · ${people.length} participants`; } catch (error) { console.warn("Matrix salon poll failed", error); if (roomState) { const people = mapState(roomState); syncPeople(people); status.textContent = `Matrix salon · ${people.length} participants · reconnecting`; } else { matrixToken = null; matrixRoomId = null; cinematicCue = null; syncPeople(defaultState()); status.textContent = demoCrowd ? "Salon preview · Matrix reconnecting" : "Matrix state unavailable"; } } }
 function updatePovCamera() { const angle = { south: 0, southeast: Math.PI / 4, east: Math.PI / 2, northeast: Math.PI * .75, north: Math.PI, northwest: Math.PI * 1.25, west: Math.PI * 1.5, southwest: Math.PI * 1.75 }[localPlayer.direction] ?? 0; const floorOffset = [-3.64, 0, 3.96, 7.76][Math.max(0, Math.min(3, Number(localPlayer.floor || 1)))] * HOUSE_WORLD_SCALE; const eye = new THREE.Vector3(localPlayer.x * HOUSE_WORLD_SCALE, floorOffset + 1.52, localPlayer.z * HOUSE_WORLD_SCALE); const look = new THREE.Vector3(eye.x + Math.sin(angle) * 2, eye.y - .1, eye.z + Math.cos(angle) * 2); povCamera.position.copy(eye); povCamera.lookAt(look); povCamera.updateProjectionMatrix(); }
-function setViewMode(mode) { setFloorLevel(floorLevel); pov = mode === "pov"; topDown = mode === "topdown"; cinematic = mode === "cinematic"; if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createTopDownRoomControls(); topDownRoomControls.style.display = topDown ? "flex" : "none"; renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, 56, 11); mapCamera.lookAt(0, 0, 11); } else if (cinematic) { cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); } else { isoCamera.position.set(8, 8, 8); isoCamera.lookAt(0, .8, 0); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = !pov; controls.enablePan = !pov; controls.target.set(0, topDown ? 11 : .8, 0); cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
+function setViewMode(mode) { setFloorLevel(floorLevel); pov = mode === "pov"; topDown = mode === "topdown"; cinematic = mode === "cinematic"; salonRoot.visible = !topDown; if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createTopDownRoomControls(); topDownRoomControls.style.display = topDown ? "flex" : "none"; renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, 56, 11); mapCamera.lookAt(0, 0, 11); } else if (cinematic) { cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); } else { isoCamera.position.set(8, 8, 8); isoCamera.lookAt(0, .8, 0); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = !pov; controls.enablePan = !pov; controls.target.set(0, topDown ? 11 : .8, 0); cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
 function leaveTopDownForBillboards() { if (!topDown || Math.abs(mapCamera.position.y - 20) < .08) return; topDown = false; cinematic = false; participantLayer.visible = true; mapMarkers.visible = false; activeCamera = mapCamera; controls.object = mapCamera; controls.enableRotate = true; cameraButton.textContent = "Cinematic view"; mapButton.textContent = "Top-down map"; }
 function handleCameraChange() { if (pov) return; if (!topDown && activeCamera === isoCamera) { const offset = isoCamera.position.clone().sub(controls.target); const polar = Math.atan2(Math.hypot(offset.x, offset.z), Math.max(.001, offset.y)); if (polar < .3) { setViewMode("topdown"); return; } } leaveTopDownForBillboards(); }
 cameraButton.addEventListener("click", () => setViewMode(cinematic ? "isometric" : "cinematic"));

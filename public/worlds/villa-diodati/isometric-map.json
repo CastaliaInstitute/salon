@@ -139,7 +139,9 @@
       "connections": [
         "salon",
         "library-morning-room",
-        "byron-study"
+        "central-stair-hall",
+        "cabinet-guest-room",
+        "dining-room"
       ]
     },
     {
@@ -151,20 +153,21 @@
       "depth": 4.0,
       "connections": [
         "drawing-music-room",
-        "byron-study"
+        "salon"
       ]
     },
     {
       "id": "salon",
       "floor": 1,
       "x": -4.2,
-      "z": -2.1,
+      "z": 0,
       "width": 4.0,
-      "depth": 8.4,
+      "depth": 4.0,
       "connections": [
         "drawing-music-room",
-        "dining-room",
+        "library-morning-room",
         "central-stair-hall",
+        "ante-room",
         "terrace",
         "entrance-hall"
       ]
@@ -173,34 +176,35 @@
       "id": "dining-room",
       "floor": 1,
       "x": 4.2,
-      "z": 4.2,
+      "z": 0,
       "width": 4.0,
       "depth": 4.0,
       "connections": [
-        "salon",
-        "cabinet-guest-room"
+        "drawing-music-room",
+        "cabinet-guest-room",
+        "byron-study"
       ]
     },
     {
       "id": "cabinet-guest-room",
       "floor": 1,
-      "x": 5.1,
-      "z": 4.0,
-      "width": 4.8,
-      "depth": 2.2,
+      "x": 4.2,
+      "z": 4.2,
+      "width": 4.0,
+      "depth": 4.0,
       "connections": [
         "dining-room",
-        "ante-room"
+        "drawing-music-room"
       ]
     },
     {
       "id": "byron-study",
       "floor": 1,
-      "x": 4.2,
-      "z": 0,
+      "x": 0,
+      "z": -4.2,
       "width": 4.0,
       "depth": 4.0,
-      "connections": ["drawing-music-room", "library-morning-room", "central-stair-hall"]
+      "connections": ["ante-room", "central-stair-hall", "dining-room", "guest-chamber"]
     },
     {
       "id": "central-stair-hall",
@@ -208,17 +212,26 @@
       "x": 0,
       "z": 0,
       "width": 4.0,
-      "depth": 1.8,
-      "connections": ["salon", "byron-study", "ante-room", "entrance-hall"]
+      "depth": 4.0,
+      "connections": ["salon", "drawing-music-room", "byron-study", "ante-room", "entrance-hall"]
     },
     {
       "id": "ante-room",
       "floor": 1,
-      "x": 0,
+      "x": -4.2,
       "z": -4.2,
       "width": 4.0,
-      "depth": 1.8,
-      "connections": ["central-stair-hall", "cabinet-guest-room"]
+      "depth": 4.0,
+      "connections": ["salon", "central-stair-hall", "byron-study"]
+    },
+    {
+      "id": "guest-chamber",
+      "floor": 1,
+      "x": 4.2,
+      "z": -4.2,
+      "width": 4.0,
+      "depth": 4.0,
+      "connections": ["byron-study"]
     },
     {
       "id": "terrace",
