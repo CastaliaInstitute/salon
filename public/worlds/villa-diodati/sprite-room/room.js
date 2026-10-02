@@ -346,8 +346,8 @@ function buildRoom() {
   // Room-specific anchors make the inferred plan legible and give the characters places to visit.
   activeBuildGroup = salonRoot;
   // Central stair hall is represented as a broad landing connecting the principal rooms.
-  box("central stair landing", [3.2, .12, 3.2], [0, -.02, -5.0], 0x9a7956);
-  for (let step = 0; step < 5; step++) box("central stair", [2.5 - step * .12, .12, .38], [0, .08 + step * .1, -6.9 + step * .38], 0xb79b72);
+  // The central stair remains a logical floor transition, but its exterior
+  // projecting steps are intentionally omitted from the rendered house.
   // Principal façade: two windows flanking the entrance.
   for (const x of [-3.55, 3.55]) addFacadeWindow(x, 2.25, 4.88);
   // Side elevations: repeated windows along the lake-facing wings.
