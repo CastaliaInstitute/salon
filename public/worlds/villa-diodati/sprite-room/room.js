@@ -117,12 +117,17 @@ function buildRoom() {
   }
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
   for (const x of [-3.8, 3.8]) {
-    const frame = box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.78], 0xa47a50);
+    const framePieces = [
+      box("art frame top", [1.18, .08, .1], [x, 3.24, -3.68], 0xa47a50),
+      box("art frame bottom", [1.18, .08, .1], [x, 1.86, -3.68], 0xa47a50),
+      box("art frame left", [.08, 1.46, .1], [x - .55, 2.55, -3.68], 0xa47a50),
+      box("art frame right", [.08, 1.46, .1], [x + .55, 2.55, -3.68], 0xa47a50),
+    ];
     const art = textureLoader.load("../art/wall-triptych-v1.png");
     art.colorSpace = THREE.SRGBColorSpace; art.wrapS = THREE.ClampToEdgeWrapping; art.repeat.set(1 / 3, 1); art.offset.set(x < 0 ? 0 : 2 / 3, 0);
     const painting = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.3), new THREE.MeshBasicMaterial({ map: art }));
     painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.7); painting.renderOrder = 2; room.add(painting);
-    room.userData.occludingDecor.push(frame, painting);
+    room.userData.occludingDecor.push(...framePieces, painting);
   }
   const fireplaceTexture = textureLoader.load("../art/fireplace-v1.png");
   fireplaceTexture.colorSpace = THREE.SRGBColorSpace;
