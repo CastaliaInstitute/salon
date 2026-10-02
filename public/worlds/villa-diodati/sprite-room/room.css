@@ -15,10 +15,10 @@ canvas { display: block; width: 100%; height: calc(100% - 210px); }
 #rewind-slider { flex: 1; min-width: 0; accent-color: #b7915d; }
 .rewind-row { display: flex; align-items: center; gap: 8px; }
 #rewind-play, #rewind-live { padding: 4px 9px; font-size: 10px; }
-.controls { position: fixed; left: 22px; bottom: 220px; display: flex; gap: 14px; align-items: center; color: #e8d9bd; font-size: 12px; letter-spacing: .04em; text-shadow: 0 1px 3px #000; }
-button { border: 1px solid #b7915d; border-radius: 999px; padding: 9px 15px; color: #f5e5c8; background: rgba(35, 22, 20, .82); font: inherit; cursor: pointer; }
+.controls { position: fixed; left: 0; right: 0; bottom: 210px; min-height: 40px; box-sizing: border-box; padding: 5px 22px; display: flex; gap: 8px; align-items: center; color: #e8d9bd; font-size: 11px; letter-spacing: .04em; text-shadow: 0 1px 3px #000; background: rgba(23,18,15,.94); border-top: 1px solid rgba(183,145,93,.35); }
+button { border: 1px solid #b7915d; border-radius: 999px; padding: 5px 10px; color: #f5e5c8; background: rgba(35, 22, 20, .82); font: inherit; cursor: pointer; }
 button:hover { background: #5f3e37; }
 .joystick { position: fixed; right: 22px; bottom: 220px; width: 78px; height: 78px; border: 1px solid rgba(183,145,93,.72); border-radius: 50%; background: rgba(35,22,20,.58); touch-action: none; display: none; }
 .joystick::after { content: ''; position: absolute; left: 27px; top: 27px; width: 24px; height: 24px; border-radius: 50%; background: rgba(232,217,189,.86); box-shadow: 0 0 16px rgba(143,201,255,.42); transform: translate(var(--joy-x,0), var(--joy-y,0)); }
 body.local-player .joystick { display: block; }
-@media (max-width: 640px) { canvas { height: calc(100% - 228px); } .controls { left: 12px; right: 12px; bottom: 238px; gap: 8px; font-size: 10px; } button { padding: 8px 11px; } .joystick { right: 16px; bottom: 242px; } #script-panel { height: 174px; padding: 10px 12px 12px; } .script-line { grid-template-columns: 82px 1fr; font-size: 11px; } .dialogue-bubble { max-width: 150px; font-size: 10px; } #rewind-control { bottom: 174px; padding-left: 12px; padding-right: 12px; } }
+@media (max-width: 640px) { canvas { height: calc(100% - 228px); } .controls { left: 0; right: 0; bottom: 228px; min-height: 40px; padding: 5px 12px; gap: 5px; font-size: 9px; } button { padding: 5px 8px; } .joystick { right: 16px; bottom: 242px; } #script-panel { height: 174px; padding: 10px 12px 12px; } .script-line { grid-template-columns: 82px 1fr; font-size: 11px; } .dialogue-bubble { max-width: 150px; font-size: 10px; } #rewind-control { bottom: 174px; padding-left: 12px; padding-right: 12px; } }
