@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "frame": { "width": 128, "height": 128, "anchor": { "x": 64, "y": 116 } },
+  "directions": ["south", "southwest", "west", "northwest", "north", "northeast", "east", "southeast"],
+  "states": ["idle", "walk", "gesture", "sit", "speak"],
+  "layers": ["shadow", "body", "hair", "underwear", "clothing", "accessories"],
+  "characters": {
+    "a.byron": {
+      "body": { "type": "adult-masculine-tall", "skin": "light-warm", "build": "slender" },
+      "hair": { "style": "dark-wavy-long", "color": "near-black" },
+      "clothing": { "underwear": "white-shirt", "outer": "long-coat", "coat": "#202536", "waistcoat": "#7a5138", "accent": "#8b3340" },
+      "accessories": ["cravat", "boots"]
+    },
+    "a.maryshelley": {
+      "body": { "type": "adult-feminine-medium", "skin": "light-neutral", "build": "slender", "chest_profile": "natural" },
+      "hair": { "style": "dark-brown-bun", "color": "dark-brown" },
+      "clothing": { "underwear": "regency-chemise", "outer": "regency-dress", "dress": "#e9dfc8", "shawl": "#71805d", "accent": "#71805d" },
+      "accessories": ["shawl", "simple-slippers"]
+    },
+    "a.clairmont": {
+      "body": { "type": "adult-feminine-medium", "skin": "light-warm", "build": "slender", "chest_profile": "natural" },
+      "hair": { "style": "dark-brown-bun-ribbon", "color": "dark-brown" },
+      "clothing": { "underwear": "regency-chemise", "outer": "regency-dress", "dress": "#e9dfc8", "shawl": "#9b4936", "accent": "#9b4936" },
+      "accessories": ["shawl", "ribbon", "simple-slippers"]
+    },
+    "a.shelley": {
+      "body": { "type": "adult-masculine-tall", "skin": "light-neutral", "build": "slender" },
+      "hair": { "style": "dark-curly-medium", "color": "dark-brown" },
+      "clothing": { "underwear": "white-shirt", "outer": "long-coat", "coat": "#32425d", "waistcoat": "#d9c7a5", "accent": "#6d86a8" },
+      "accessories": ["cravat", "boots"]
+    },
+    "a.polidori": {
+      "body": { "type": "adult-masculine-medium", "skin": "olive-warm", "build": "average" },
+      "hair": { "style": "dark-curly-short", "color": "near-black" },
+      "clothing": { "underwear": "white-shirt", "outer": "doctor-coat", "coat": "#17191c", "waistcoat": "#674936", "accent": "#9c7652" },
+      "accessories": ["cravat", "watch-chain", "boots"]
+    }
+  }
+}

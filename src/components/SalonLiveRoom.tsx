@@ -38,22 +38,23 @@ interface SpeakerIdentity {
   name: string
   facultyHandle?: string
   bustUrl?: string
+  palette: { coat: number; waistcoat: number; accent: number }
 }
 
 const DIODATI_SPEAKERS: Record<string, SpeakerIdentity> = {
-  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png' },
-  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png' },
-  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png' },
-  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png' },
-  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png' },
-  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png' },
-  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png' },
-  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png' },
-  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png' },
-  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png' },
-  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png' },
-  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png' },
-  'salon.web': { name: 'A visitor' },
+  'a.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png', palette: { coat: 0x202536, waistcoat: 0x7a5138, accent: 0x8b3340 } },
+  'g.byron': { name: 'Lord Byron', facultyHandle: 'a.byron', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/byron/bust_frontal.png', palette: { coat: 0x202536, waistcoat: 0x7a5138, accent: 0x8b3340 } },
+  'a.maryshelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png', palette: { coat: 0xe9dfc8, waistcoat: 0xf7f0dd, accent: 0x71805d } },
+  'm.godwin': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png', palette: { coat: 0xe9dfc8, waistcoat: 0xf7f0dd, accent: 0x71805d } },
+  'm.shelley': { name: 'Mary Godwin', facultyHandle: 'a.maryshelley', bustUrl: 'https://inquiry-institute-assets.s3.amazonaws.com/busts/maryshelley/bust_frontal.png', palette: { coat: 0xe9dfc8, waistcoat: 0xf7f0dd, accent: 0x71805d } },
+  'a.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png', palette: { coat: 0xe9dfc8, waistcoat: 0xf7f0dd, accent: 0x9b4936 } },
+  'c.clairmont': { name: 'Claire Clairmont', facultyHandle: 'a.clairmont', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/clairmont/bust_frontal.png', palette: { coat: 0xe9dfc8, waistcoat: 0xf7f0dd, accent: 0x9b4936 } },
+  'a.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png', palette: { coat: 0x32425d, waistcoat: 0xd9c7a5, accent: 0x6d86a8 } },
+  'a.shelley1': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png', palette: { coat: 0x32425d, waistcoat: 0xd9c7a5, accent: 0x6d86a8 } },
+  'p.shelley': { name: 'Percy Bysshe Shelley', facultyHandle: 'a.shelley', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/shelley/bust_frontal.png', palette: { coat: 0x32425d, waistcoat: 0xd9c7a5, accent: 0x6d86a8 } },
+  'a.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png', palette: { coat: 0x17191c, waistcoat: 0x674936, accent: 0x9c7652 } },
+  'j.polidori': { name: 'John Polidori', facultyHandle: 'a.polidori', bustUrl: 'https://pilmscrodlitdrygabvo.supabase.co/storage/v1/object/public/busts/polidori/bust_frontal.png', palette: { coat: 0x17191c, waistcoat: 0x674936, accent: 0x9c7652 } },
+  'salon.web': { name: 'A visitor', palette: { coat: 0x84708b, waistcoat: 0x5a4350, accent: 0xc0aaba } },
 }
 
 function speakerIdentity(message: MatrixMessage): SpeakerIdentity {
@@ -210,6 +211,7 @@ interface SalonLiveRoomProps {
   salonTitle?: string
   salonSubtitle?: string
   initialView?: 'transcript' | 'room'
+  immersive?: boolean
 }
 
 export function SalonLiveRoom({
@@ -217,6 +219,7 @@ export function SalonLiveRoom({
   salonTitle = 'Salon room',
   salonSubtitle = 'This page mirrors a Matrix room: agents and guests chat here.',
   initialView = 'transcript',
+  immersive = false,
 }: SalonLiveRoomProps) {
   const params = useParams()
   const splat = params['*'] ?? ''
@@ -304,7 +307,10 @@ export function SalonLiveRoom({
 
   const roomCharacters = useMemo(() => Object.entries(DIODATI_SPEAKERS)
     .filter(([id], index, entries) => entries.findIndex(([candidate]) => DIODATI_SPEAKERS[candidate].name === DIODATI_SPEAKERS[id].name) === index && id !== 'salon.web')
-    .map(([id, speaker]) => ({ id, name: speaker.name, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position: roomState?.positions?.[id] })), [roomState])
+    .map(([id, speaker]) => {
+      const style = roomState?.avatars?.[id]
+      return { id, name: speaker.name, palette: { coat: style?.coat ?? speaker.palette.coat, waistcoat: style?.waistcoat ?? speaker.palette.waistcoat, accent: style?.accent ?? speaker.palette.accent }, bodyType: style?.body ?? (id === 'a.maryshelley' || id === 'a.clairmont' ? 'feminine' as const : 'masculine' as const), skin: style?.skin, hair: style?.hair, accessories: style?.accessories, active: roomState?.activeSpeaker === id || roomState?.activeSpeaker === speaker.name, position: roomState?.positions?.[id] }
+    }), [roomState])
 
   useEffect(() => {
     const transcript = transcriptRef.current
@@ -457,8 +463,8 @@ export function SalonLiveRoom({
   }, [])
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 pb-28">
-      <header className="mb-8">
+    <div className={immersive ? 'salon-immersive-room' : 'mx-auto max-w-3xl px-4 py-8 pb-28'}>
+      {!immersive && <header className="mb-8">
         <h1 className="mb-3 text-3xl font-light tracking-wide text-slate-900">{salonTitle}</h1>
         <p className="text-slate-600">
           {salonSubtitle}{' '}
@@ -469,7 +475,7 @@ export function SalonLiveRoom({
             </>
           )}
         </p>
-      </header>
+      </header>}
 
       {!roomRefRaw && (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-slate-700 shadow-sm">
@@ -489,7 +495,7 @@ export function SalonLiveRoom({
 
       {((resolvedRoomId && status !== 'error') || viewMode === 'room') && (
         <div className="flex h-[calc(100dvh-17rem)] min-h-[16rem] max-h-[660px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
-          <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
+          {!immersive && <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
             {salonWindow.open
               ? salonWindow.accessTier === 'registered-preview'
                 ? 'FREE SNEAK PREVIEW · REGISTRATION REQUIRED · 15 JUNE 1816'
@@ -499,14 +505,14 @@ export function SalonLiveRoom({
                   ? 'THE TEST SALON HAS CLOSED'
                   : 'THE OCTOBER 2026 SEASON HAS CLOSED'
                 : `${salonWindow.accessTier === 'registered-preview' ? 'NEXT FREE PREVIEW' : 'NEXT MEMBERS’ SALON'} · ${formatOpening(salonWindow.nextStart).toUpperCase()} MOUNTAIN TIME`}
-          </div>
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2">
+          </div>}
+          {!immersive && <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2">
             <span className="text-xs uppercase tracking-[0.18em] text-slate-500">The room remembers the positions</span>
             <div className="flex gap-1 rounded-md border border-slate-200 bg-white p-1" role="group" aria-label="Salon view">
               <button type="button" onClick={() => setViewMode('transcript')} className={`rounded px-2 py-1 text-xs ${viewMode === 'transcript' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>Transcript</button>
               <button type="button" onClick={() => setViewMode('room')} className={`rounded px-2 py-1 text-xs ${viewMode === 'room' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>Room</button>
             </div>
-          </div>
+          </div>}
           {viewMode === 'room' ? <SalonPhaserView characters={roomCharacters} furniture={roomState?.furniture} /> : null}
           <div
             ref={transcriptRef}
@@ -588,7 +594,7 @@ export function SalonLiveRoom({
         </div>
       )}
 
-      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-600/50 bg-[#0b1020]/95 px-3 py-3 shadow-[0_-14px_35px_rgba(0,0,0,0.35)] backdrop-blur-md">
+      {!immersive && <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-600/50 bg-[#0b1020]/95 px-3 py-3 shadow-[0_-14px_35px_rgba(0,0,0,0.35)] backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center gap-2">
           <label htmlFor="salon-entry" className="sr-only">Enter the salon</label>
           <textarea
@@ -636,7 +642,7 @@ export function SalonLiveRoom({
           )}
         </div>
         {sendError && <p className="mx-auto mt-1 max-w-3xl text-xs text-red-300">Your words did not reach the room. Try again.</p>}
-      </footer>
+      </footer>}
 
       {selectedDraft?.draft && (
         <div
