@@ -147,7 +147,7 @@ function buildRoom() {
   box("antique writing desk apron", [1.1, .32, .08], [writingDeskX, .82, writingDeskZ + .48], 0x553126);
   for (const x of [writingDeskX - .5, writingDeskX + .5]) for (const z of [writingDeskZ - .42, writingDeskZ + .42]) box("antique writing desk leg", [.1, .82, .1], [x, .43, z], 0x4b2d24);
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
-  for (const x of [-3.8, 3.8]) {
+  for (const x of [-2.35, 2.35]) {
     const framePieces = [
       box("art frame top", [1.18, .08, .1], [x, 3.24, -3.68], 0xa47a50),
       box("art frame bottom", [1.18, .08, .1], [x, 1.86, -3.68], 0xa47a50),
