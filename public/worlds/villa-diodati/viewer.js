@@ -264,6 +264,7 @@ function invokeFigureGesture(name = "idle", target = "all") {
 function animateFigureGesture(figure) {
   const gesture = figure.userData.gesture || { name: "idle", started: 0 };
   const t = animationClock.elapsedTime - gesture.started;
+  const phase = figure.userData.gesturePhase ?? (figure.userData.gesturePhase = Math.random() * Math.PI * 2);
   const bones = new Map();
   figure.traverse((object) => { if (object.isBone) bones.set(object.name, object); });
   const add = (name, x = 0, y = 0, z = 0) => {
@@ -276,7 +277,16 @@ function animateFigureGesture(figure) {
   const breath = Math.sin(animationClock.elapsedTime * 1.35) * 0.012;
   add("spine_02", breath, 0, 0);
   add("head", -breath * 0.5, Math.sin(animationClock.elapsedTime * 0.45) * 0.025, 0);
-  if (gesture.name === "look" || gesture.name === "look-at-speaker") {
+  if (gesture.name === "idle") {
+    // Each figure has a slightly different attention rhythm so the circle
+    // does not move in lockstep: small glances, posture shifts, and a rare
+    // conversational nod layered over the authored pose.
+    add("head", Math.sin(t * 0.7 + phase) * 0.018, Math.sin(t * 0.38 + phase) * 0.075, 0);
+    add("spine_01", Math.sin(t * 0.52 + phase) * 0.006, 0, 0);
+    add("upperarm.l", 0, 0, Math.sin(t * 0.8 + phase) * 0.018);
+    add("upperarm.r", 0, 0, Math.sin(t * 0.63 + phase + 1) * 0.018);
+    add("head", Math.max(0, Math.sin(t * 0.21 + phase)) ** 8 * 0.07, 0, 0);
+  } else if (gesture.name === "look" || gesture.name === "look-at-speaker") {
     add("head", 0, Math.sin(t * 1.4) * 0.12, 0);
     add("spine_02", 0, Math.sin(t * 1.4) * 0.025, 0);
   } else if (gesture.name === "nod") {
