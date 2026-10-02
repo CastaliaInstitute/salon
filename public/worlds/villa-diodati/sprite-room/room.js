@@ -174,16 +174,23 @@ function buildRoom() {
   const planRoom = (name, x, z, width, depth, color = 0x80634d) => {
     box(`${name} floor`, [width, .1, depth], [x, -.08, z], color);
     const wall = 0.16;
-    box(`${name} north wall`, [width, .72, wall], [x, .28, z - depth / 2], 0x5b4035);
-    box(`${name} south wall`, [width, .72, wall], [x, .28, z + depth / 2], 0x5b4035);
-    box(`${name} west wall`, [wall, .72, depth], [x - width / 2, .28, z], 0x5b4035);
-    box(`${name} east wall`, [wall, .72, depth], [x + width / 2, .28, z], 0x5b4035);
+    box(`${name} north wall`, [width, .28, wall], [x, .28, z - depth / 2], 0x5b4035);
+    box(`${name} south wall`, [width, .28, wall], [x, .28, z + depth / 2], 0x5b4035);
+    box(`${name} west wall`, [wall, .28, depth], [x - width / 2, .28, z], 0x5b4035);
+    box(`${name} east wall`, [wall, .28, depth], [x + width / 2, .28, z], 0x5b4035);
   };
   planRoom("drawing room and music room", -12.1, -.9, 7.8, 5.8, 0x80634d);
   planRoom("library and morning room", -12.1, 3.4, 7.8, 2.6, 0x80634d);
   planRoom("dining room", 12.1, -.9, 7.8, 5.8, 0x80634d);
   planRoom("cabinet and guest room", 12.1, 3.4, 7.8, 2.6, 0x80634d);
   planRoom("rear service hall", 0, -6.2, 15.8, 3.8, 0x705640);
+  // Room-specific anchors make the inferred plan legible and give the characters places to visit.
+  box("drawing room piano", [2.3, .9, .75], [-13.7, .42, -1.25], 0x3c2420);
+  for (const x of [-11.8, -10.5]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "drawing room armchair", [x, 0, .35], .8, Math.PI);
+  box("dining room table", [3.3, .18, 1.35], [12.0, .86, -.8], 0x5b3828);
+  for (const x of [10.7, 13.3]) for (const z of [-1.8, .2]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "dining room chair", [x, 0, z], .72, x < 12 ? Math.PI / 2 : -Math.PI / 2);
+  for (let shelf = 0; shelf < 3; shelf++) box("library bookcase", [2.8, 1.8, .25], [-14.9 + shelf * 1.35, .9, 3.95], 0x4b3025);
+  box("cabinet writing desk", [1.6, .75, .7], [11.6, .42, 3.3], 0x5b3828);
   // Central stair hall is represented as a broad landing connecting the principal rooms.
   box("central stair landing", [3.2, .12, 3.2], [0, -.02, -5.0], 0x9a7956);
   for (let step = 0; step < 5; step++) box("central stair", [2.5 - step * .12, .12, .38], [0, .08 + step * .1, -6.9 + step * .38], 0xb79b72);
