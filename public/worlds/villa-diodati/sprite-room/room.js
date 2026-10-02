@@ -278,7 +278,9 @@ function buildRoom() {
   planRoom("library and morning room", -12.1, 3.4, 7.8, 2.6, 0x80634d);
   planRoom("dining room", 12.1, -.9, 7.8, 5.8, 0x80634d);
   planRoom("cabinet and guest room", 12.1, 3.4, 7.8, 2.6, 0x80634d);
-  planRoom("rear service hall", 0, -6.2, 15.8, 3.8, 0x705640);
+  planRoom("Byron study", -4.8, -6.2, 4.2, 3.8, 0x705640);
+  planRoom("central stair hall", 0, -6.2, 4.2, 3.8, 0x80634d);
+  planRoom("ante room", 4.8, -6.2, 4.2, 3.8, 0x705640);
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
   box("west room connector", [1.4, .1, 2.4], [-8.0, -.02, .1], 0xa28662);
   box("east room connector", [1.4, .1, 2.4], [8.0, -.02, .1], 0xa28662);
