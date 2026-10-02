@@ -261,7 +261,6 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   addVerticalDoorWall("Byron study east", 2.1, 4.2, 4.2, 1.82);
   const doorColor = 0x4a3027;
   layerBox(layer, `${levelName} foyer front door`, [1.35, 2.45, .08], [0, baseY + 1.22, -6.28], doorColor);
-  for (const x of [-.45, .45]) layerBox(layer, `${levelName} room 5 to room 8 door`, [.82, 2.4, .08], [x, baseY + 1.25, 2.1], doorColor);
   layerBox(layer, `${levelName} room 4 to room 7 door`, [1.35, 2.45, .08], [-4.2, baseY + 1.22, 2.1], doorColor);
   for (const z of [3.72, 4.68]) layerBox(layer, `${levelName} room 8 to room 9 door`, [.08, 2.4, .86], [2.1, baseY + 1.25, z], doorColor);
   layerBox(layer, `${levelName} room 8 south veranda door`, [1.35, 2.45, .08], [0, baseY + 1.22, 6.28], doorColor);
@@ -460,13 +459,6 @@ function buildRoom() {
     const eastStep = new THREE.Mesh(new THREE.BoxGeometry(1.0, .14, .36), mat(0x6f4934));
     eastStep.position.set(.75, .13 + (7 - index) * .14, z); eastStep.name = "stairs down east flight south north"; room.add(eastStep);
   }
-  const stairToRoomEightDoors = new THREE.Group(); stairToRoomEightDoors.name = "room 5 to room 8 double doors";
-  for (const x of [-.45, .45]) {
-    const panel = box("room 5 to room 8 door panel", [.82, 2.4, .08], [x, 1.25, 2.10], 0x4a3027);
-    panel.userData.openableDoor = true; stairToRoomEightDoors.add(panel);
-    stairToRoomEightDoors.add(box("room 5 to room 8 door handle", [.08, .08, .1], [x + (x < 0 ? .22 : -.22), 1.25, 2.16], 0xd6b16d));
-  }
-  room.add(stairToRoomEightDoors);
   planRoom("dining room", 4.2, 0, 4.2, 4.2, 0x705640);
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
