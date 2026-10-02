@@ -47,8 +47,10 @@ const HOUSE_WORLD_SCALE = 3.0;
 const SALON_ORIGIN = { x: -2.1, z: -2.1 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
-const SALON_CONTENT_SCALE = { x: .70, z: .70 };
-const SALON_CONTENT_ROTATION = Math.PI / 2;
+const SALON_CONTENT_SCALE = { x: .50, z: .50 };
+// The salon geometry is already authored with its fireplace on local south;
+// rotating the whole group moves it out of the southwest 2x2 bay block.
+const SALON_CONTENT_ROTATION = 0;
 let roomRegions = [];
 let navigationRooms = [];
 let walkRoute = [];
