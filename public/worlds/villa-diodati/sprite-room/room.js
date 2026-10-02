@@ -136,6 +136,7 @@ function updatePlanRoomVisibility(roomId) {
   const activeName = roomId === "salon" ? null : (planShellByRoom[roomId] || null);
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
+    if (node.userData.structuralOpening) { node.visible = false; return; }
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
     if (match) node.visible = Boolean(activeName && match === activeName);
   });
@@ -146,6 +147,7 @@ function applyTopDownRoomVisibility() {
   salonRoot.visible = !topDown && topDownRoomVisibility.get("salon") !== false;
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
+    if (node.userData.structuralOpening) { node.visible = false; return; }
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
     if (match) node.visible = match === "grand salon"
       ? topDownRoomVisibility.get("salon") !== false && topDownRoomVisibility.get(match) !== false
@@ -408,14 +410,37 @@ function buildRoom() {
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
-  planRoom("drawing room", 0, 4.2, 4.0, 4.0, 0x705640);
+  planRoom("foyer", 0, 4.2, 4.0, 4.0, 0x705640);
   planRoom("cabinet guest room", 4.2, 4.2, 4.0, 4.0, 0x705640);
   planRoom("central stair hall", 0, 0, 4.0, 4.0, 0x80634d);
   planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
-  planRoom("grand salon", -4.2, 0, 4.0, 4.0, 0x80634d);
+  // Room 4 is intentionally a neutral shell cell for now; salon content is
+  // excluded from this baseline grid until the room layout is settled.
+  planRoom("room four", -4.2, 0, 4.0, 4.0, 0x80634d);
   planRoom("ante room", -4.2, -4.2, 4.0, 4.0, 0x705640);
   planRoom("Byron study", 0, -4.2, 4.0, 4.0, 0x705640);
   planRoom("guest chamber", 4.2, -4.2, 4.0, 4.0, 0x705640);
+  // Rooms 7 and 8 are opened into one salon. Remove both wall segments at
+  // their shared boundary and replace the 8/9 boundary with double doors.
+  room.traverse((node) => {
+    if (!node.isMesh || !node.name) return;
+    if (/^(ante room east wall|Byron study west wall|Byron study east wall|guest chamber west wall)$/.test(node.name)) {
+      node.userData.structuralOpening = true;
+      node.visible = false;
+    }
+  });
+  const morningDoors = new THREE.Group(); morningDoors.name = "room 9 morning room double doors";
+  for (const z of [-4.68, -3.72]) {
+    const panel = box("morning room double door panel", [.08, 2.4, .86], [2.18, 1.25, z], 0x4a3027);
+    panel.userData.openableDoor = true; morningDoors.add(panel);
+    const handle = box("morning room double door handle", [.11, .08, .08], [2.10, 1.25, z + (z < -4 ? .28 : -.28)], 0xd6b16d);
+    morningDoors.add(handle);
+  }
+  room.add(morningDoors);
+  // Room 2 is the foyer: put the principal front door in its north wall.
+  const foyerDoor = box("foyer front door", [1.35, 2.55, .08], [0, 1.28, 6.18], 0x402a24);
+  const foyerDoorTop = box("foyer front door lintel", [1.55, .12, .12], [0, 2.72, 6.16], 0xb3875c);
+  room.userData.occludingDecor.push(foyerDoor, foyerDoorTop);
   // Basic shell test: exactly three evenly spaced windows on each exterior
   // elevation of the nine-room grid.
   activeBuildGroup = room;
