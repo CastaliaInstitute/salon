@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/validate-season.mjs && node scripts/sw-version.mjs && node scripts/cache-bust-world.mjs && node scripts/stamp-deploy-version.mjs && node scripts/copy-404.mjs",
+    "build": "astro build && node scripts/validate-season.mjs && node scripts/validate-villa-map.mjs && node scripts/sw-version.mjs && node scripts/cache-bust-world.mjs && node scripts/stamp-deploy-version.mjs && node scripts/copy-404.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
