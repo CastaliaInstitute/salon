@@ -22,7 +22,7 @@ let cinematic = false;
 let topDown = new URLSearchParams(location.search).get("map") === "topdown";
 const controls = new OrbitControls(activeCamera, canvas);
 controls.enablePan = true; controls.enableDamping = true; controls.dampingFactor = .08;
-controls.minZoom = .72; controls.maxZoom = 1.35; controls.minDistance = 5; controls.maxDistance = 16;
+controls.minZoom = .72; controls.maxZoom = 2.15; controls.minDistance = 3.2; controls.maxDistance = 16;
 controls.target.set(0, 0.8, 0);
 
 const map = { minX: -6, maxX: 6, minZ: -4, maxZ: 5 };
