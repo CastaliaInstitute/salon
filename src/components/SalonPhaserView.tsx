@@ -110,7 +110,7 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
             const projected = this.project(world.x, world.z)
             const style = DRESSUP_STYLES[index % DRESSUP_STYLES.length]
             const state = character.position?.animation_state ?? 'idle'
-            const row = state === 'walk' ? 1 : state === 'gesture' ? 2 : state === 'sit' ? 3 : state === 'speak' ? 4 : 0
+            const row = character.position?.held && state !== 'sit' ? 2 : state === 'walk' ? 1 : state === 'gesture' ? 2 : state === 'sit' ? 3 : state === 'speak' ? 4 : 0
             const column = DIRECTION_COLUMNS[character.position?.direction ?? 'south'] ?? 0
             const sprite = this.add.sprite(projected.x, projected.y, `dressup-${style}`, row * 8 + column).setOrigin(.5, 1)
             const heightValue = Number(character.position?.height ?? 1)
