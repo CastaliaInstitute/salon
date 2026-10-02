@@ -48,7 +48,8 @@ const HOUSE_WORLD_SCALE = 3.0;
 // The four rendered levels share one architectural datum.  Keep this in one
 // place so camera focus, pointer picking, avatars, and duplicate floor shells
 // cannot drift apart vertically.
-const FLOOR_BASE_Y = [-3.64, 0, 3.96, 7.76];
+const CEILING_HEIGHT = 4.8768; // 16 feet
+const FLOOR_BASE_Y = [-CEILING_HEIGHT, 0, CEILING_HEIGHT, CEILING_HEIGHT * 2];
 // Villa plan datum: three 4.2 m bays in each direction.  The architectural
 // shell is kept independent of the salon set so the same grid can be rendered
 // on ground, principal, second, and attic levels.
@@ -234,7 +235,7 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   layer.clear();
   const floorColor = levelName === "ground" ? 0x6f5846 : levelName === "attic" ? 0x89745f : 0x80634d;
   const wallColor = 0x91adbc;
-  const wallHeight = 3.048;
+  const wallHeight = CEILING_HEIGHT;
   const rooms = [
     ["library study", -4.2, -4.2, []], ["foyer", 0, -4.2, ["south"]], ["cabinet guest room", 4.2, -4.2, []],
     ["room four", -4.2, 0, ["south"]], ["central stair hall", 0, 0, ["north", "south"]], ["dining room", 4.2, 0, []],
@@ -289,10 +290,10 @@ function buildPlanFloorShell(layer, baseY, levelName) {
     if (uniqueWalls.has(key)) { node.userData.structuralOpening = true; node.visible = false; } else uniqueWalls.add(key);
   });
 }
-function buildLowerFloor() { buildPlanFloorShell(lowerFloor, -3.64, "ground"); }
+function buildLowerFloor() { buildPlanFloorShell(lowerFloor, FLOOR_BASE_Y[0], "ground"); }
 function buildUpperFloors() {
-  buildPlanFloorShell(upperFloors[0], 3.96, "second");
-  buildPlanFloorShell(upperFloors[1], 7.76, "attic");
+  buildPlanFloorShell(upperFloors[0], FLOOR_BASE_Y[2], "second");
+  buildPlanFloorShell(upperFloors[1], FLOOR_BASE_Y[3], "attic");
 }
 function setFloorLevel(level) { floorLevel = Math.max(0, Math.min(3, Number(level))); floorPlane.constant = -FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE; room.visible = floorLevel === 1; lowerFloor.visible = floorLevel === 0; upperFloors.forEach((layer, index) => { layer.visible = floorLevel === index + 2; }); for (const figure of figures.values()) { const person = figure.userData.person; if (person) figure.visible = Number(person.floor ?? 1) === floorLevel && (!pov || person.id === localPlayer.id); } if (floorButton) floorButton.textContent = floorLevel === 0 ? "Ground floor" : floorLevel === 1 ? "Principal floor" : floorLevel === 2 ? "Second floor" : "Attic"; if (topDown && topDownRoomControls) applyTopDownRoomVisibility(); }
 function buildExterior() { const exteriorMat = mat(0xd8e4e3); const trimMat = mat(0xf4f0e6); const roofMat = mat(0x594b46); const glassMat = new THREE.MeshStandardMaterial({ color: 0x7ea7b5, transparent: true, opacity: .62, roughness: .18 }); const add = (geometry, material, position, name) => { const mesh = new THREE.Mesh(geometry, material); mesh.position.set(...position); mesh.name = name; mesh.castShadow = true; mesh.receiveShadow = true; exteriorLayer.add(mesh); return mesh; }; add(new THREE.BoxGeometry(14.8, 4.0, .42), exteriorMat, [0, 2.05, 4.72], "villa exterior facade"); add(new THREE.BoxGeometry(16.2, .3, 3.3), roofMat, [0, 4.25, 4.72], "villa exterior roof"); add(new THREE.BoxGeometry(15.6, .18, .5), trimMat, [0, 4.05, 4.45], "villa exterior cornice"); for (const x of [-6.2, -3.8, 3.8, 6.2]) { add(new THREE.BoxGeometry(1.75, 2.35, .06), glassMat, [x, 2.35, 4.46], "villa exterior window"); add(new THREE.BoxGeometry(.08, 2.48, .12), trimMat, [x - .87, 2.35, 4.4], "villa exterior window trim"); add(new THREE.BoxGeometry(.08, 2.48, .12), trimMat, [x + .87, 2.35, 4.4], "villa exterior window trim"); add(new THREE.BoxGeometry(1.9, .1, .16), trimMat, [x, 1.14, 4.38], "villa exterior window sill"); } add(new THREE.BoxGeometry(2.4, 2.85, .12), mat(0x5a3b2f), [0, 1.46, 4.4], "villa exterior entrance door"); for (const x of [-5.8, -4.35, -2.9, 2.9, 4.35, 5.8]) add(new THREE.CylinderGeometry(.16, .2, 2.7, 12), trimMat, [x, 1.35, 5.45], "villa veranda column"); add(new THREE.BoxGeometry(15.8, .18, 2.7), trimMat, [0, 2.72, 5.45], "villa veranda entablature"); }
@@ -328,10 +329,10 @@ function addThreeSidedPrincipalBalcony() {
 function refineNorthElevationComposition() { exteriorLayer.traverse((node) => { if (!node.isMesh || !node.name) return; const atticRow = node.position.y > 4.8 && /front facade (window|shutter|sill)|square villa front (window|sill)/.test(node.name); if (atticRow) node.visible = false; }); const stone = mat(0xb9a997); const arch = new THREE.Mesh(new THREE.TorusGeometry(1.02, .08, 8, 24, Math.PI), stone); arch.position.set(0, 4.2, 4.96); arch.rotation.z = Math.PI; arch.name = "north upper arched window surround"; exteriorLayer.add(arch); }
 buildExterior(); buildVillaSilhouette(); buildSquareVillaExterior(); openSouthWallForVeranda(); const squareRoof = exteriorLayer.children.find((node) => node.name === "square villa hipped roof"); if (squareRoof) squareRoof.scale.z = .46; addSquareChimney(); addFrontEntranceDetails(); addWestElevationDetails(); addRoofDormers(); addSouthLakeVeranda(); spanSouthVerandaAcrossFacade(); addFullSideBalconies(); addThreeSidedPrincipalBalcony(); addFrontFacadeOverlay(); addVillaSideShutters(); tuneVillaExteriorPalette(); applyVillaPlasterTexture(); addVillaCornerMasonry(); refineNorthElevationComposition();
 function buildRoom() {
-  // Scene units are metres: a ten-foot salon wall is 3.048m high. Keeping
+  // Scene units are metres: a sixteen-foot salon wall is 4.8768m high. Keeping
   // this explicit prevents the architectural shell from growing out of scale
   // with the 1.7m dress-up avatars as the house plan expands.
-  const SALON_WALL_HEIGHT = 3.048;
+  const SALON_WALL_HEIGHT = CEILING_HEIGHT;
   const SALON_WALL_CENTER = SALON_WALL_HEIGHT / 2;
   activeBuildGroup = salonRoot;
   const floor = box("oak parquet floor", [16, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
@@ -379,8 +380,11 @@ function buildRoom() {
   // exposed ground/basement level up to the underside of the veranda slab.
   // Keeping their center below y=0 prevents them from reading as salon
   // interior columns in the map or isometric view.
+  // The principal floor is sixteen feet above the exposed ground level.  Run
+  // the veranda columns through that full interval so the taller shell does
+  // not leave a visible gap below the balcony.
   for (const x of [-5.6, -3.7, -1.8, 1.8, 3.7, 5.6]) {
-    const column = new THREE.Mesh(new THREE.CylinderGeometry(.18, .22, 3.35, 12), mat(0xe6dfd2)); column.position.set(x, -1.72, 5.55); column.castShadow = true; room.add(column); room.userData.occludingDecor.push(column);
+    const column = new THREE.Mesh(new THREE.CylinderGeometry(.18, .22, CEILING_HEIGHT, 12), mat(0xe6dfd2)); column.position.set(x, -CEILING_HEIGHT / 2, 5.55); column.castShadow = true; room.add(column); room.userData.occludingDecor.push(column);
   }
   box("garden lawn", [15.8, .08, 9.8], [0, -.16, 13.4], 0x52694d);
   const path = box("main garden path", [1.15, .1, 14.5], [0, -.08, 13.8], 0xc0a477, 0);
@@ -435,7 +439,7 @@ function buildRoom() {
   const planRoom = (name, x, z, width, depth, color = 0x80634d, continuous = false, openSides = []) => {
     box(`${name} floor`, [width, .1, depth], [x, -.08, z], color);
     const wall = 0.16;
-    const wallHeight = 3.048;
+    const wallHeight = CEILING_HEIGHT;
     const wallCenter = wallHeight / 2;
     const horizontal = (centerX, centerZ, side) => box(`${name} ${side} wall`, [width, wallHeight, wall], [centerX, wallCenter, centerZ], 0x91adbc);
     const vertical = (centerX, centerZ, side) => box(`${name} ${side} wall`, [wall, wallHeight, depth], [centerX, wallCenter, centerZ], 0x91adbc);
@@ -472,7 +476,7 @@ function buildRoom() {
   // 4–7 and 8–9 are closed boundaries with a real doorway, not open-plan
   // passages.  Add one shared wall around each doorway so the adjoining rooms
   // do not produce doubled walls while the door panels remain visible.
-  const doorWallHeight = 3.048;
+  const doorWallHeight = CEILING_HEIGHT;
   const addHorizontalDoorWall = (name, centerX, centerZ, length, opening) => {
     const segment = (length - opening) / 2;
     const offset = (opening + segment) / 2;
@@ -755,7 +759,7 @@ mapButton.addEventListener("click", () => setViewMode(topDown ? "isometric" : "t
 povButton.addEventListener("click", () => setViewMode(pov ? "isometric" : "pov"));
 floorButton?.addEventListener("click", () => { const nextFloor = floorLevel >= 3 ? 0 : floorLevel + 1; if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = stair.x; localPlayer.z = stair.z + 1.0; walkTarget = null; } setFloorLevel(nextFloor); focusHouseLocation(stair.x, stair.z + 1.0, nextFloor); });
 controls.addEventListener("change", handleCameraChange);
-function resize() { const rect = canvas.getBoundingClientRect(); const w = Math.max(1, rect.width), h = Math.max(1, rect.height); renderer.setSize(w, h, false); isoCamera.left = -8 * w / h; isoCamera.right = 8 * w / h; isoCamera.top = 5; isoCamera.bottom = -5; isoCamera.updateProjectionMatrix(); mapCamera.left = -32; mapCamera.right = 32; mapCamera.top = 32 / Math.max(w / h, .35); mapCamera.bottom = -32 / Math.max(w / h, .35); mapCamera.updateProjectionMatrix(); cinematicCamera.aspect = w / h; cinematicCamera.updateProjectionMatrix(); povCamera.aspect = w / h; povCamera.updateProjectionMatrix(); }
+function resize() { const rect = canvas.getBoundingClientRect(); const w = Math.max(1, rect.width), h = Math.max(1, rect.height); const aspect = w / h; renderer.setSize(w, h, false); const isoHalfWidth = 32; isoCamera.left = -isoHalfWidth; isoCamera.right = isoHalfWidth; isoCamera.top = isoHalfWidth / Math.max(aspect, .4); isoCamera.bottom = -isoCamera.top; isoCamera.updateProjectionMatrix(); mapCamera.left = -32; mapCamera.right = 32; mapCamera.top = 32 / Math.max(aspect, .35); mapCamera.bottom = -32 / Math.max(aspect, .35); mapCamera.updateProjectionMatrix(); cinematicCamera.aspect = aspect; cinematicCamera.updateProjectionMatrix(); povCamera.aspect = aspect; povCamera.updateProjectionMatrix(); }
 function refreshConversations(now) { const active = [...figures.values()].map((figure) => figure.userData.person).filter((person) => person && person.id !== localPlayer.id); for (const person of active) { if (person.talkingTo) continue; const candidates = active.filter((other) => other.id !== person.id && Math.hypot(other.x - person.x, other.z - person.z) <= (person.speechRange || speechRange)); const target = candidates.sort((a, b) => Math.hypot(a.x - person.x, a.z - person.z) - Math.hypot(b.x - person.x, b.z - person.z))[0]; if (!target) continue; const exchange = Math.floor(now / 11 + (figures.get(person.id)?.userData.phase || 0)) % 5; if (exchange < 3) { person.talkingTo = target.id; person.conversationId = person.conversationId || `local-${Math.floor(now / 11)}`; if (exchange === 0 || exchange === 1) { person.state = "speak"; person.direction = directionFromDelta(target.x - person.x, target.z - person.z, person.direction); } } else { person.talkingTo = null; person.conversationId = null; } } }
 function updateCinematicShot(now) { if (!cinematic) return; const cue = cinematicCue; const elapsed = cue ? now - cue.started : 0; if (cue && elapsed > cue.duration + cue.hold) { cinematicCue = null; setViewMode("isometric"); return; } const targetId = cue?.target || cinematicSpeakerId; const targetFigure = targetId ? figures.get(targetId) : null; const target = targetFigure ? targetFigure.position : new THREE.Vector3(0, .8, 0); const shot = cue?.shot || "wide"; const distance = shot === "close" ? 3.2 : shot === "medium" ? 5.2 : 8.8; const side = shot === "pan" ? Math.sin((cue ? elapsed : now) * .35) * 2.2 : 0; const desired = new THREE.Vector3(target.x + side, target.y + (shot === "close" ? .35 : 1.8), target.z + distance); cinematicCamera.position.lerp(desired, .045); cinematicCamera.lookAt(target.x, target.y + (shot === "close" ? .25 : .55), target.z); cinematicCamera.fov = shot === "close" ? 28 : shot === "medium" ? 34 : 40; cinematicCamera.updateProjectionMatrix(); }
 function updateLocalPlayer(now) { if (!localPlayerEnabled) return; const keyHorizontal = (pressedKeys.has("d") || pressedKeys.has("arrowright") ? 1 : 0) - (pressedKeys.has("a") || pressedKeys.has("arrowleft") ? 1 : 0); const keyVertical = (pressedKeys.has("s") || pressedKeys.has("arrowdown") ? 1 : 0) - (pressedKeys.has("w") || pressedKeys.has("arrowup") ? 1 : 0); const targetDx = walkTarget ? walkTarget.x - localPlayer.x : 0; const targetDz = walkTarget ? walkTarget.z - localPlayer.z : 0; const targetDistance = Math.hypot(targetDx, targetDz); if (walkTarget && targetDistance < .07) walkTarget = null; const horizontal = keyHorizontal || (walkTarget ? targetDx / Math.max(targetDistance, .001) : 0); const vertical = keyVertical || (walkTarget ? targetDz / Math.max(targetDistance, .001) : 0); const moving = horizontal !== 0 || vertical !== 0; if (moving) { const length = Math.hypot(horizontal, vertical) || 1; const nextX = localPlayer.x + (horizontal / length) * .045; const nextZ = localPlayer.z + (vertical / length) * .045; const safe = safePosition(nextX, nextZ, .22); localPlayer.x = safe.x; localPlayer.z = safe.z; localPlayer.direction = directionFromDelta(horizontal, vertical, localPlayer.direction); localPlayer.state = "walk"; if (Math.hypot(localPlayer.x - stair.x, localPlayer.z - stair.z) < .72) changeFloor(now); } else localPlayer.state = Math.floor(now / 5) % 4 === 0 ? "gesture" : "idle"; const localFigure = figures.get(localPlayer.id); if (localFigure?.userData.person) Object.assign(localFigure.userData.person, localPlayer); const nearby = [...figures.values()].map((figure) => figure.userData.person).filter((person) => person && person.id !== localPlayer.id && Math.hypot(person.x - localPlayer.x, person.z - localPlayer.z) <= localHearingRange); const source = roomState ? `Matrix salon · ${figures.size} participants` : demoCrowd ? `Salon preview · ${peopleCountForStatus()} participants` : "Matrix state unavailable"; status.textContent = `${source}${nearby.length ? ` · hearing ${nearby.length}` : ""}`; }
