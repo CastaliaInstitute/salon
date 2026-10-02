@@ -9,3 +9,14 @@ import SalonLiveApp from '../../../components/SalonLiveApp.tsx';
 >
   <SalonLiveApp client:only="react" />
 </BaseLayout>
+
+<script>
+  document.body.classList.add('immersive-salon');
+</script>
+
+<style is:global>
+  body.immersive-salon > nav,
+  body.immersive-salon .site-footer {
+    display: none;
+  }
+</style>

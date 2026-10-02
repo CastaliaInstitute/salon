@@ -37,6 +37,7 @@ export default function SalonLiveApp() {
             <SalonLiveRoom
               roomRef="#villa-diodati:matrix.castalia.institute"
               initialView="room"
+              immersive
               salonTitle="Villa Diodati · 2.5D"
               salonSubtitle="A Matrix-backed isometric view of the Villa Diodati salon."
             />
