@@ -184,7 +184,7 @@ function faceMaterial(file) {
 }
 function heldProp(kind) {
   if (!kind) return null;
-  const group = new THREE.Group(); group.position.set(.42, -.08, .06); group.renderOrder = 8;
+  const group = new THREE.Group(); group.position.set(.31, .2, .06); group.renderOrder = 8;
   if (kind === "book") { const book = new THREE.Mesh(new THREE.BoxGeometry(.3, .06, .22), new THREE.MeshStandardMaterial({ color: 0x6c3440, roughness: .6 })); book.rotation.z = -.18; group.add(book); }
   if (kind === "quill") { const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.012, .018, .25, 8), new THREE.MeshStandardMaterial({ color: 0x8b5a36, roughness: .65 })); shaft.rotation.z = -.45; group.add(shaft); const nib = new THREE.Mesh(new THREE.ConeGeometry(.025, .07, 5), new THREE.MeshStandardMaterial({ color: 0xd2b56d, metalness: .5, roughness: .35 })); nib.position.set(.09, -.1, 0); nib.rotation.z = -.45; group.add(nib); }
   if (kind === "cup") { const cup = new THREE.Mesh(new THREE.CylinderGeometry(.065, .055, .13, 12), new THREE.MeshStandardMaterial({ color: 0xd7c39b, roughness: .35 })); cup.rotation.z = -.18; group.add(cup); }
