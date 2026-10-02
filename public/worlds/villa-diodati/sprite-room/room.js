@@ -125,7 +125,7 @@ function box(name, size, position, color, rotation = 0) {
   mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; room.add(mesh); return mesh;
 }
 function windowViewTexture() { const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512; const ctx = canvas.getContext("2d"); const sky = ctx.createLinearGradient(0, 0, 0, 512); sky.addColorStop(0, "#0b1830"); sky.addColorStop(.58, "#243d58"); sky.addColorStop(1, "#151b24"); ctx.fillStyle = sky; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = "rgba(232,241,255,.9)"; ctx.beginPath(); ctx.arc(390, 92, 42, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "rgba(11,24,48,.9)"; ctx.beginPath(); ctx.arc(407, 80, 39, 0, Math.PI * 2); ctx.fill(); for (let i = 0; i < 45; i++) { const x = (i * 83) % 512; const y = 24 + ((i * 47) % 250); ctx.fillStyle = `rgba(220,235,255,${.35 + (i % 4) * .12})`; ctx.fillRect(x, y, 2, 2); } ctx.fillStyle = "#101923"; ctx.beginPath(); ctx.moveTo(0, 390); ctx.lineTo(100, 320); ctx.lineTo(175, 370); ctx.lineTo(280, 290); ctx.lineTo(390, 370); ctx.lineTo(512, 300); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.fill(); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture; }
-function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); room.add(model); }); }
+function loadFurnitureModel(path, name, position, fit, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); const sourceBounds = new THREE.Box3().setFromObject(model); const sourceSize = sourceBounds.getSize(new THREE.Vector3()); const dimension = fit.height ? sourceSize.y : sourceSize.x; model.scale.setScalar((fit.height || fit.width) / Math.max(.001, dimension)); const groundedBounds = new THREE.Box3().setFromObject(model); model.position.y -= groundedBounds.min.y; room.add(model); }); }
 function addStairFlight(layer, baseY, name) {
   const stairMat = mat(0x806445);
   for (let step = 0; step < 6; step++) {
@@ -317,9 +317,9 @@ function buildRoom() {
   box("veranda front rail", [5.4, .65, .12], [0, .35, 6.85], 0xf2eee5);
   // Room-specific anchors make the inferred plan legible and give the characters places to visit.
   box("drawing room piano", [2.3, .9, .75], [-13.7, .42, -1.25], 0x3c2420);
-  for (const x of [-11.8, -10.5]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "drawing room armchair", [x, 0, .35], .8, Math.PI);
+  for (const x of [-11.8, -10.5]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "drawing room armchair", [x, 0, .35], { height: 1.05 }, Math.PI);
   box("dining room table", [3.3, .18, 1.35], [12.0, .86, -.8], 0x5b3828);
-  for (const x of [10.7, 13.3]) for (const z of [-1.8, .2]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "dining room chair", [x, 0, z], .72, x < 12 ? Math.PI / 2 : -Math.PI / 2);
+  for (const x of [10.7, 13.3]) for (const z of [-1.8, .2]) loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "dining room chair", [x, 0, z], { height: .95 }, x < 12 ? Math.PI / 2 : -Math.PI / 2);
   for (let shelf = 0; shelf < 3; shelf++) box("library bookcase", [2.8, 1.8, .25], [-14.9 + shelf * 1.35, .9, 3.95], 0x4b3025);
   box("cabinet writing desk", [1.6, .75, .7], [11.6, .42, 3.3], 0x5b3828);
   box("Byron study fireplace surround", [1.25, 1.05, .28], [-5.275, .5, -7.98], 0x80665b);
@@ -380,12 +380,12 @@ function buildRoom() {
   fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
-  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.15], 2.05, 0);
-  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.0, 0, .65], 1.08, 0);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.55, 0, .35], 1.02, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [2.55, 0, 1.85], 1.02, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.75, 0, 2.35], 1.02, Math.PI / 2);
-  loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.15], 1.52, 0);
+  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.15], { width: 4.2 }, 0);
+  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.0, 0, .65], { width: 2.8 }, 0);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.55, 0, .35], { height: 1.05 }, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [2.55, 0, 1.85], { height: 1.05 }, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.75, 0, 2.35], { height: 1.05 }, Math.PI / 2);
+  loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.15], { height: .72 }, 0);
   const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.42); room.add(tableCandelabra);
   const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.42); room.add(tableCandleLight); candleLights.push(tableCandleLight);
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
