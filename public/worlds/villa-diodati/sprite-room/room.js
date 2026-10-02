@@ -444,6 +444,22 @@ function buildRoom() {
   planRoom("ante room", -4.2, 4.2, 4.2, 4.2, 0x705640, false, ["north", "east"]);
   planRoom("Byron study", 0, 4.2, 4.2, 4.2, 0x705640, false, ["north", "west", "east", "south"]);
   planRoom("guest chamber", 4.2, 4.2, 4.2, 4.2, 0x705640, false, ["west"]);
+  // 4–7 and 8–9 are closed boundaries with a real doorway, not open-plan
+  // passages.  Add one shared wall around each doorway so the adjoining rooms
+  // do not produce doubled walls while the door panels remain visible.
+  const doorWallHeight = 3.048;
+  const addHorizontalDoorWall = (name, centerX, centerZ, length, opening) => {
+    const segment = (length - opening) / 2;
+    const offset = (opening + segment) / 2;
+    for (const x of [centerX - offset, centerX + offset]) box(`${name} wall segment`, [segment, doorWallHeight, .16], [x, doorWallHeight / 2, centerZ], 0x91adbc);
+  };
+  const addVerticalDoorWall = (name, centerX, centerZ, length, opening) => {
+    const segment = (length - opening) / 2;
+    const offset = (opening + segment) / 2;
+    for (const z of [centerZ - offset, centerZ + offset]) box(`${name} wall segment`, [.16, doorWallHeight, segment], [centerX, doorWallHeight / 2, z], 0x91adbc);
+  };
+  addHorizontalDoorWall("room four south", -4.2, 2.1, 4.2, 1.35);
+  addVerticalDoorWall("Byron study east", 2.1, 4.2, 4.2, 1.82);
   // Room builders intentionally describe both sides of a boundary. Keep one
   // coincident mesh only; this prevents z-fighting and visibly doubled walls.
   const uniqueWalls = new Set();
