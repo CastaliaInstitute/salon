@@ -103,10 +103,11 @@ function buildRoom() {
   wallpaper.repeat.set(3, 1);
   for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = wallpaper; wall.material.color.set(0xffffff); wall.material.needsUpdate = true; }
   const door = box("front wall door", [1.35, 2.55, .08], [0, 1.3, 4.87], 0x402a24);
-  box("front door frame left", [.12, 2.8, .12], [-.72, 1.42, 4.8], 0xb3875c);
-  box("front door frame right", [.12, 2.8, .12], [.72, 1.42, 4.8], 0xb3875c);
-  box("front door lintel", [1.55, .12, .12], [0, 2.78, 4.8], 0xb3875c);
+  const doorFrameLeft = box("front door frame left", [.12, 2.8, .12], [-.72, 1.42, 4.8], 0xb3875c);
+  const doorFrameRight = box("front door frame right", [.12, 2.8, .12], [.72, 1.42, 4.8], 0xb3875c);
+  const doorLintel = box("front door lintel", [1.55, .12, .12], [0, 2.78, 4.8], 0xb3875c);
   box("front door handle", [.08, .08, .08], [.48, 1.35, 4.76], 0xd8b36e);
+  room.userData.occludingDecor.push(door, doorFrameLeft, doorFrameRight, doorLintel);
   const outside = windowViewTexture();
   for (const x of [-4.25, 4.25]) {
     box("window recess", [1.8, 2.35, .08], [x, 2.45, -3.88], 0x182b3c);
