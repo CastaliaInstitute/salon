@@ -667,7 +667,7 @@ new GLTFLoader().load(
         [-4.00, 0.34, 0.24, Math.PI / 2],
         [-2.80, 0.34, 0.32, Math.PI / 2],
         // The standing speaker faces into the circle; the fireplace is behind him.
-        [1.20, 0.14, -0.15, 0],
+        [1.20, 0.14, 0.65, 0],
         [2.43, 0.34, -0.52, -Math.PI / 2],
         [4.05, 0.34, 1.05, -Math.PI / 2],
       ];
@@ -696,7 +696,7 @@ new GLTFLoader().load(
           }
         });
         if (!dressingRoomMode && !figureRoomMode) {
-          if (x === 1.20) {
+          if (x === 1.20 && z === 0.65) {
             poseStandingFigure(figure);
             standingFigures.push(figure);
           } else {
