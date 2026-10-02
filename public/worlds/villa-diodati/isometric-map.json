@@ -2,13 +2,13 @@
   "id": "villa-diodati-salon-v1",
   "coordinateSystem": "villa-diodati-isometric-v1",
   "units": "room-grid",
-  "bounds": { "minX": -6, "maxX": 6, "minZ": -4, "maxZ": 5 },
+  "bounds": { "minX": -8, "maxX": 8, "minZ": -4, "maxZ": 5 },
   "camera": {
     "orthographic": { "azimuth": 45, "elevation": 35, "zoom": 1.0 },
     "perspective": { "position": [0, 5.4, 8.2], "target": [0, 1.0, 0] }
   },
   "walkable": [
-    { "id": "salon-floor", "minX": -5.4, "maxX": 5.4, "minZ": -2.8, "maxZ": 4.2 }
+    { "id": "salon-floor", "minX": -7.4, "maxX": 7.4, "minZ": -2.8, "maxZ": 4.2 }
   ],
   "furniture": [
     { "id": "sofa-left", "kind": "sofa", "x": -3.35, "z": 0.25, "rotation": 0, "seats": ["sofa-left-01", "sofa-left-02", "sofa-left-03"] },
