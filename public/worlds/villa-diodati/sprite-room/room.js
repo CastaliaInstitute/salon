@@ -52,6 +52,7 @@ const defaultPeople = [
 ];
 const demoCrowd = new URLSearchParams(location.search).get("demo") === "30";
 const localPlayerEnabled = new URLSearchParams(location.search).get("player") === "1";
+if (localPlayerEnabled) document.body.classList.add("local-player");
 const localHearingRange = 2.8;
 const demoSeated = Math.max(0, Math.min(6, Number(new URLSearchParams(location.search).get("sit") || 0)));
 const demoSeatedLimit = defaultPeople.length + demoSeated;
@@ -60,6 +61,7 @@ const localPlayer = { id: "player.local", name: "You", style: "mary", x: 0, z: 3
 const pressedKeys = new Set();
 addEventListener("keydown", (event) => { if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d"].includes(event.key)) return; pressedKeys.add(event.key.toLowerCase()); event.preventDefault(); });
 addEventListener("keyup", (event) => pressedKeys.delete(event.key.toLowerCase()));
+if (localPlayerEnabled) { const joystick = document.createElement("div"); joystick.className = "joystick"; joystick.setAttribute("aria-label", "Move avatar"); document.body.append(joystick); let pointerId = null; const setJoystick = (event) => { const rect = joystick.getBoundingClientRect(); const dx = event.clientX - (rect.left + rect.width / 2); const dy = event.clientY - (rect.top + rect.height / 2); const length = Math.min(Math.hypot(dx, dy), rect.width * .38); const angle = Math.atan2(dy, dx); const x = Math.cos(angle) * length; const y = Math.sin(angle) * length; joystick.style.setProperty("--joy-x", `${x}px`); joystick.style.setProperty("--joy-y", `${y}px`); for (const key of ["arrowleft", "arrowright", "arrowup", "arrowdown"]) pressedKeys.delete(key); if (Math.abs(x) > 8) pressedKeys.add(x < 0 ? "arrowleft" : "arrowright"); if (Math.abs(y) > 8) pressedKeys.add(y < 0 ? "arrowup" : "arrowdown"); }; joystick.addEventListener("pointerdown", (event) => { pointerId = event.pointerId; joystick.setPointerCapture(pointerId); setJoystick(event); }); joystick.addEventListener("pointermove", (event) => { if (event.pointerId === pointerId) setJoystick(event); }); const releaseJoystick = (event) => { if (event.pointerId !== pointerId) return; pointerId = null; for (const key of ["arrowleft", "arrowright", "arrowup", "arrowdown"]) pressedKeys.delete(key); joystick.style.setProperty("--joy-x", "0px"); joystick.style.setProperty("--joy-y", "0px"); }; joystick.addEventListener("pointerup", releaseJoystick); joystick.addEventListener("pointercancel", releaseJoystick); }
 function demographicFactors(person) { const height = Number(person.height_cm ?? person.height); const weight = Number(person.weight_kg ?? person.weight); const heightFactor = Number.isFinite(height) && height > 100 ? THREE.MathUtils.clamp(height / 170, .86, 1.14) : 1; const weightFactor = Number.isFinite(weight) && weight > 25 ? THREE.MathUtils.clamp(Math.sqrt(weight / 70), .82, 1.18) : (Number.isFinite(weight) ? THREE.MathUtils.clamp(weight, .84, 1.16) : 1); return { height: heightFactor, weight: weightFactor }; }
 const furnitureObstacles = [
   { minX: -5.05, maxX: -1.65, minZ: -.35, maxZ: .95 },
