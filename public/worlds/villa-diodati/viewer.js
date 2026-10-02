@@ -342,6 +342,11 @@ function stepPhysics(delta) {
       }
       part.bone.position.copy(worldPosition);
     }
+    // The head is not a free-swinging ragdoll ball. Preserve its authored
+    // local orientation so torso physics cannot roll it onto its side.
+    if (ragdoll.head && ragdoll.head.userData.physicsHeadBase) {
+      ragdoll.head.rotation.copy(ragdoll.head.userData.physicsHeadBase);
+    }
     refreshSkinnedPose(ragdoll.figure);
   }
 }
@@ -380,7 +385,12 @@ function createRagdoll(figure) {
   const names = new Set(["spine_01", "spine_02", "upperarm.l", "lowerarm.l", "upperarm.r", "lowerarm.r", "thigh.l", "calf.l", "foot.l", "thigh.r", "calf.r", "foot.r"]);
   const parts = [];
   const byBone = new Map();
+  let head = null;
   figure.traverse((bone) => {
+    if (bone.isBone && bone.name === "head") {
+      head = bone;
+      bone.userData.physicsHeadBase = bone.rotation.clone();
+    }
     if (!bone.isBone || !names.has(bone.name)) return;
     const p = new THREE.Vector3();
     const q = new THREE.Quaternion();
@@ -421,7 +431,7 @@ function createRagdoll(figure) {
       true,
     );
   }
-  ragdolls.push({ figure, parts });
+  ragdolls.push({ figure, parts, head });
 }
 
 const physicsInit = import("rapier3d-compat")
