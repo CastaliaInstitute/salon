@@ -463,10 +463,11 @@ function makeFigure(id, name, style, x, z, state = "idle", index = 0, wardrobe =
   // bottom anchor keeps every pair of feet on the floor.
   const spriteHeight = 2.36;
   const spriteWidth = spriteHeight * DRESSUP_ATLAS.frameAspect;
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth, spriteHeight), material); mesh.position.set(x, spriteHeight * (1 - DRESSUP_ATLAS.anchorY), z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: mesh.position.y, phase: index * .7, motion: { x, z }, floorAnchor: DRESSUP_ATLAS.anchorY }; mesh.castShadow = true; mesh.renderOrder = 5; setHeldProp(mesh, wardrobe.held); mesh.userData.heldKind = wardrobe.held || null;
+  material.depthTest = false; material.depthWrite = false;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth, spriteHeight), material); mesh.position.set(x, spriteHeight * (1 - DRESSUP_ATLAS.anchorY), z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: mesh.position.y, phase: index * .7, motion: { x, z }, floorAnchor: DRESSUP_ATLAS.anchorY }; mesh.castShadow = true; mesh.renderOrder = 30; setHeldProp(mesh, wardrobe.held); mesh.userData.heldKind = wardrobe.held || null;
   if (id.startsWith("a.")) {
     const auraMaterial = material.clone(); auraMaterial.depthTest = true; auraMaterial.uniforms.ghostStrength.value = .22; auraMaterial.uniforms.ghost.value.set(0xb8f3ff);
-    const aura = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth * 1.04, spriteHeight * 1.03), auraMaterial); aura.position.z = -.012; aura.renderOrder = 4; mesh.add(aura); mesh.userData.glowMesh = aura;
+    auraMaterial.depthTest = false; auraMaterial.depthWrite = false; const aura = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth * 1.04, spriteHeight * 1.03), auraMaterial); aura.position.z = -.012; aura.renderOrder = 29; mesh.add(aura); mesh.userData.glowMesh = aura;
   }
   const marker = new THREE.Mesh(new THREE.PlaneGeometry(.58, .58), faceMaterial(sheetFiles[style] || sheetFiles.byron)); marker.rotation.x = -Math.PI / 2; marker.position.set(x, .035, z); marker.renderOrder = 20; marker.userData.figure = mesh; mapMarkers.add(marker); mesh.userData.mapMarker = marker;
   participantLayer.add(mesh); figures.set(id, mesh); return mesh;
