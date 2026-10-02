@@ -315,8 +315,8 @@ function buildRoom() {
     const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.86], 0x5e7080);
     room.userData.occludingDecor.push(windowMullion, windowSill, curtain);
   }
-  const writingDeskX = 4.55;
-  const writingDeskZ = -1.8;
+  const writingDeskX = -5.35;
+  const writingDeskZ = 2.65;
   box("antique writing desk top", [1.25, .12, 1.15], [writingDeskX, 1.02, writingDeskZ], 0x6b402d);
   box("antique writing desk apron", [1.1, .32, .08], [writingDeskX, .82, writingDeskZ + .48], 0x553126);
   for (const x of [writingDeskX - .5, writingDeskX + .5]) for (const z of [writingDeskZ - .42, writingDeskZ + .42]) box("antique writing desk leg", [.1, .82, .1], [x, .43, z], 0x4b2d24);
@@ -352,14 +352,14 @@ function buildRoom() {
   fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
-  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.05], 2.15, 0);
-  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-2.8, 0, .75], 1.16, 0);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.45, 0, .45], 1.12, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [2.45, 0, 1.75], 1.12, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.65, 0, 1.55], 1.12, Math.PI / 2);
-  loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.05], 1.7, 0);
-  const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.35); room.add(tableCandelabra);
-  const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.35); room.add(tableCandleLight); candleLights.push(tableCandleLight);
+  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.15], 2.05, 0);
+  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.0, 0, .65], 1.08, 0);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.55, 0, .35], 1.02, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [2.55, 0, 1.85], 1.02, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.75, 0, 2.35], 1.02, Math.PI / 2);
+  loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.15], 1.52, 0);
+  const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.42); room.add(tableCandelabra);
+  const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.42); room.add(tableCandleLight); candleLights.push(tableCandleLight);
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
 }
 function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const position = activeCamera.position; const near = new Set(); if (position.x > 1.2) near.add("right"); if (position.x < -1.2) near.add("left"); if (position.z < -1.2) near.add("rear"); if (position.z > 1.2) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .06 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } const decorOpacity = near.size ? .06 : 1; for (const item of decor) { item.material.transparent = true; item.material.opacity = decorOpacity; item.material.depthWrite = !near.size; item.material.needsUpdate = true; } } const activeShells = floorLevel === 0 ? [lowerFloor] : floorLevel >= 2 ? [upperFloors[floorLevel - 2]] : []; for (const shell of activeShells) shell.traverse((node) => { if (!node.isMesh || !/ wall$/i.test(node.name)) return; const side = node.position.x > 1.2 ? "right" : node.position.x < -1.2 ? "left" : node.position.z < -1.2 ? "rear" : "front"; node.material.transparent = !topDown; node.material.opacity = topDown || !near.has(side) ? 1 : .12; node.material.depthWrite = topDown || !near.has(side); node.material.needsUpdate = true; }); }
