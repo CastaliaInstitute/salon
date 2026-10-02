@@ -232,6 +232,132 @@
         "garden",
         "lake"
       ]
+    },
+    {
+      "id": "entrance-hall",
+      "floor": 0,
+      "x": 0,
+      "z": -0.8,
+      "width": 5.8,
+      "depth": 5.5,
+      "connections": ["kitchen", "servants-hall", "salon"]
+    },
+    {
+      "id": "kitchen",
+      "floor": 0,
+      "x": -6.2,
+      "z": -0.8,
+      "width": 5.5,
+      "depth": 5.5,
+      "connections": ["entrance-hall", "pantry", "wine-cellar"]
+    },
+    {
+      "id": "pantry",
+      "floor": 0,
+      "x": -10.5,
+      "z": -0.8,
+      "width": 2.5,
+      "depth": 5.5,
+      "connections": ["kitchen"]
+    },
+    {
+      "id": "servants-hall",
+      "floor": 0,
+      "x": 6.2,
+      "z": -0.8,
+      "width": 5.5,
+      "depth": 5.5,
+      "connections": ["entrance-hall", "storage-cellar", "stores"]
+    },
+    {
+      "id": "storage-cellar",
+      "floor": 0,
+      "x": 10.5,
+      "z": -0.8,
+      "width": 2.5,
+      "depth": 5.5,
+      "connections": ["servants-hall"]
+    },
+    {
+      "id": "wine-cellar",
+      "floor": 0,
+      "x": -5.5,
+      "z": -5.5,
+      "width": 5.5,
+      "depth": 2.8,
+      "connections": ["kitchen", "stores"]
+    },
+    {
+      "id": "stores",
+      "floor": 0,
+      "x": 5.5,
+      "z": -5.5,
+      "width": 5.5,
+      "depth": 2.8,
+      "connections": ["servants-hall", "wine-cellar"]
+    },
+    {
+      "id": "byron-bedroom",
+      "floor": 2,
+      "x": -5.3,
+      "z": -1.4,
+      "width": 5.1,
+      "depth": 4.6,
+      "connections": ["upper-landing", "guest-chamber-west"]
+    },
+    {
+      "id": "polidori-bedroom",
+      "floor": 2,
+      "x": 5.3,
+      "z": -1.4,
+      "width": 5.1,
+      "depth": 4.6,
+      "connections": ["upper-landing", "guest-chamber-east"]
+    },
+    {
+      "id": "guest-chamber-west",
+      "floor": 2,
+      "x": -5.3,
+      "z": 3,
+      "width": 5.1,
+      "depth": 3.2,
+      "connections": ["byron-bedroom", "upper-landing"]
+    },
+    {
+      "id": "guest-chamber-east",
+      "floor": 2,
+      "x": 5.3,
+      "z": 3,
+      "width": 5.1,
+      "depth": 3.2,
+      "connections": ["polidori-bedroom", "upper-landing"]
+    },
+    {
+      "id": "upper-landing",
+      "floor": 2,
+      "x": 0,
+      "z": 3.2,
+      "width": 4.2,
+      "depth": 3,
+      "connections": ["byron-bedroom", "polidori-bedroom", "guest-chamber-west", "guest-chamber-east", "servants-room-west", "servants-room-east"]
+    },
+    {
+      "id": "servants-room-west",
+      "floor": 3,
+      "x": -5,
+      "z": -0.4,
+      "width": 5.6,
+      "depth": 5.8,
+      "connections": ["upper-landing", "servants-room-east"]
+    },
+    {
+      "id": "servants-room-east",
+      "floor": 3,
+      "x": 5,
+      "z": -0.4,
+      "width": 5.6,
+      "depth": 5.8,
+      "connections": ["upper-landing", "servants-room-west"]
     }
   ],
   "floors": [
