@@ -456,6 +456,11 @@ function buildRoom() {
   const foyerDoor = box("foyer front door", [1.35, 2.55, .08], [0, 1.28, 6.18], 0x402a24);
   const foyerDoorTop = box("foyer front door lintel", [1.55, .12, .12], [0, 2.72, 6.16], 0xb3875c);
   room.userData.occludingDecor.push(foyerDoor, foyerDoorTop);
+  const doorFourToSeven = box("door between rooms 4 and 7", [1.35, 2.45, .08], [-4.2, 1.22, -2.18], 0x4a3027);
+  const doorFourToSevenTop = box("door 4 to 7 lintel", [1.55, .12, .12], [-4.2, 2.58, -2.18], 0xb3875c);
+  const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, -2.10], 0xd6b16d);
+  doorFourToSeven.userData.openableDoor = true;
+  room.userData.occludingDecor.push(doorFourToSeven, doorFourToSevenTop, doorFourToSevenHandle);
   // Basic shell test: exactly three evenly spaced windows on each exterior
   // elevation of the nine-room grid.
   activeBuildGroup = room;
