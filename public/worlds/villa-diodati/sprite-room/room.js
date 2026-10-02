@@ -146,8 +146,10 @@ function buildUpperFloors() {
   for (const [x, z] of [[-6.1, -1.5], [-4.5, -1.5], [4.5, -1.5], [6.1, -1.5], [-6.1, 3.0], [4.8, 3.0]]) {
     addUpperProp(upperFloors[0], "upper floor bed", x, z, 1.25, .22, 2.0, 0x6a493b);
     addUpperProp(upperFloors[0], "upper floor writing desk", x + .7, z + .85, .7, .5, .42, 0x5b3828);
+    addUpperProp(upperFloors[0], "upper floor bedside table", x - .82, z - .55, .36, .42, .36, 0x5b3828);
   }
-  for (const x of [-6.2, 6.2]) addUpperProp(upperFloors[1], "servants room bed", x, -.4, 1.1, .22, 1.8, 0x6a493b);
+  for (const x of [-6.2, 6.2]) { addUpperProp(upperFloors[1], "servants room bed", x, -.4, 1.1, .22, 1.8, 0x6a493b); addUpperProp(upperFloors[1], "servants room chest", x + (x < 0 ? .95 : -.95), -.4, .6, .45, .8, 0x5b3828); }
+  for (const x of [-1.2, 1.2]) addUpperProp(upperFloors[1], "attic landing trunk", x, 3.0, .7, .42, .5, 0x5b3828);
   for (const layer of upperFloors) {
     const shaft = new THREE.Mesh(new THREE.BoxGeometry(2.2, .18, 2.2), mat(0x806445)); shaft.name = "stair landing opening"; shaft.position.set(0, layer === upperFloors[0] ? 3.98 : 7.78, -1.9); layer.add(shaft);
   }
