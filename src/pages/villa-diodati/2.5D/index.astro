@@ -9,7 +9,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
   <iframe
     title="Villa Diodati isometric Three.js salon"
     id="villa-viewer"
-    src="/worlds/villa-diodati/sprite-room/"
+    src="/worlds/villa-diodati/sprite-room/?player=1"
     class="sprite-room-frame"
     allow="fullscreen"
   ></iframe>
@@ -30,5 +30,5 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
 <script>
   const frame = document.querySelector('#villa-viewer');
-  if (frame && window.location.search) frame.src += `?${window.location.search.slice(1)}`;
+  if (frame && window.location.search) frame.src += `&${window.location.search.slice(1)}`;
 </script>
