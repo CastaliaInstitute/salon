@@ -103,7 +103,6 @@ function buildRoom() {
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
   for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(0x91adbc); wall.material.needsUpdate = true; }
-  for (const x of [-7.5, -4.7, -1.9, 1.9, 4.7, 7.5]) box("white wall panel molding", [.07, 3.35, .08], [x, 2.05, -3.82], 0xf2eee5);
   box("white crown molding", [15.7, .14, .12], [0, 4.08, -3.82], 0xf2eee5);
   box("white chair rail", [15.7, .12, .12], [0, .72, -3.82], 0xf2eee5);
   const door = box("front wall door", [1.35, 2.55, .08], [0, 1.3, 4.87], 0x402a24);
