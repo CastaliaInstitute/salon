@@ -439,7 +439,7 @@ function buildRoom() {
   // their shared boundary and replace the 8/9 boundary with double doors.
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
-    if (/^(ante room east wall|Byron study west wall|Byron study east wall|guest chamber west wall|foyer south wall|central stair hall north wall)$/.test(node.name)) {
+    if (/^(ante room east wall|Byron study west wall|Byron study east wall|guest chamber west wall|foyer south wall|central stair hall north wall|foyer west wall|cabinet guest room west wall|central stair hall west wall|dining room west wall|Byron study west wall|guest chamber west wall|room four north wall|dining room north wall|ante room north wall|Byron study north wall|guest chamber north wall)$/.test(node.name)) {
       node.userData.structuralOpening = true;
       node.visible = false;
     }
