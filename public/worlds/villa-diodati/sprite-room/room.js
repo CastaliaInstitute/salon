@@ -371,12 +371,21 @@ function buildRoom() {
   // projecting steps are intentionally omitted from the rendered house.
   // Principal façade: two windows flanking the entrance.
   for (const x of [-3.55, 3.55]) addFacadeWindow(x, 2.25, 4.88);
-  // Side elevations: repeated windows along the lake-facing wings.
-  for (const z of [-2.15, .55, 3.15]) {
-    addFacadeWindow(-7.86, 2.25, z, Math.PI / 2);
-    addFacadeWindow(7.86, 2.25, z, Math.PI / 2);
-  }
+  // West wall: two openings, with the right-hand opening leading to the west veranda.
+  addFacadeWindow(-7.86, 2.25, -1.35, Math.PI / 2);
+  const westDoor = box("west veranda door", [.08, 2.55, 1.55], [-7.86, 1.32, 1.35], 0x402a24, Math.PI / 2);
+  const westDoorFrameTop = box("west veranda door lintel", [.12, .12, 1.75], [-7.86, 2.72, 1.35], 0xb3875c, Math.PI / 2);
+  room.userData.occludingDecor.push(westDoor, westDoorFrameTop);
+  // East elevation retains its regular window rhythm.
+  for (const z of [-2.15, .55, 3.15]) addFacadeWindow(7.86, 2.25, z, Math.PI / 2);
   for (const x of [-5.9, 5.9]) {
+    if (x < 0) {
+      const southDoor = box("south veranda door", [1.55, 2.55, .08], [x, 1.32, -3.86], 0x402a24);
+      const southDoorFrameLeft = box("south veranda door frame left", [.12, 2.8, .12], [x - .88, 1.42, -3.82], 0xb3875c);
+      const southDoorFrameRight = box("south veranda door frame right", [.12, 2.8, .12], [x + .88, 1.42, -3.82], 0xb3875c);
+      room.userData.occludingDecor.push(southDoor, southDoorFrameLeft, southDoorFrameRight);
+      continue;
+    }
     const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.91], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
     const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshBasicMaterial({ map: outside, transparent: true })); windowPane.name = "tall window to the storm outside"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; room.add(windowPane); room.userData.occludingDecor.push(windowPane);
