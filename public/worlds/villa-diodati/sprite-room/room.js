@@ -37,7 +37,7 @@ controls.minZoom = .72; controls.maxZoom = 2.15; controls.minDistance = 3.2; con
 controls.target.set(0, 0.8, 0);
 
 const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
-const HOUSE_WORLD_SCALE = 2.0;
+const HOUSE_WORLD_SCALE = 3.0;
 let roomRegions = [];
 let navigationRooms = [];
 let walkRoute = [];
