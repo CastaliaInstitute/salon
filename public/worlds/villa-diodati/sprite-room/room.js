@@ -392,12 +392,12 @@ function buildRoom() {
     room.userData.occludingDecor.push(recess, pane, ...frame);
   };
   // Principal-floor reconstruction surrounding the salon.
-  const planRoom = (name, x, z, width, depth, color = 0x80634d) => {
+  const planRoom = (name, x, z, width, depth, color = 0x80634d, continuous = false) => {
     box(`${name} floor`, [width, .1, depth], [x, -.08, z], color);
     const wall = 0.16;
     const wallHeight = 3.048;
     const wallCenter = wallHeight / 2;
-    const gap = Math.min(1.35, width - .4); const sideGap = Math.min(1.35, depth - .4);
+    const gap = continuous ? 0 : Math.min(1.35, width - .4); const sideGap = continuous ? 0 : Math.min(1.35, depth - .4);
     const horizontal = (centerX, centerZ, side) => { const segment = (width - gap) / 2; for (const offset of [-(gap + segment) / 2, (gap + segment) / 2]) box(`${name} ${side} wall`, [segment, wallHeight, wall], [centerX + offset, wallCenter, centerZ], 0x91adbc); };
     const vertical = (centerX, centerZ, side) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) box(`${name} ${side} wall`, [wall, wallHeight, segment], [centerX, wallCenter, centerZ + offset], 0x91adbc); };
     horizontal(x, z - depth / 2, "north"); horizontal(x, z + depth / 2, "south"); vertical(x - width / 2, z, "west"); vertical(x + width / 2, z, "east");
@@ -405,7 +405,7 @@ function buildRoom() {
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
   planRoom("drawing room", 4.2, 4.2, 4.0, 4.0, 0x705640);
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
-  planRoom("grand salon", -4.2, -4.2, 8.2, 8.2, 0x80634d);
+  planRoom("grand salon", -4.2, -4.2, 8.2, 8.2, 0x80634d, true);
   planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
   planRoom("Byron study", 4.2, -4.2, 4.0, 4.0, 0x705640);
   planRoom("central stair hall", 0, -6.3, 4.0, 1.8, 0x80634d);
