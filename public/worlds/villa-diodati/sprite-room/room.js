@@ -1,11 +1,13 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const canvas = document.querySelector("#room");
 const status = document.querySelector("#status");
 const cameraButton = document.querySelector("#camera");
 const mapButton = document.querySelector("#map-view");
 const textureLoader = new THREE.TextureLoader();
+const gltfLoader = new GLTFLoader();
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x17120f);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -65,6 +67,7 @@ function box(name, size, position, color, rotation = 0) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color));
   mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; room.add(mesh); return mesh;
 }
+function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } }); room.add(model); }); }
 function buildRoom() {
   const floor = box("oak parquet floor", [12, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
   for (let x = -5.5; x <= 5.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
@@ -102,12 +105,10 @@ function buildRoom() {
   const fireOuter = new THREE.Mesh(new THREE.ConeGeometry(.48, 1.15, 7), new THREE.MeshBasicMaterial({ color: 0xff6b2e, transparent: true, opacity: .9 })); fireOuter.position.set(0, .82, -4.05); room.add(fireOuter); flames.push(fireOuter);
   const fireInner = new THREE.Mesh(new THREE.ConeGeometry(.24, .72, 7), new THREE.MeshBasicMaterial({ color: 0xffe28a, transparent: true, opacity: .95 })); fireInner.position.set(0, .72, -4.08); room.add(fireInner); flames.push(fireInner);
   box("rug", [6.3, .035, 2.3], [0, .02, 1.1], 0x583743);
-  box("sofa", [3.2, .9, .9], [-3.35, .48, .25], 0x70454a, 0);
-  box("sofa back", [3.2, 1.3, .22], [-3.35, 1.05, -.18], 0x70454a);
-  box("chair by window", [1.15, .85, 1.15], [3.75, .45, .25], 0x704b42, -Math.PI / 2);
-  box("chair right", [1.15, .85, 1.15], [2.55, .45, 1.35], 0x704b42, -Math.PI / 2);
-  box("reading chair", [1.15, .85, 1.15], [-1.95, .45, 1.65], 0x704b42, Math.PI / 2);
-  box("writing table", [1.8, .45, 1.1], [.15, .38, 1.55], 0x51352c);
+  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.35, 0, .25], 1.16, 0);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom window armchair", [3.75, 0, .25], 1.12, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.55, 0, 1.35], 1.12, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.95, 0, 1.65], 1.12, Math.PI / 2);
   for (const x of [-.48, -.18, .18, .48]) { const candle = new THREE.PointLight(0xffc77c, 1.2, 1.5); candle.position.set(x, 1.1, 1.55); room.add(candle); candleLights.push(candle); box("candle", [.05, .65, .05], [x, .86, 1.55], 0xe8d0a4); const flame = new THREE.Mesh(new THREE.ConeGeometry(.06, .2, 5), new THREE.MeshBasicMaterial({ color: 0xffd37a })); flame.position.set(x, 1.22, 1.55); room.add(flame); flames.push(flame); }
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
 }
