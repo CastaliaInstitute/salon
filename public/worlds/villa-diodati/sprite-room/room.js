@@ -79,6 +79,7 @@ function box(name, size, position, color, rotation = 0) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color));
   mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; room.add(mesh); return mesh;
 }
+function windowViewTexture() { const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512; const ctx = canvas.getContext("2d"); const sky = ctx.createLinearGradient(0, 0, 0, 512); sky.addColorStop(0, "#0b1830"); sky.addColorStop(.58, "#243d58"); sky.addColorStop(1, "#151b24"); ctx.fillStyle = sky; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = "rgba(232,241,255,.9)"; ctx.beginPath(); ctx.arc(390, 92, 42, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "rgba(11,24,48,.9)"; ctx.beginPath(); ctx.arc(407, 80, 39, 0, Math.PI * 2); ctx.fill(); for (let i = 0; i < 45; i++) { const x = (i * 83) % 512; const y = 24 + ((i * 47) % 250); ctx.fillStyle = `rgba(220,235,255,${.35 + (i % 4) * .12})`; ctx.fillRect(x, y, 2, 2); } ctx.fillStyle = "#101923"; ctx.beginPath(); ctx.moveTo(0, 390); ctx.lineTo(100, 320); ctx.lineTo(175, 370); ctx.lineTo(280, 290); ctx.lineTo(390, 370); ctx.lineTo(512, 300); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.fill(); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture; }
 function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } }); room.add(model); }); }
 function buildRoom() {
   const floor = box("oak parquet floor", [12, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
@@ -87,26 +88,34 @@ function buildRoom() {
   const rearWall = box("rear wall", [12, 4.3, .18], [0, 2.05, -4], 0x3d3435);
   const leftWall = box("left wall", [.18, 4.3, 8.2], [-6, 2.05, .1], 0x4a3a38);
   const rightWall = box("right wall", [.18, 4.3, 8.2], [6, 2.05, .1], 0x4a3a38);
-  room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall };
+  const frontWall = box("camera-side wall", [12, 4.3, .18], [0, 2.05, 5], 0x3d3435);
+  room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
   const wallpaper = textureLoader.load("../art/wallpaper-v1.png");
   wallpaper.colorSpace = THREE.SRGBColorSpace;
   wallpaper.wrapS = THREE.RepeatWrapping; wallpaper.wrapT = THREE.RepeatWrapping;
   wallpaper.repeat.set(3, 1);
-  for (const wall of [rearWall, leftWall, rightWall]) { wall.material.map = wallpaper; wall.material.color.set(0xffffff); wall.material.needsUpdate = true; }
+  for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = wallpaper; wall.material.color.set(0xffffff); wall.material.needsUpdate = true; }
+  const door = box("front wall door", [1.35, 2.55, .08], [0, 1.3, 4.87], 0x402a24);
+  box("front door frame left", [.12, 2.8, .12], [-.72, 1.42, 4.8], 0xb3875c);
+  box("front door frame right", [.12, 2.8, .12], [.72, 1.42, 4.8], 0xb3875c);
+  box("front door lintel", [1.55, .12, .12], [0, 2.78, 4.8], 0xb3875c);
+  box("front door handle", [.08, .08, .08], [.48, 1.35, 4.76], 0xd8b36e);
+  const outside = windowViewTexture();
   for (const x of [-4.25, 4.25]) {
     box("window recess", [1.8, 2.35, .08], [x, 2.45, -3.88], 0x182b3c);
+    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.05), new THREE.MeshBasicMaterial({ map: outside, transparent: true })); windowPane.name = "window to the storm outside"; windowPane.position.set(x, 2.45, -3.8); windowPane.renderOrder = 1; room.add(windowPane); room.userData.occludingDecor.push(windowPane);
     box("window mullion", [.1, 2.1, .1], [x, 2.45, -3.8], 0x9d704d);
     box("window sill", [1.9, .12, .22], [x, 1.25, -3.72], 0xb3875c);
     box("curtain", [.28, 3.1, .3], [x + (x < 0 ? -.82 : .82), 2.45, -3.7], 0x80605b);
   }
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
   for (const x of [-3.8, 3.8]) {
-    const frame = box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.88], 0xa47a50);
+    const frame = box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.78], 0xa47a50);
     const art = textureLoader.load("../art/wall-triptych-v1.png");
     art.colorSpace = THREE.SRGBColorSpace; art.wrapS = THREE.ClampToEdgeWrapping; art.repeat.set(1 / 3, 1); art.offset.set(x < 0 ? 0 : 2 / 3, 0);
     const painting = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.3), new THREE.MeshBasicMaterial({ map: art }));
-    painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.83); painting.renderOrder = 2; room.add(painting);
+    painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.7); painting.renderOrder = 2; room.add(painting);
     room.userData.occludingDecor.push(frame, painting);
   }
   const fireplaceTexture = textureLoader.load("../art/fireplace-v1.png");
