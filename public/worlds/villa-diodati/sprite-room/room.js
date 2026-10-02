@@ -413,6 +413,21 @@ function buildRoom() {
   planRoom("foyer", 0, 4.2, 4.0, 4.0, 0x705640);
   planRoom("cabinet guest room", 4.2, 4.2, 4.0, 4.0, 0x705640);
   planRoom("central stair hall", 0, 0, 4.0, 4.0, 0x80634d);
+  // Room 5: paired straight flights. West rises away from the landing;
+  // east descends away from the landing.
+  for (let index = 0; index < 8; index += 1) {
+    const westStep = new THREE.Mesh(new THREE.BoxGeometry(.34, .14, 1.0), mat(0x6f4934));
+    westStep.position.set(-.75 - index * .18, .13 + index * .14, 0); westStep.name = "stairs up west flight"; room.add(westStep);
+    const eastStep = new THREE.Mesh(new THREE.BoxGeometry(.34, .14, 1.0), mat(0x6f4934));
+    eastStep.position.set(.75 + index * .18, .13 + (7 - index) * .14, 0); eastStep.name = "stairs down east flight"; room.add(eastStep);
+  }
+  const stairToRoomEightDoors = new THREE.Group(); stairToRoomEightDoors.name = "room 5 to room 8 double doors";
+  for (const x of [-.45, .45]) {
+    const panel = box("room 5 to room 8 door panel", [.82, 2.4, .08], [x, 1.25, -2.18], 0x4a3027);
+    panel.userData.openableDoor = true; stairToRoomEightDoors.add(panel);
+    stairToRoomEightDoors.add(box("room 5 to room 8 door handle", [.08, .08, .1], [x + (x < 0 ? .22 : -.22), 1.25, -2.12], 0xd6b16d));
+  }
+  room.add(stairToRoomEightDoors);
   planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
