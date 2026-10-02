@@ -616,6 +616,9 @@ new GLTFLoader().load(
     // A cutaway roof and lake facade keep the statues visible in the browser overview.
     // The downloadable GLB remains complete for ThirdRoom.
     gltf.scene.traverse((object) => {
+      if (/^(oak parquet floor|parquet board \d+|lake loggia floor)$/i.test(object.name)) {
+        object.visible = false;
+      }
       if (
         object.name === "ceiling" ||
         /^(lake_wall|lake_opening|lake_window|lake_transom|lake_center_mullion|lake_curtain|lake_cornice)/.test(object.name)
