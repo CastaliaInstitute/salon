@@ -68,7 +68,7 @@ const animalSheetFiles = { monkey: "monkey-v1.png", peacock: "peacock-v1.png", d
 // Dressable avatar contract: every source sheet uses the same safe frame and
 // bottom-center floor anchor. Clothing/skin changes must never change this
 // placement, which prevents the recurring cropped-head and floating-feet bugs.
-const DRESSUP_ATLAS = { columns: 8, rows: 5, safeInset: { left: .04, right: .04, top: .04, bottom: .08 }, anchorY: .92 };
+const DRESSUP_ATLAS = { columns: 8, rows: 5, frameAspect: (1536 / 8) / (1000 / 5), safeInset: { left: .04, right: .04, top: .04, bottom: .08 }, anchorY: .92 };
 const textureCache = new Map();
 let fireLight;
 let lightningLight;
