@@ -39,7 +39,9 @@ controls.target.set(0, 0.8, 0);
 const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
 const HOUSE_WORLD_SCALE = 3.0;
 const SALON_ORIGIN = { x: -5.1, z: -1.8 };
-const SALON_CONTENT_SCALE = { x: .42, z: .62 };
+// Uniform scaling is essential for imported GLB furniture; non-uniform room
+// fitting visibly stretches sofas, chairs, tables, and wall decor.
+const SALON_CONTENT_SCALE = { x: .52, z: .52 };
 let roomRegions = [];
 let navigationRooms = [];
 let walkRoute = [];
