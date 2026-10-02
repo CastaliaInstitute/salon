@@ -88,7 +88,7 @@ function makeFigure(id, name, style, x, z, state = "idle", index = 0, wardrobe =
   material.uniforms.coat.value.set(wardrobe.coat || "#ffffff"); material.uniforms.waistcoat.value.set(wardrobe.waistcoat || "#ffffff"); material.uniforms.accent.value.set(wardrobe.accent || "#ffffff"); material.uniforms.skin.value.set(wardrobe.skin || "#d5a07c");
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.65, 2.2), material); mesh.position.set(x, 1.1, z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: 1.1, phase: index * .7, motion: { x, z } }; mesh.castShadow = true; mesh.renderOrder = 5;
   if (id.startsWith("a.")) {
-    const auraMaterial = material.clone(); auraMaterial.uniforms.ghostStrength.value = .26; auraMaterial.uniforms.ghost.value.set(0x78bfff);
+    const auraMaterial = material.clone(); auraMaterial.uniforms.ghostStrength.value = .22; auraMaterial.uniforms.ghost.value.set(0xb8f3ff);
     const aura = new THREE.Mesh(new THREE.PlaneGeometry(1.72, 2.27), auraMaterial); aura.position.z = -.012; aura.renderOrder = 4; mesh.add(aura); mesh.userData.glowMesh = aura;
   }
   const marker = new THREE.Mesh(new THREE.PlaneGeometry(.58, .58), faceMaterial(sheetFiles[style] || sheetFiles.byron)); marker.rotation.x = -Math.PI / 2; marker.position.set(x, .035, z); marker.renderOrder = 20; marker.userData.figure = mesh; mapMarkers.add(marker); mesh.userData.mapMarker = marker;
