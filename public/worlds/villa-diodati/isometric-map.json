@@ -36,6 +36,14 @@
       "maxZ": 27.5
     }
   ],
+  "floorTransitions": [
+    {
+      "id": "central-stair",
+      "x": 0,
+      "z": -5,
+      "levels": [0, 1, 2, 3]
+    }
+  ],
   "furniture": [
     {
       "id": "sofa-left",
