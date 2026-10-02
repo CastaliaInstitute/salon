@@ -109,7 +109,7 @@ function buildRoom() {
   const fireplaceTexture = textureLoader.load("../art/fireplace-v1.png");
   fireplaceTexture.colorSpace = THREE.SRGBColorSpace;
   const fireplaceArt = new THREE.Mesh(new THREE.PlaneGeometry(3.05, 1.985), new THREE.MeshBasicMaterial({ map: fireplaceTexture, transparent: true, depthWrite: false }));
-  fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.99); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
+  fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
   box("rug", [6.3, .035, 2.3], [0, .02, 1.1], 0x583743);
