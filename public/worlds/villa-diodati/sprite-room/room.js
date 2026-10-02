@@ -296,10 +296,6 @@ function buildRoom() {
     const vertical = (centerX, centerZ, side) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) box(`${name} ${side} wall`, [wall, .28, segment], [centerX, .28, centerZ + offset], 0x5b4035); };
     horizontal(x, z - depth / 2, "north"); horizontal(x, z + depth / 2, "south"); vertical(x - width / 2, z, "west"); vertical(x + width / 2, z, "east");
   };
-  planRoom("drawing room and music room", -12.1, -.9, 7.8, 5.8, 0x80634d);
-  planRoom("library and morning room", -12.1, 3.4, 7.8, 2.6, 0x80634d);
-  planRoom("dining room", 12.1, -.9, 7.8, 5.8, 0x80634d);
-  planRoom("cabinet and guest room", 12.1, 3.4, 7.8, 2.6, 0x80634d);
   planRoom("Byron study", -4.8, -6.2, 4.2, 3.8, 0x705640);
   planRoom("central stair hall", 0, -6.2, 4.2, 3.8, 0x80634d);
   planRoom("ante room", 4.8, -6.2, 4.2, 3.8, 0x705640);
