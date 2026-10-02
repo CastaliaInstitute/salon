@@ -155,7 +155,7 @@ function createTopDownRoomControls() {
   if (topDownRoomControls) return;
   topDownRoomControls = document.createElement("div");
   topDownRoomControls.style.cssText = "position:fixed;top:5.6rem;left:1rem;z-index:20;display:none;gap:.35rem;flex-wrap:wrap;max-width:22rem;padding:.5rem;background:rgba(20,15,13,.88);border:1px solid #a88955;border-radius:.5rem;font:12px Georgia;color:#f2eadc";
-  compassRose = document.createElement("div"); compassRose.innerHTML = "<div style='font-size:15px;color:#f2d38b'>↑ N</div><div style='font-size:13px;color:#d9bd7b'>W &nbsp;✦&nbsp; E</div><div style='font-size:13px;color:#d9bd7b'>↓ S · veranda</div>"; compassRose.style.cssText = "width:100%;text-align:center;line-height:1.05;padding:.15rem 0 .35rem;border-bottom:1px solid rgba(217,189,123,.35);margin-bottom:.2rem;transform-origin:center;transition:transform .12s linear"; topDownRoomControls.append(compassRose);
+  compassRose = document.createElement("div"); compassRose.innerHTML = "<div style='font-size:15px;color:#f2d38b'>↑ N</div><div style='font-size:13px;color:#d9bd7b'>W &nbsp;✦&nbsp; E</div><div style='font-size:13px;color:#d9bd7b'>↓ S · veranda</div>"; compassRose.style.cssText = "position:fixed;top:6.2rem;right:1.2rem;z-index:21;width:5.5rem;text-align:center;line-height:1.05;padding:.45rem .3rem;background:rgba(20,15,13,.82);border:1px solid #a88955;border-radius:50%;transform-origin:center;transition:transform .12s linear;pointer-events:none"; document.body.append(compassRose);
   for (const name of new Set(Object.values(planShellByRoom))) {
     topDownRoomVisibility.set(name, true);
     const label = document.createElement("label"); label.style.cssText = "display:flex;align-items:center;gap:.2rem";
