@@ -456,6 +456,12 @@ function buildRoom() {
       node.userData.structuralOpening = true;
       node.visible = false;
     }
+    // Room 7/8 is a deliberate full-width opening. Enforce it geometrically
+    // so a renamed or duplicated wall cannot reappear on that boundary.
+    if (Math.abs(node.position.x + 2.1) < .04 && Math.abs(node.position.z + 4.2) < 2.2 && / wall$/.test(node.name)) {
+      node.userData.structuralOpening = true;
+      node.visible = false;
+    }
   });
   const morningDoors = new THREE.Group(); morningDoors.name = "room 9 morning room double doors";
   for (const z of [-4.68, -3.72]) {
@@ -474,6 +480,12 @@ function buildRoom() {
   const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, -2.02], 0xd6b16d);
   doorFourToSeven.userData.openableDoor = true;
   room.userData.occludingDecor.push(doorFourToSeven, doorFourToSevenTop, doorFourToSevenHandle);
+  // Room 8 south wall: direct access to the south veranda.
+  const roomEightVerandaDoor = box("room 8 south veranda door", [1.35, 2.45, .08], [0, 1.22, -6.28], 0x4a3027);
+  const roomEightVerandaLintel = box("room 8 south veranda door lintel", [1.55, .12, .12], [0, 2.58, -6.28], 0xb3875c);
+  const roomEightVerandaHandle = box("room 8 south veranda door handle", [.08, .08, .1], [.46, 1.22, -6.20], 0xd6b16d);
+  roomEightVerandaDoor.userData.openableDoor = true;
+  room.userData.occludingDecor.push(roomEightVerandaDoor, roomEightVerandaLintel, roomEightVerandaHandle);
   // South-wall fireplace centered on the 7/8 junction.
   const shellFireplace = box("south wall fireplace surround", [1.8, 1.55, .28], [-2.1, .78, -6.28], 0x6b5548);
   const shellMantel = box("south wall fireplace mantel", [2.35, .18, .42], [-2.1, 1.62, -6.22], 0x8a6a4b);
