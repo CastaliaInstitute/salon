@@ -250,6 +250,55 @@ function poseStandingFigure(figure) {
   refreshSkinnedPose(figure);
 }
 
+// Lightweight, pose-safe gesture layer. These offsets are applied after the
+// authored seated/standing pose, so gestures cannot reopen the T-pose or move
+// the mannequin's torso out of its body.
+function invokeFigureGesture(name = "idle", target = "all") {
+  const figures = [...seatedFigures.map((entry) => entry.figure), ...standingFigures];
+  figures.forEach((figure, index) => {
+    if (target !== "all" && Number(target) !== index) return;
+    figure.userData.gesture = { name, started: animationClock.elapsedTime };
+  });
+}
+
+function animateFigureGesture(figure) {
+  const gesture = figure.userData.gesture || { name: "idle", started: 0 };
+  const t = animationClock.elapsedTime - gesture.started;
+  const bones = new Map();
+  figure.traverse((object) => { if (object.isBone) bones.set(object.name, object); });
+  const add = (name, x = 0, y = 0, z = 0) => {
+    const bone = bones.get(name);
+    if (!bone) return;
+    bone.rotation.x += x;
+    bone.rotation.y += y;
+    bone.rotation.z += z;
+  };
+  const breath = Math.sin(animationClock.elapsedTime * 1.35) * 0.012;
+  add("spine_02", breath, 0, 0);
+  add("head", -breath * 0.5, Math.sin(animationClock.elapsedTime * 0.45) * 0.025, 0);
+  if (gesture.name === "look" || gesture.name === "look-at-speaker") {
+    add("head", 0, Math.sin(t * 1.4) * 0.12, 0);
+    add("spine_02", 0, Math.sin(t * 1.4) * 0.025, 0);
+  } else if (gesture.name === "nod") {
+    add("head", Math.sin(t * 5) * 0.12, 0, 0);
+  } else if (gesture.name === "speak") {
+    add("head", Math.sin(t * 3.2) * 0.025, 0, 0);
+    add("upperarm.r", 0, 0, Math.sin(t * 3.2) * 0.12);
+    add("lowerarm.r", Math.sin(t * 3.2) * 0.08, 0, 0);
+  } else if (gesture.name === "fidget") {
+    add("head", Math.sin(t * 1.7) * 0.06, Math.sin(t * 1.1) * 0.08, 0);
+    add("upperarm.l", 0, 0, Math.sin(t * 2.3) * 0.08);
+    add("lowerarm.l", Math.sin(t * 2.3) * 0.08, 0, 0);
+  }
+  refreshSkinnedPose(figure);
+}
+
+window.villaDiodatiGestures = { invoke: invokeFigureGesture };
+window.addEventListener("villa-gesture", (event) => {
+  const detail = event.detail || {};
+  invokeFigureGesture(detail.name || detail.gesture || "idle", detail.target ?? "all");
+});
+
 function stepPhysics(delta) {
   if (!physicsReady) return;
   physicsWorld.timestep = Math.min(delta, 1 / 30);
@@ -710,10 +759,12 @@ renderer.setAnimationLoop(() => {
   for (const mixer of mannequinMixers) mixer.update(delta);
   for (const seated of seatedFigures) {
     if (!dressingRoomMode || !physicsReady) poseSeatedFigure(seated.figure, seated.index);
+    animateFigureGesture(seated.figure);
     if (!dressingRoomMode) keepFeetAboveFloor(seated.figure);
   }
   for (const figure of standingFigures) {
     poseStandingFigure(figure);
+    animateFigureGesture(figure);
     keepFeetAboveFloor(figure);
   }
   stepPhysics(delta);
