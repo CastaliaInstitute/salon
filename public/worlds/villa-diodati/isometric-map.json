@@ -233,5 +233,42 @@
         "lake"
       ]
     }
+  ],
+  "floors": [
+    {
+      "level": 1,
+      "name": "Principal floor / piano nobile",
+      "rooms": [
+        "drawing-music-room",
+        "library-morning-room",
+        "salon",
+        "dining-room",
+        "cabinet-guest-room",
+        "rear-service-hall",
+        "terrace",
+        "garden",
+        "shore"
+      ]
+    },
+    {
+      "level": 2,
+      "name": "Upper floor / bedchambers",
+      "rooms": [
+        "byron-bedroom",
+        "polidori-bedroom",
+        "guest-chamber-west",
+        "guest-chamber-east",
+        "upper-landing"
+      ]
+    },
+    {
+      "level": 3,
+      "name": "Attic / servants rooms",
+      "rooms": [
+        "servants-room-west",
+        "servants-room-east",
+        "upper-landing"
+      ]
+    }
   ]
 }
