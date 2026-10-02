@@ -521,7 +521,7 @@ export function SalonLiveRoom({
               <button type="button" onClick={() => setViewMode('room')} className={`rounded px-2 py-1 text-xs ${viewMode === 'room' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}>Room</button>
             </div>
           </div>}
-          {viewMode === 'room' ? <SalonPhaserView characters={roomCharacters} furniture={roomState?.furniture} /> : null}
+          {viewMode === 'room' ? <SalonPhaserView characters={roomCharacters} furniture={roomState?.furniture} immersive={immersive} /> : null}
           <div
             ref={transcriptRef}
             className={`${viewMode === 'room' ? 'hidden' : 'flex'} min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5`}

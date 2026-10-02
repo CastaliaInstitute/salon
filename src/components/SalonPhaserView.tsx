@@ -19,6 +19,7 @@ interface Props {
   characters: SalonPhaserCharacter[]
   furniture?: SalonRoomState['furniture']
   onSelect?: (id: string) => void
+  immersive?: boolean
 }
 
 const ANCHORS = [
@@ -26,7 +27,7 @@ const ANCHORS = [
 ] as const
 
 /** A deliberately small 2.5D stage: the room is drawn in Phaser, while chat remains React. */
-export function SalonPhaserView({ characters, furniture, onSelect }: Props) {
+export function SalonPhaserView({ characters, furniture, onSelect, immersive = false }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const onSelectRef = useRef(onSelect)
   onSelectRef.current = onSelect
@@ -38,13 +39,20 @@ export function SalonPhaserView({ characters, furniture, onSelect }: Props) {
       if (cancelled || !hostRef.current) return
       class RoomScene extends Phaser.Scene {
         constructor() { super('salon-room') }
+        preload() {
+          this.load.image('salon-background', '/worlds/villa-diodati/sprites/v1/salon-background.png')
+        }
         create() {
           this.drawRoom()
-          this.drawFurniture()
+          if (!this.textures.exists('salon-background')) this.drawFurniture()
           this.drawCharacters()
         }
         drawRoom() {
           const { width: w, height: h } = this.scale
+          if (this.textures.exists('salon-background')) {
+            this.add.image(w / 2, h / 2, 'salon-background').setDisplaySize(w, h)
+            return
+          }
           const g = this.add.graphics()
           g.fillStyle(0x0c0b12, 1).fillRect(0, 0, w, h)
           // Isometric room shell: rear wall, side walls, dado, and parquet floor.
@@ -112,8 +120,8 @@ export function SalonPhaserView({ characters, furniture, onSelect }: Props) {
             const head = this.add.circle(0, -27 * height, 11 * weight, character.skin ?? (character.active ? 0xf0c5a0 : 0xc7a28f))
             const arm = gesturing ? this.add.rectangle((feminine ? 19 : 18) * weight, -7 * height, 29 * weight, 6 * height, character.palette.coat, .95).setAngle(-28) : null
             const accessory = character.accessories?.includes('cravat') ? this.add.rectangle(0, -15 * height, 4 * weight, 10 * height, character.palette.accent, 1) : null
-            const label = this.add.text(0, 43, character.name, { color: '#f5e9dc', fontFamily: 'Georgia', fontSize: '12px', align: 'center', wordWrap: { width: 100 } }).setOrigin(.5)
-            group.add([shadow, hips, coat, torso, ...(chest ? [chest] : []), hair, head, ...(arm ? [arm] : []), ...(accessory ? [accessory] : []), label])
+            const label = immersive ? null : this.add.text(0, 43, character.name, { color: '#f5e9dc', fontFamily: 'Georgia', fontSize: '12px', align: 'center', wordWrap: { width: 100 } }).setOrigin(.5)
+            group.add([shadow, hips, coat, torso, ...(chest ? [chest] : []), hair, head, ...(arm ? [arm] : []), ...(accessory ? [accessory] : []), ...(label ? [label] : [])])
             group.setScale(scale)
             group.on('pointerdown', () => onSelectRef.current?.(character.id))
           })
