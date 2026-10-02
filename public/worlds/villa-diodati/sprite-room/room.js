@@ -35,7 +35,7 @@ controls.enablePan = true; controls.enableDamping = true; controls.dampingFactor
 controls.minZoom = .72; controls.maxZoom = 2.15; controls.minDistance = 3.2; controls.maxDistance = 16;
 controls.target.set(0, 0.8, 0);
 
-const map = { minX: -18, maxX: 18, minZ: -4, maxZ: 32 };
+const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
 fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => {
   if (contract?.coordinateSystem === "villa-diodati-isometric-v1") Object.assign(map, contract.bounds || {});
 }).catch(() => {});
@@ -170,6 +170,23 @@ function buildRoom() {
     ];
     room.userData.occludingDecor.push(recess, pane, ...frame);
   };
+  // Principal-floor reconstruction surrounding the salon.
+  const planRoom = (name, x, z, width, depth, color = 0x80634d) => {
+    box(`${name} floor`, [width, .1, depth], [x, -.08, z], color);
+    const wall = 0.16;
+    box(`${name} north wall`, [width, .72, wall], [x, .28, z - depth / 2], 0x5b4035);
+    box(`${name} south wall`, [width, .72, wall], [x, .28, z + depth / 2], 0x5b4035);
+    box(`${name} west wall`, [wall, .72, depth], [x - width / 2, .28, z], 0x5b4035);
+    box(`${name} east wall`, [wall, .72, depth], [x + width / 2, .28, z], 0x5b4035);
+  };
+  planRoom("drawing room and music room", -12.1, -.9, 7.8, 5.8, 0x80634d);
+  planRoom("library and morning room", -12.1, 3.4, 7.8, 2.6, 0x80634d);
+  planRoom("dining room", 12.1, -.9, 7.8, 5.8, 0x80634d);
+  planRoom("cabinet and guest room", 12.1, 3.4, 7.8, 2.6, 0x80634d);
+  planRoom("rear service hall", 0, -6.2, 15.8, 3.8, 0x705640);
+  // Central stair hall is represented as a broad landing connecting the principal rooms.
+  box("central stair landing", [3.2, .12, 3.2], [0, -.02, -5.0], 0x9a7956);
+  for (let step = 0; step < 5; step++) box("central stair", [2.5 - step * .12, .12, .38], [0, .08 + step * .1, -6.9 + step * .38], 0xb79b72);
   // Principal façade: two windows flanking the entrance.
   for (const x of [-3.55, 3.55]) addFacadeWindow(x, 2.25, 4.88);
   // Side elevations: repeated windows along the lake-facing wings.

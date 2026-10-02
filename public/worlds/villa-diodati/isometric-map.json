@@ -5,7 +5,7 @@
   "bounds": {
     "minX": -18,
     "maxX": 18,
-    "minZ": -4,
+    "minZ": -10,
     "maxZ": 32
   },
   "camera": {
@@ -29,10 +29,10 @@
   },
   "walkable": [
     {
-      "id": "villa-estate-and-shore",
+      "id": "villa-principal-floor-and-grounds",
       "minX": -16.5,
       "maxX": 16.5,
-      "minZ": -2.8,
+      "minZ": -8.5,
       "maxZ": 27.5
     }
   ],
