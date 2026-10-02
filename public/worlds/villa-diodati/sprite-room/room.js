@@ -110,6 +110,13 @@ function buildUpperFloors() {
   addRoom(upperFloors[1], "servants room west", -5.0, -.4, 5.6, 5.8);
   addRoom(upperFloors[1], "servants room east", 5.0, -.4, 5.6, 5.8);
   addRoom(upperFloors[1], "upper landing", 0, 3.2, 4.2, 3.0);
+  const addUpperProp = (layer, name, x, z, width, height, depth, color) => { const prop = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), mat(color)); prop.name = name; prop.position.set(x, layer === upperFloors[0] ? 4.25 : 8.05, z); prop.castShadow = true; layer.add(prop); return prop; };
+  for (const [x, z] of [[-6.1, -1.5], [-4.5, -1.5], [4.5, -1.5], [6.1, -1.5], [-6.1, 3.0], [4.8, 3.0]]) {
+    addUpperProp(upperFloors[0], "upper floor bed", x, z, 1.25, .22, 2.0, 0x6a493b);
+    addUpperProp(upperFloors[0], "upper floor writing desk", x + .7, z + .85, .7, .5, .42, 0x5b3828);
+  }
+  for (const x of [-6.2, 6.2]) addUpperProp(upperFloors[1], "servants room bed", x, -.4, 1.1, .22, 1.8, 0x6a493b);
+  for (const z of [2.2, 2.8, 3.4]) addUpperProp(upperFloors[1], "attic storage chest", 0, z, 1.4, .42, .65, 0x5b3828);
 }
 function setFloorLevel(level) { floorLevel = level; room.visible = level === 1; upperFloors.forEach((layer, index) => { layer.visible = level === index + 2; }); for (const figure of figures.values()) { const person = figure.userData.person; if (person) figure.visible = person.floor === floorLevel && (!pov || person.id === localPlayer.id); } if (floorButton) floorButton.textContent = `Floor ${level}`; }
 function buildRoom() {
