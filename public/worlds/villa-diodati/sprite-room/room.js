@@ -41,10 +41,13 @@ controls.target.set(0, 0.8, 0);
 
 const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
 const HOUSE_WORLD_SCALE = 3.0;
-const SALON_ORIGIN = { x: -5.1, z: -1.8 };
+// Principal floor bay grid: three 4.2 m bays in each direction. The salon
+// occupies the southwest 2 x 2 block; the remaining bay is circulation and
+// service space rather than another copy of the salon.
+const SALON_ORIGIN = { x: -2.1, z: -2.1 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
-const SALON_CONTENT_SCALE = { x: .52, z: .52 };
+const SALON_CONTENT_SCALE = { x: .35, z: .35 };
 const SALON_CONTENT_ROTATION = Math.PI / 2;
 let roomRegions = [];
 let navigationRooms = [];
@@ -134,6 +137,7 @@ function updatePlanRoomVisibility(roomId) {
   });
 }
 function applyTopDownRoomVisibility() {
+  salonRoot.visible = topDownRoomVisibility.get("salon") !== false;
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
@@ -141,6 +145,7 @@ function applyTopDownRoomVisibility() {
   });
 }
 function resetTopDownRoomVisibility() {
+  topDownRoomVisibility.set("salon", true);
   for (const name of new Set(Object.values(planShellByRoom))) topDownRoomVisibility.set(name, true);
   if (topDownRoomControls) topDownRoomControls.querySelectorAll("input").forEach((input) => { input.checked = true; });
   applyTopDownRoomVisibility();
@@ -156,7 +161,7 @@ function createTopDownRoomControls() {
   topDownRoomControls = document.createElement("div");
   topDownRoomControls.style.cssText = "position:fixed;top:5.6rem;left:1rem;z-index:20;display:none;gap:.35rem;flex-wrap:wrap;max-width:22rem;padding:.5rem;background:rgba(20,15,13,.88);border:1px solid #a88955;border-radius:.5rem;font:12px Georgia;color:#f2eadc";
   compassRose = document.createElement("div"); compassRose.innerHTML = "<div style='font-size:15px;color:#f2d38b'>↑ N</div><div style='font-size:13px;color:#d9bd7b'>W &nbsp;✦&nbsp; E</div><div style='font-size:13px;color:#d9bd7b'>↓ S · veranda</div>"; compassRose.style.cssText = "position:fixed;top:6.2rem;right:1.2rem;z-index:21;width:5.5rem;text-align:center;line-height:1.05;padding:.45rem .3rem;background:rgba(20,15,13,.82);border:1px solid #a88955;border-radius:50%;transform-origin:center;transition:transform .12s linear;pointer-events:none"; document.body.append(compassRose);
-  for (const name of new Set(Object.values(planShellByRoom))) {
+  for (const name of ["salon", ...new Set(Object.values(planShellByRoom))]) {
     topDownRoomVisibility.set(name, true);
     const label = document.createElement("label"); label.style.cssText = "display:flex;align-items:center;gap:.2rem";
     const input = document.createElement("input"); input.type = "checkbox"; input.checked = true; input.addEventListener("change", () => { topDownRoomVisibility.set(name, input.checked); applyTopDownRoomVisibility(); });
@@ -388,13 +393,13 @@ function buildRoom() {
     horizontal(x, z - depth / 2, "north"); horizontal(x, z + depth / 2, "south"); vertical(x - width / 2, z, "west"); vertical(x + width / 2, z, "east");
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
-  planRoom("drawing room", 0, 2.5, 4.8, 4.2, 0x705640);
-  planRoom("library study", -5.1, 3.0, 4.8, 3.0, 0x80634d);
-  planRoom("grand salon", -5.1, -1.8, 5.4, 6.0, 0x80634d);
-  planRoom("dining room", 5.1, 1.0, 4.8, 4.2, 0x705640);
-  planRoom("Byron study", 5.1, -2.8, 4.8, 3.2, 0x705640);
-  planRoom("central stair hall", 0, -3.1, 4.2, 3.0, 0x80634d);
-  planRoom("ante room", -5.1, -4.9, 4.8, 2.0, 0x705640);
+  planRoom("drawing room", 4.2, 4.2, 4.0, 4.0, 0x705640);
+  planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
+  planRoom("grand salon", -2.1, -2.1, 8.2, 8.2, 0x80634d);
+  planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
+  planRoom("Byron study", 4.2, -4.2, 4.0, 4.0, 0x705640);
+  planRoom("central stair hall", 0, -6.3, 4.0, 1.8, 0x80634d);
+  planRoom("ante room", -4.2, -6.3, 4.0, 1.8, 0x705640);
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
   box("west room threshold", [1.4, .1, 2.4], [-2.7, -.02, .1], 0xa28662);
   box("east room threshold", [1.4, .1, 2.4], [2.7, -.02, .1], 0xa28662);

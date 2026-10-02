@@ -132,10 +132,10 @@
     {
       "id": "drawing-music-room",
       "floor": 1,
-      "x": 0,
-      "z": 2.5,
-      "width": 4.8,
-      "depth": 4.2,
+      "x": 4.2,
+      "z": 4.2,
+      "width": 4.0,
+      "depth": 4.0,
       "connections": [
         "salon",
         "library-morning-room",
@@ -145,10 +145,10 @@
     {
       "id": "library-morning-room",
       "floor": 1,
-      "x": -5.1,
-      "z": 3.0,
-      "width": 4.8,
-      "depth": 3.0,
+      "x": -4.2,
+      "z": 4.2,
+      "width": 4.0,
+      "depth": 4.0,
       "connections": [
         "drawing-music-room",
         "byron-study"
@@ -157,10 +157,10 @@
     {
       "id": "salon",
       "floor": 1,
-      "x": -5.1,
-      "z": -1.8,
-      "width": 5.4,
-      "depth": 6.0,
+      "x": -2.1,
+      "z": -2.1,
+      "width": 8.2,
+      "depth": 8.2,
       "connections": [
         "drawing-music-room",
         "dining-room",
@@ -172,10 +172,10 @@
     {
       "id": "dining-room",
       "floor": 1,
-      "x": 5.1,
-      "z": 1.0,
-      "width": 4.8,
-      "depth": 4.8,
+      "x": 4.2,
+      "z": 0,
+      "width": 4.0,
+      "depth": 4.0,
       "connections": [
         "salon",
         "cabinet-guest-room"
@@ -196,28 +196,28 @@
     {
       "id": "byron-study",
       "floor": 1,
-      "x": 5.1,
-      "z": -2.8,
-      "width": 4.8,
-      "depth": 3.2,
+      "x": 4.2,
+      "z": -4.2,
+      "width": 4.0,
+      "depth": 4.0,
       "connections": ["drawing-music-room", "library-morning-room", "central-stair-hall"]
     },
     {
       "id": "central-stair-hall",
       "floor": 1,
       "x": 0,
-      "z": -3.2,
-      "width": 4.2,
-      "depth": 3.2,
+      "z": -6.3,
+      "width": 4.0,
+      "depth": 1.8,
       "connections": ["salon", "byron-study", "ante-room", "entrance-hall"]
     },
     {
       "id": "ante-room",
       "floor": 1,
-      "x": -5.1,
-      "z": -4.8,
-      "width": 4.8,
-      "depth": 2.2,
+      "x": -4.2,
+      "z": -6.3,
+      "width": 4.0,
+      "depth": 1.8,
       "connections": ["central-stair-hall", "cabinet-guest-room"]
     },
     {
