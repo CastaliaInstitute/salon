@@ -157,8 +157,8 @@
     {
       "id": "salon",
       "floor": 1,
-      "x": -2.1,
-      "z": -2.1,
+      "x": -4.2,
+      "z": -4.2,
       "width": 8.2,
       "depth": 8.2,
       "connections": [

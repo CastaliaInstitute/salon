@@ -44,7 +44,7 @@ const HOUSE_WORLD_SCALE = 3.0;
 // Principal floor bay grid: three 4.2 m bays in each direction. The salon
 // occupies the southwest 2 x 2 block; the remaining bay is circulation and
 // service space rather than another copy of the salon.
-const SALON_ORIGIN = { x: -2.1, z: -2.1 };
+const SALON_ORIGIN = { x: -4.2, z: -6.3 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
 const SALON_CONTENT_SCALE = { x: .50, z: .50 };
@@ -405,7 +405,7 @@ function buildRoom() {
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
   planRoom("drawing room", 4.2, 4.2, 4.0, 4.0, 0x705640);
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
-  planRoom("grand salon", -2.1, -2.1, 8.2, 8.2, 0x80634d);
+  planRoom("grand salon", -4.2, -4.2, 8.2, 8.2, 0x80634d);
   planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
   planRoom("Byron study", 4.2, -4.2, 4.0, 4.0, 0x705640);
   planRoom("central stair hall", 0, -6.3, 4.0, 1.8, 0x80634d);
