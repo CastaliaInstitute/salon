@@ -344,8 +344,10 @@ function stepPhysics(delta) {
     }
     // The head is not a free-swinging ragdoll ball. Preserve its authored
     // local orientation so torso physics cannot roll it onto its side.
-    if (ragdoll.head && ragdoll.head.userData.physicsHeadBase) {
-      ragdoll.head.rotation.copy(ragdoll.head.userData.physicsHeadBase);
+    if (ragdoll.head && ragdoll.head.userData.physicsHeadWorldBase) {
+      const parentQuaternion = new THREE.Quaternion();
+      ragdoll.head.parent.getWorldQuaternion(parentQuaternion);
+      ragdoll.head.quaternion.copy(parentQuaternion.invert().multiply(ragdoll.head.userData.physicsHeadWorldBase));
     }
     refreshSkinnedPose(ragdoll.figure);
   }
@@ -390,6 +392,7 @@ function createRagdoll(figure) {
     if (bone.isBone && bone.name === "head") {
       head = bone;
       bone.userData.physicsHeadBase = bone.rotation.clone();
+      bone.getWorldQuaternion(bone.userData.physicsHeadWorldBase = new THREE.Quaternion());
     }
     if (!bone.isBone || !names.has(bone.name)) return;
     const p = new THREE.Vector3();
