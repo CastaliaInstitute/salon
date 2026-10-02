@@ -3,10 +3,10 @@
   "coordinateSystem": "villa-diodati-isometric-v1",
   "units": "room-grid",
   "bounds": {
-    "minX": -8,
-    "maxX": 8,
+    "minX": -18,
+    "maxX": 18,
     "minZ": -4,
-    "maxZ": 18
+    "maxZ": 32
   },
   "camera": {
     "orthographic": {
@@ -29,11 +29,11 @@
   },
   "walkable": [
     {
-      "id": "villa-and-grounds",
-      "minX": -7.4,
-      "maxX": 7.4,
+      "id": "villa-estate-and-shore",
+      "minX": -16.5,
+      "maxX": 16.5,
       "minZ": -2.8,
-      "maxZ": 17.6
+      "maxZ": 27.5
     }
   ],
   "furniture": [
