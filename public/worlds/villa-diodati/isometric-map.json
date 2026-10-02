@@ -159,8 +159,8 @@
       "floor": 1,
       "x": -4.2,
       "z": -4.2,
-      "width": 8.2,
-      "depth": 8.2,
+      "width": 8.4,
+      "depth": 8.4,
       "connections": [
         "drawing-music-room",
         "dining-room",

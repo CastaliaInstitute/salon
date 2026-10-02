@@ -147,7 +147,7 @@ function applyTopDownRoomVisibility() {
     if (!node.isMesh || !node.name) return;
     const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
     if (match) node.visible = match === "grand salon"
-      ? topDownRoomVisibility.get("salon") === false && topDownRoomVisibility.get(match) !== false
+      ? topDownRoomVisibility.get("salon") !== false && topDownRoomVisibility.get(match) !== false
       : topDownRoomVisibility.get(match) !== false;
   });
 }
@@ -408,11 +408,13 @@ function buildRoom() {
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
   planRoom("drawing room", 4.2, 4.2, 4.0, 4.0, 0x705640);
   planRoom("library study", -4.2, 4.2, 4.0, 4.0, 0x80634d);
-  planRoom("grand salon", -4.2, -4.2, 8.2, 8.2, 0x80634d, true);
+  // One continuous southwest 2x2 block: it is not four rooms and must not be
+  // subdivided by the stair/ante-room placeholder shells.
+  planRoom("grand salon", -4.2, -4.2, 8.4, 8.4, 0x80634d, true);
   planRoom("dining room", 4.2, 0, 4.0, 4.0, 0x705640);
   planRoom("Byron study", 4.2, -4.2, 4.0, 4.0, 0x705640);
-  planRoom("central stair hall", 0, -6.3, 4.0, 1.8, 0x80634d);
-  planRoom("ante room", -4.2, -6.3, 4.0, 1.8, 0x705640);
+  box("central stair hall floor", [3.8, .1, 1.2], [0, -.08, -6.0], 0x80634d);
+  box("ante room floor", [3.8, .1, 1.2], [-4.2, -.08, -6.0], 0x705640);
   // Open thresholds connect the salon to the inferred adjacent rooms and service hall.
   box("west room threshold", [1.4, .1, 2.4], [-2.7, -.02, .1], 0xa28662);
   box("east room threshold", [1.4, .1, 2.4], [2.7, -.02, .1], 0xa28662);
