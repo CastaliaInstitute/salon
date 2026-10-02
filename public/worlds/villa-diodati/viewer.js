@@ -542,7 +542,8 @@ const floor = new THREE.Mesh(
 );
 floor.rotation.x = -Math.PI / 2;
 floor.position.y = -0.22;
-if (!dressingRoomMode) scene.add(floor);
+// salon.glb already contains the authored parquet floor. A second overlay
+// plane could visually slice through mannequin legs from some camera angles.
 
 const ceiling = new THREE.Mesh(
   new THREE.PlaneGeometry(22, 22),
