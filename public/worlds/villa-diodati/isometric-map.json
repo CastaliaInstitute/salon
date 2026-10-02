@@ -132,8 +132,8 @@
     {
       "id": "drawing-music-room",
       "floor": 1,
-      "x": -5.1,
-      "z": -1.8,
+      "x": 0,
+      "z": 2.1,
       "width": 4.8,
       "depth": 4.8,
       "connections": [
@@ -157,8 +157,8 @@
     {
       "id": "salon",
       "floor": 1,
-      "x": 0,
-      "z": 2.1,
+      "x": -5.1,
+      "z": -1.8,
       "width": 6.4,
       "depth": 5.8,
       "connections": [
