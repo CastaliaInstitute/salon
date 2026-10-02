@@ -100,7 +100,7 @@ function windowViewTexture() { const canvas = document.createElement("canvas"); 
 function loadFurnitureModel(path, name, position, scale, rotation = 0) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.scale.setScalar(scale); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); room.add(model); }); }
 function buildLowerFloor() {
   const floorMat = mat(0x6c5542); const wallMat = mat(0x49362d);
-  const room = (name, x, z, width, depth) => { const floor = new THREE.Mesh(new THREE.BoxGeometry(width, .12, depth), floorMat); floor.name = `${name} floor`; floor.position.set(x, -3.7, z); lowerFloor.add(floor); for (const [sx, sz, sw, sd] of [[0, -depth / 2, width, .12], [0, depth / 2, width, .12], [-width / 2, 0, .12, depth], [width / 2, 0, .12, depth]]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(sw, 1.8, sd), wallMat); wall.name = `${name} wall`; wall.position.set(x + sx, -2.8, z + sz); lowerFloor.add(wall); } };
+  const room = (name, x, z, width, depth) => { const floor = new THREE.Mesh(new THREE.BoxGeometry(width, .12, depth), floorMat); floor.name = `${name} floor`; floor.position.set(x, -3.7, z); lowerFloor.add(floor); for (const [sx, sz, sw, sd] of [[0, -depth / 2, width, .12], [0, depth / 2, width, .12], [-width / 2, 0, .12, depth], [width / 2, 0, .12, depth]]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(sw, .82, sd), wallMat); wall.name = `${name} wall`; wall.position.set(x + sx, -3.29, z + sz); lowerFloor.add(wall); } };
   room("entrance hall", 0, -.8, 5.8, 5.5); room("kitchen", -6.2, -.8, 5.5, 5.5); room("pantry", -10.5, -.8, 2.5, 5.5); room("servants hall", 6.2, -.8, 5.5, 5.5); room("storage and cellar", 10.5, -.8, 2.5, 5.5); room("wine cellar", -5.5, -5.5, 5.5, 2.8); room("stores", 5.5, -5.5, 5.5, 2.8);
   for (const x of [-7.3, -5.5, -3.7]) { const counter = new THREE.Mesh(new THREE.BoxGeometry(1.2, .65, .55), mat(0x5b3828)); counter.position.set(x, -3.2, -.8); lowerFloor.add(counter); }
 }
@@ -109,7 +109,7 @@ function buildUpperFloors() {
   const wallMat = mat(0x5b4035);
   const addRoom = (layer, name, x, z, width, depth) => {
     const floor = new THREE.Mesh(new THREE.BoxGeometry(width, .12, depth), floorMat); floor.name = `${name} floor`; floor.position.set(x, layer === upperFloors[0] ? 3.9 : 7.7, z); layer.add(floor);
-    for (const [sx, sz, sw, sd] of [[0, -depth / 2, width, .12], [0, depth / 2, width, .12], [-width / 2, 0, .12, depth], [width / 2, 0, .12, depth]]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(sw, 1.8, sd), wallMat); wall.name = `${name} wall`; wall.position.set(x + sx, floor.position.y + .9, z + sz); layer.add(wall); }
+    for (const [sx, sz, sw, sd] of [[0, -depth / 2, width, .12], [0, depth / 2, width, .12], [-width / 2, 0, .12, depth], [width / 2, 0, .12, depth]]) { const wall = new THREE.Mesh(new THREE.BoxGeometry(sw, .82, sd), wallMat); wall.name = `${name} wall`; wall.position.set(x + sx, floor.position.y + .41, z + sz); layer.add(wall); }
   };
   addRoom(upperFloors[0], "Byron bedroom", -5.3, -1.4, 5.1, 4.6);
   addRoom(upperFloors[0], "Polidori bedroom", 5.3, -1.4, 5.1, 4.6);
