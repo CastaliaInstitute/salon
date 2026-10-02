@@ -96,17 +96,20 @@
 
       <div class="status" id="status">Preparing the room…</div>
       <div class="object-identification" id="object-identification" aria-live="polite">Tap an object to identify it</div>
+      <div class="scene-version" id="scene-version">VILLA DIODATI · build checking · asset room-props-9</div>
       <div class="controls-hint">Drag to orbit <span>·</span> scroll to zoom</div>
     </main>
     <script type="module" src="./viewer.js?v=dressing-room-scale-stable-1"></script>
     <script>
       (() => {
         let currentVersion = null;
+        const versionLabel = document.querySelector("#scene-version");
         const checkDeployment = async () => {
           try {
             const response = await fetch(`/deploy-version.json?t=${Date.now()}`, { cache: "no-store" });
             if (!response.ok) return;
             const payload = await response.json();
+            if (versionLabel && payload.version) versionLabel.textContent = `VILLA DIODATI · build ${String(payload.version).slice(0, 8)} · asset room-props-9`;
             if (currentVersion && payload.version && payload.version !== currentVersion) {
               window.location.reload();
               return;
