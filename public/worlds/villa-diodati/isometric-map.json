@@ -133,9 +133,9 @@
       "id": "drawing-music-room",
       "floor": 1,
       "x": 0,
-      "z": 2.1,
+      "z": 2.5,
       "width": 4.8,
-      "depth": 4.8,
+      "depth": 4.2,
       "connections": [
         "salon",
         "library-morning-room",
@@ -146,9 +146,9 @@
       "id": "library-morning-room",
       "floor": 1,
       "x": -5.1,
-      "z": 2.6,
+      "z": 3.0,
       "width": 4.8,
-      "depth": 3.2,
+      "depth": 3.0,
       "connections": [
         "drawing-music-room",
         "byron-study"
@@ -159,8 +159,8 @@
       "floor": 1,
       "x": -5.1,
       "z": -1.8,
-      "width": 6.4,
-      "depth": 5.8,
+      "width": 5.4,
+      "depth": 6.0,
       "connections": [
         "drawing-music-room",
         "dining-room",
@@ -197,9 +197,9 @@
       "id": "byron-study",
       "floor": 1,
       "x": 5.1,
-      "z": -2.0,
+      "z": -2.8,
       "width": 4.8,
-      "depth": 3.8,
+      "depth": 3.2,
       "connections": ["drawing-music-room", "library-morning-room", "central-stair-hall"]
     },
     {
