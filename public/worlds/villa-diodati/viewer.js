@@ -257,7 +257,7 @@ function invokeFigureGesture(name = "idle", target = "all") {
   const figures = [...seatedFigures.map((entry) => entry.figure), ...standingFigures];
   figures.forEach((figure, index) => {
     if (target !== "all" && Number(target) !== index) return;
-    figure.userData.gesture = { name, started: animationClock.elapsedTime };
+    figure.userData.gesture = { name, started: animationClock.elapsedTime, attentionTarget: Number(target) };
   });
 }
 
@@ -286,6 +286,19 @@ function animateFigureGesture(figure) {
     add("upperarm.l", 0, 0, Math.sin(t * 0.8 + phase) * 0.018);
     add("upperarm.r", 0, 0, Math.sin(t * 0.63 + phase + 1) * 0.018);
     add("head", Math.max(0, Math.sin(t * 0.21 + phase)) ** 8 * 0.07, 0, 0);
+  } else if (gesture.name === "look-at-figure") {
+    const figures = [...seatedFigures.map((entry) => entry.figure), ...standingFigures];
+    const targetFigure = figures[gesture.attentionTarget];
+    if (targetFigure && targetFigure !== figure) {
+      const from = new THREE.Vector3();
+      const to = new THREE.Vector3();
+      figure.getWorldPosition(from);
+      targetFigure.getWorldPosition(to);
+      const desiredYaw = Math.atan2(to.x - from.x, to.z - from.z) - figure.rotation.y;
+      const yaw = THREE.MathUtils.clamp(THREE.MathUtils.euclideanModulo(desiredYaw + Math.PI, Math.PI * 2) - Math.PI, -0.6, 0.6);
+      add("head", 0, yaw, 0);
+      add("spine_02", 0, yaw * 0.16, 0);
+    }
   } else if (gesture.name === "look" || gesture.name === "look-at-speaker") {
     add("head", 0, Math.sin(t * 1.4) * 0.12, 0);
     add("spine_02", 0, Math.sin(t * 1.4) * 0.025, 0);
@@ -568,6 +581,24 @@ controls.maxDistance = 18;
 controls.maxPolarAngle = Math.PI * 0.48;
 controls.update();
 
+let cameraFocus = null;
+function focusFigure(indexOrName) {
+  const names = { byron: 0, claire: 1, clairmont: 1, mary: 2, percy: 3, shelley: 4 };
+  const key = String(indexOrName).toLowerCase();
+  const index = names[key] ?? Number(indexOrName);
+  const figures = [...seatedFigures.map((entry) => entry.figure), ...standingFigures];
+  const figure = figures[index];
+  if (!figure) return false;
+  figures.forEach((other) => {
+    other.userData.gesture = { name: "look-at-figure", started: animationClock.elapsedTime, attentionTarget: index };
+  });
+  const point = new THREE.Vector3();
+  figure.getWorldPosition(point);
+  cameraFocus = point.add(new THREE.Vector3(0, 0.9, 0));
+  return true;
+}
+window.villaDiodatiGestures.focusFigure = focusFigure;
+
 const resize = () => {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -777,6 +808,7 @@ renderer.setAnimationLoop(() => {
     animateFigureGesture(figure);
     keepFeetAboveFloor(figure);
   }
+  if (cameraFocus) controls.target.lerp(cameraFocus, 0.045);
   stepPhysics(delta);
   controls.update();
   renderer.render(scene, camera);
