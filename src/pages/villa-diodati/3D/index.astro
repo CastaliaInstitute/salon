@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+const viewerQuery = Astro.url.search;
 ---
 
 <BaseLayout
@@ -8,7 +9,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 >
   <iframe
     title="Villa Diodati navigable house"
-    src="/worlds/villa-diodati/sprite-room/?player=1"
+    src={`/worlds/villa-diodati/sprite-room/?player=1${viewerQuery ? `&${viewerQuery.slice(1)}` : ''}`}
     class="villa-3d-frame"
     allow="fullscreen"
   ></iframe>

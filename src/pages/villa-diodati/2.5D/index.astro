@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+const viewerQuery = Astro.url.search;
 ---
 
 <BaseLayout
@@ -8,7 +9,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 >
   <iframe
     title="Villa Diodati isometric Three.js salon"
-    src="/worlds/villa-diodati/sprite-room/"
+    src={`/worlds/villa-diodati/sprite-room/${viewerQuery ? `?${viewerQuery.slice(1)}` : ''}`}
     class="sprite-room-frame"
     allow="fullscreen"
   ></iframe>
