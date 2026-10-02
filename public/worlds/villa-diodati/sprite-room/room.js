@@ -77,6 +77,7 @@ function buildRoom() {
   const leftWall = box("left wall", [.18, 4.3, 8.2], [-6, 2.05, .1], 0x4a3a38);
   const rightWall = box("right wall", [.18, 4.3, 8.2], [6, 2.05, .1], 0x4a3a38);
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall };
+  room.userData.occludingDecor = [];
   const wallpaper = textureLoader.load("../art/wallpaper-v1.png");
   wallpaper.colorSpace = THREE.SRGBColorSpace;
   wallpaper.wrapS = THREE.RepeatWrapping; wallpaper.wrapT = THREE.RepeatWrapping;
@@ -90,11 +91,12 @@ function buildRoom() {
   }
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
   for (const x of [-3.8, 3.8]) {
-    box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.88], 0xa47a50);
+    const frame = box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.88], 0xa47a50);
     const art = textureLoader.load("../art/wall-triptych-v1.png");
     art.colorSpace = THREE.SRGBColorSpace; art.wrapS = THREE.ClampToEdgeWrapping; art.repeat.set(1 / 3, 1); art.offset.set(x < 0 ? 0 : 2 / 3, 0);
     const painting = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.3), new THREE.MeshBasicMaterial({ map: art }));
     painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.83); painting.renderOrder = 2; room.add(painting);
+    room.userData.occludingDecor.push(frame, painting);
   }
   box("fireplace", [2.35, 2.2, .5], [0, 1.1, -3.72], 0x71645c);
   box("fire opening", [1.35, .9, .04], [0, .75, -3.99], 0x241916);
@@ -102,6 +104,7 @@ function buildRoom() {
   fireplaceTexture.colorSpace = THREE.SRGBColorSpace;
   const fireplaceArt = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 1.57), new THREE.MeshBasicMaterial({ map: fireplaceTexture, transparent: true }));
   fireplaceArt.name = "generated fireplace surround"; fireplaceArt.position.set(0, 1.1, -4.005); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
+  room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 4, 5); fireLight.position.set(0, .8, -3.1); room.add(fireLight);
   const fireOuter = new THREE.Mesh(new THREE.ConeGeometry(.48, 1.15, 7), new THREE.MeshBasicMaterial({ color: 0xff6b2e, transparent: true, opacity: .9 })); fireOuter.position.set(0, .82, -4.05); room.add(fireOuter); flames.push(fireOuter);
   const fireInner = new THREE.Mesh(new THREE.ConeGeometry(.24, .72, 7), new THREE.MeshBasicMaterial({ color: 0xffe28a, transparent: true, opacity: .95 })); fireInner.position.set(0, .72, -4.08); room.add(fireInner); flames.push(fireInner);
@@ -113,7 +116,7 @@ function buildRoom() {
   for (const x of [-.48, -.18, .18, .48]) { const candle = new THREE.PointLight(0xffc77c, 1.2, 1.5); candle.position.set(x, 1.1, 1.55); room.add(candle); candleLights.push(candle); box("candle", [.05, .65, .05], [x, .86, 1.55], 0xe8d0a4); const flame = new THREE.Mesh(new THREE.ConeGeometry(.06, .2, 5), new THREE.MeshBasicMaterial({ color: 0xffd37a })); flame.position.set(x, 1.22, 1.55); room.add(flame); flames.push(flame); }
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
 }
-function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } return; } const position = activeCamera.position; const near = new Set(); if (position.x > 1.2) near.add("right"); if (position.x < -1.2) near.add("left"); if (position.z < -1.2) near.add("rear"); for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .16 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } }
+function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } return; } const position = activeCamera.position; const near = new Set(); if (position.x > 1.2) near.add("right"); if (position.x < -1.2) near.add("left"); if (position.z < -1.2) near.add("rear"); for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .16 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = near.has("rear") ? .16 : 1; item.material.depthWrite = !near.has("rear"); item.material.needsUpdate = true; } }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
   const key = new THREE.DirectionalLight(0xffe0bd, 2.1); key.position.set(-4, 8, 5); key.castShadow = true; scene.add(key);
