@@ -24,8 +24,8 @@ async function addCopies(path, placements) {
 }
 
 await addCopies('furniture/armchair-01/ArmChair_01.gltf', [
-  [-1.55, 0, 0.18, Math.PI * 0.08, 0.94],
-  [1.55, 0, 0.18, -Math.PI * 0.08, 0.94],
+  [-2.15, 0, 0.35, Math.PI * 0.08, 0.88],
+  [2.15, 0, 0.35, -Math.PI * 0.08, 0.88],
   [-3.95, 0, 0.34, Math.PI / 2, 0.94],
   [3.95, 0, 1.02, -Math.PI / 2, 0.94],
 ]);
