@@ -130,10 +130,10 @@ function buildRoom() {
   fireplaceArt.name = "Villa Diodati fireplace artwork"; fireplaceArt.position.set(0, 1.32, -3.78); fireplaceArt.renderOrder = 3; room.add(fireplaceArt);
   room.userData.occludingDecor.push(fireplaceArt);
   fireLight = new THREE.PointLight(0xff9b43, 3.2, 5); fireLight.position.set(0, .82, -3.15); room.add(fireLight);
-  box("rug", [6.3, .035, 2.3], [0, .02, 1.1], 0x583743);
-  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.35, 0, .25], 1.16, 0);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom window armchair", [3.75, 0, .25], 1.12, -Math.PI / 2);
-  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.55, 0, 1.35], 1.12, -Math.PI / 2);
+  loadFurnitureModel("../furniture/rug-01/rug.glb", "CC0 salon rug", [0, .025, 1.1], 2.65, 0);
+  loadFurnitureModel("../furniture/sofa-03/sofa_03.gltf", "ThirdRoom carved sofa", [-3.45, 0, .65], 1.16, 0);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [3.45, 0, .35], 1.12, -Math.PI / 2);
+  loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [3.45, 0, 1.85], 1.12, -Math.PI / 2);
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.95, 0, 1.65], 1.12, Math.PI / 2);
   loadFurnitureModel("../furniture/coffee-table-01/coffee-table.glb", "CC0 carved coffee table", [0, 0, 1.35], 3.0, 0);
   const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.35); room.add(tableCandelabra);
