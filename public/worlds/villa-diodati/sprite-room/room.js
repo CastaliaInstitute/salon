@@ -105,18 +105,15 @@ function buildRoom() {
   room.userData.occludingDecor = [];
   for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(0x91adbc); wall.material.needsUpdate = true; }
   const crownMolding = box("white crown molding", [15.7, .14, .12], [0, 4.08, -3.91], 0xf2eee5);
-  const chairRail = box("white chair rail", [15.7, .12, .12], [0, .72, -3.91], 0xf2eee5);
-  room.userData.occludingDecor.push(crownMolding, chairRail);
+  room.userData.occludingDecor.push(crownMolding);
   const sideTrim = [];
   for (const x of [-7.91, 7.91]) {
     sideTrim.push(
       box("side wall crown molding", [.12, .14, 9.0], [x, 4.08, .5], 0xf2eee5),
-      box("side wall chair rail", [.12, .12, 9.0], [x, .72, .5], 0xf2eee5),
     );
   }
   const frontTrim = [
     box("front wall crown molding", [15.7, .14, .12], [0, 4.08, 4.91], 0xf2eee5),
-    box("front wall chair rail", [15.7, .12, .12], [0, .72, 4.91], 0xf2eee5),
   ];
   room.userData.occludingDecor.push(...sideTrim, ...frontTrim);
   box("villa front terrace", [15.8, .12, 3.8], [0, -.12, 6.9], 0x8b684b);
@@ -200,7 +197,7 @@ function setupLighting() {
 function sheetMaterial(file) {
   if (textureCache.has(file)) return textureCache.get(file);
   const texture = textureLoader.load(`../sprites/dressup-v1/${file}`); texture.colorSpace = THREE.SRGBColorSpace; texture.magFilter = THREE.NearestFilter; texture.minFilter = THREE.NearestFilter; texture.generateMipmaps = false;
-  const material = new THREE.ShaderMaterial({ transparent: true, depthTest: true, depthWrite: false, uniforms: { map: { value: texture }, frame: { value: new THREE.Vector2(0, 0) }, coat: { value: new THREE.Color(0xffffff) }, waistcoat: { value: new THREE.Color(0xffffff) }, accent: { value: new THREE.Color(0xffffff) }, skin: { value: new THREE.Color(0xd5a07c) }, ghost: { value: new THREE.Color(0x8fc9ff) }, ghostStrength: { value: 0 } }, vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`, fragmentShader: `uniform sampler2D map; uniform vec2 frame; uniform vec3 coat; uniform vec3 waistcoat; uniform vec3 accent; uniform vec3 skin; uniform vec3 ghost; uniform float ghostStrength; varying vec2 vUv; void main(){vec2 cellUv=vec2(vUv.x,.012+vUv.y*.976); vec2 uv=(cellUv+vec2(frame.x,4.0-frame.y))/vec2(8.0,5.0); vec4 c=texture2D(map,uv); float alpha=c.a; if(alpha<.02) discard; float y=fract(cellUv.y); float lower=smoothstep(.18,.42,y)*(1.0-smoothstep(.86,.98,y)); float middle=smoothstep(.38,.58,y)*(1.0-smoothstep(.72,.88,y)); float warmPixels=smoothstep(.08,.28,c.r-c.b); float faceMask=smoothstep(.58,.78,y)*warmPixels; vec3 recolored=mix(c.rgb,coat,.55*lower); recolored=mix(recolored,waistcoat,.42*middle); recolored=mix(recolored,accent,.22*lower); recolored=mix(recolored,skin,.13*faceMask); recolored=mix(recolored,ghost,ghostStrength); gl_FragColor=vec4(recolored,alpha*(1.0-ghostStrength*.42));}` });
+  const material = new THREE.ShaderMaterial({ transparent: true, depthTest: true, depthWrite: false, uniforms: { map: { value: texture }, frame: { value: new THREE.Vector2(0, 0) }, coat: { value: new THREE.Color(0xffffff) }, waistcoat: { value: new THREE.Color(0xffffff) }, accent: { value: new THREE.Color(0xffffff) }, skin: { value: new THREE.Color(0xd5a07c) }, ghost: { value: new THREE.Color(0x8fc9ff) }, ghostStrength: { value: 0 } }, vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`, fragmentShader: `uniform sampler2D map; uniform vec2 frame; uniform vec3 coat; uniform vec3 waistcoat; uniform vec3 accent; uniform vec3 skin; uniform vec3 ghost; uniform float ghostStrength; varying vec2 vUv; void main(){vec2 cellUv=vec2(.012+vUv.x*.976,.012+vUv.y*.976); vec2 uv=(cellUv+vec2(frame.x,4.0-frame.y))/vec2(8.0,5.0); vec4 c=texture2D(map,uv); float alpha=c.a; if(alpha<.02) discard; float y=fract(cellUv.y); float lower=smoothstep(.18,.42,y)*(1.0-smoothstep(.86,.98,y)); float middle=smoothstep(.38,.58,y)*(1.0-smoothstep(.72,.88,y)); float warmPixels=smoothstep(.08,.28,c.r-c.b); float faceMask=smoothstep(.58,.78,y)*warmPixels; vec3 recolored=mix(c.rgb,coat,.55*lower); recolored=mix(recolored,waistcoat,.42*middle); recolored=mix(recolored,accent,.22*lower); recolored=mix(recolored,skin,.13*faceMask); recolored=mix(recolored,ghost,ghostStrength); gl_FragColor=vec4(recolored,alpha*(1.0-ghostStrength*.42));}` });
   textureCache.set(file, material); return material;
 }
 function faceMaterial(file) {
