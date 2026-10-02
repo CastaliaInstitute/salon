@@ -113,8 +113,12 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
             const row = state === 'walk' ? 1 : state === 'gesture' ? 2 : state === 'sit' ? 3 : state === 'speak' ? 4 : 0
             const column = DIRECTION_COLUMNS[character.position?.direction ?? 'south'] ?? 0
             const sprite = this.add.sprite(projected.x, projected.y, `dressup-${style}`, row * 8 + column).setOrigin(.5, 1)
-            const scale = Math.min(1, character.position?.scale ?? 1) * (state === 'sit' ? .84 : 1)
-            sprite.setScale(scale * .72)
+            const heightValue = Number(character.position?.height ?? 1)
+            const weightValue = Number(character.position?.weight ?? 1)
+            const heightDemo = heightValue > 100 ? Phaser.Math.Clamp(heightValue / 170, .86, 1.14) : 1
+            const weightDemo = weightValue > 25 ? Phaser.Math.Clamp(Math.sqrt(weightValue / 70), .82, 1.18) : Phaser.Math.Clamp(weightValue, .84, 1.16)
+            const scale = Phaser.Math.Clamp((character.position?.scale ?? 1) * heightDemo, .68, 1.02) * (state === 'sit' ? .84 : 1)
+            sprite.setScale(scale * .72 * weightDemo)
             sprite.setInteractive({ useHandCursor: true })
             sprite.on('pointerdown', () => onSelectRef.current?.(character.id))
           })
