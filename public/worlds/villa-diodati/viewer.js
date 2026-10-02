@@ -358,13 +358,6 @@ function stepPhysics(delta) {
       }
       part.bone.position.copy(worldPosition);
     }
-    // The head is not a free-swinging ragdoll ball. Preserve its authored
-    // local orientation so torso physics cannot roll it onto its side.
-    if (ragdoll.head && ragdoll.head.userData.physicsHeadWorldBase) {
-      const parentQuaternion = new THREE.Quaternion();
-      ragdoll.head.parent.getWorldQuaternion(parentQuaternion);
-      ragdoll.head.quaternion.copy(parentQuaternion.invert().multiply(ragdoll.head.userData.physicsHeadWorldBase));
-    }
     applyNeckLimits(ragdoll.figure);
     refreshSkinnedPose(ragdoll.figure);
   }
@@ -401,16 +394,10 @@ function createDressingRoomColliders() {
 
 function createRagdoll(figure) {
   figure.updateMatrixWorld(true);
-  const names = new Set(["spine_01", "spine_02", "upperarm.l", "lowerarm.l", "upperarm.r", "lowerarm.r", "thigh.l", "calf.l", "foot.l", "thigh.r", "calf.r", "foot.r"]);
+  const names = new Set(["spine_01", "spine_02", "head", "upperarm.l", "lowerarm.l", "upperarm.r", "lowerarm.r", "thigh.l", "calf.l", "foot.l", "thigh.r", "calf.r", "foot.r"]);
   const parts = [];
   const byBone = new Map();
-  let head = null;
   figure.traverse((bone) => {
-    if (bone.isBone && bone.name === "head") {
-      head = bone;
-      bone.userData.physicsHeadBase = bone.rotation.clone();
-      bone.getWorldQuaternion(bone.userData.physicsHeadWorldBase = new THREE.Quaternion());
-    }
     if (!bone.isBone || !names.has(bone.name)) return;
     const p = new THREE.Vector3();
     const q = new THREE.Quaternion();
@@ -419,7 +406,7 @@ function createRagdoll(figure) {
     const body = physicsWorld.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x, p.y, p.z)
         .setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
-        .setLinearDamping(3).setAngularDamping(3).setCanSleep(false),
+        .setLinearDamping(3).setAngularDamping(bone.name === "head" ? 8 : 3).setCanSleep(false),
     );
     physicsWorld.createCollider(RAPIER.ColliderDesc.ball(0.13).setMass(0.7), body);
     const part = { bone, body };
@@ -451,7 +438,7 @@ function createRagdoll(figure) {
       true,
     );
   }
-  ragdolls.push({ figure, parts, head });
+  ragdolls.push({ figure, parts });
 }
 
 const physicsInit = import("rapier3d-compat")
