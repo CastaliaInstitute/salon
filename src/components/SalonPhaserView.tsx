@@ -26,6 +26,11 @@ interface Props {
 const ANCHORS = [
   [0.25, 0.55], [0.43, 0.34], [0.61, 0.53], [0.78, 0.36], [0.52, 0.73],
 ] as const
+const DRESSUP_STYLES = ['byron', 'mary-godwin', 'claire-clairmont', 'percy-shelley', 'john-polidori'] as const
+const DIRECTION_COLUMNS: Record<string, number> = { south: 0, southwest: 1, west: 2, northwest: 3, north: 4, northeast: 5, east: 6, southeast: 7 }
+const STYLE_FILES: Record<(typeof DRESSUP_STYLES)[number], string> = {
+  byron: 'byron.png', 'mary-godwin': 'mary-godwin.png', 'claire-clairmont': 'claire-clairmont.png', 'percy-shelley': 'percy-shelley.png', 'john-polidori': 'john-polidori.png',
+}
 
 /** A deliberately small 2.5D stage: the room is drawn in Phaser, while chat remains React. */
 export function SalonPhaserView({ characters, furniture, onSelect, immersive = false }: Props) {
@@ -42,6 +47,7 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
         constructor() { super('salon-room') }
         preload() {
           this.load.image('salon-background', '/worlds/villa-diodati/sprites/v1/salon-background.png')
+          DRESSUP_STYLES.forEach((style) => this.load.spritesheet(`dressup-${style}`, `/worlds/villa-diodati/sprites/dressup-v1/${STYLE_FILES[style]}`, { frameWidth: 192, frameHeight: 200 }))
           this.load.json('salon-map', '/worlds/villa-diodati/isometric-map.json')
         }
         create() {
@@ -98,33 +104,19 @@ export function SalonPhaserView({ characters, furniture, onSelect, immersive = f
           })
         }
         drawCharacters() {
-          const { width: w, height: h } = this.scale
           characters.slice().sort((a, b) => (a.depth ?? 0) - (b.depth ?? 0)).forEach((character, index) => {
-            const [defaultX, defaultZ] = ANCHORS[index]
+            const [defaultX, defaultZ] = ANCHORS[index % ANCHORS.length]
             const world = character.position ?? { x: (defaultX - .5) * 12, z: (defaultZ - .54) * 15 }
             const projected = this.project(world.x, world.z)
-            const x = projected.x; const y = projected.y
-            const group = this.add.container(x, y).setSize(94, 70).setInteractive({ useHandCursor: true })
+            const style = DRESSUP_STYLES[index % DRESSUP_STYLES.length]
             const state = character.position?.animation_state ?? 'idle'
-            const seated = state === 'sit'
-            const gesturing = state === 'gesture' || state === 'speak'
-            const feminine = character.bodyType === 'feminine'
-            const scale = character.position?.scale ?? 1
-            const height = character.position?.height ?? 1
-            const weight = character.position?.weight ?? 1
-            const shadow = this.add.ellipse(0, seated ? 13 : 22, (seated ? 42 : 54) * weight, 16 * weight, 0x090812, .55)
-            const hips = this.add.ellipse(0, seated ? 0 : 10, (feminine ? 36 : 30) * weight, seated ? 24 : 34, character.palette.coat, .95).setStrokeStyle(2, character.active ? 0xffdf9b : character.palette.accent)
-            const torso = this.add.rectangle(0, seated ? -12 : -4, (feminine ? 25 : 24) * weight, 28 * height, character.palette.waistcoat, .98)
-            const coat = this.add.rectangle(0, seated ? -7 : 2, (feminine ? 37 : 32) * weight, (seated ? 17 : 34) * height, character.palette.coat, .9).setStrokeStyle(1, character.palette.accent)
-            const chest = feminine ? this.add.ellipse(0, seated ? -17 : -12, 24 * weight, 14 * height, character.palette.waistcoat, 1) : null
-            const hair = this.add.ellipse(0, -30 * height, (feminine ? 19 : 18) * weight, (feminine ? 21 : 18) * height, character.hair ?? character.palette.accent, 1)
-            const head = this.add.circle(0, -27 * height, 11 * weight, character.skin ?? (character.active ? 0xf0c5a0 : 0xc7a28f))
-            const arm = gesturing ? this.add.rectangle((feminine ? 19 : 18) * weight, -7 * height, 29 * weight, 6 * height, character.palette.coat, .95).setAngle(-28) : null
-            const accessory = character.accessories?.includes('cravat') ? this.add.rectangle(0, -15 * height, 4 * weight, 10 * height, character.palette.accent, 1) : null
-            const label = immersive ? null : this.add.text(0, 43, character.name, { color: '#f5e9dc', fontFamily: 'Georgia', fontSize: '12px', align: 'center', wordWrap: { width: 100 } }).setOrigin(.5)
-            group.add([shadow, hips, coat, torso, ...(chest ? [chest] : []), hair, head, ...(arm ? [arm] : []), ...(accessory ? [accessory] : []), ...(label ? [label] : [])])
-            group.setScale(scale)
-            group.on('pointerdown', () => onSelectRef.current?.(character.id))
+            const row = state === 'walk' ? 1 : state === 'gesture' ? 2 : state === 'sit' ? 3 : state === 'speak' ? 4 : 0
+            const column = DIRECTION_COLUMNS[character.position?.direction ?? 'south'] ?? 0
+            const sprite = this.add.sprite(projected.x, projected.y, `dressup-${style}`, row * 8 + column).setOrigin(.5, 1)
+            const scale = Math.min(1, character.position?.scale ?? 1) * (state === 'sit' ? .84 : 1)
+            sprite.setScale(scale * .72)
+            sprite.setInteractive({ useHandCursor: true })
+            sprite.on('pointerdown', () => onSelectRef.current?.(character.id))
           })
         }
       }
