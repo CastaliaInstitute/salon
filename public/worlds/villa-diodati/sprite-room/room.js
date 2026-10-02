@@ -26,6 +26,10 @@ renderer.shadowMap.enabled = true;
 const isoCamera = new THREE.OrthographicCamera(-8, 8, 5, -5, .1, 100);
 const cinematicCamera = new THREE.PerspectiveCamera(36, 1, .1, 100);
 const mapCamera = new THREE.OrthographicCamera(-18, 18, 28, -28, .1, 100);
+// Keep geographic north at the top of the plan.  The explicit up vector is
+// important for a camera looking straight down; relying on the default camera
+// up vector makes the map orientation depend on a nearly-singular lookAt.
+mapCamera.up.set(0, 0, -1);
 const povCamera = new THREE.PerspectiveCamera(68, 1, .05, 100);
 let activeCamera = isoCamera;
 let cinematic = false;
@@ -46,7 +50,7 @@ const HOUSE_WORLD_SCALE = 3.0;
 // service space rather than another copy of the salon.
 // Principal floor is a 3x3 bay grid. The salon occupies the southwest
 // column across two bays: one bay wide, two bays deep.
-const SALON_ORIGIN = { x: -4.2, z: -4.2 };
+const SALON_ORIGIN = { x: -4.2, z: 4.2 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
 const SALON_CONTENT_SCALE = { x: .50, z: .50 };
@@ -59,7 +63,7 @@ let walkRoute = [];
 let currentRoomId = "";
 const stair = { x: 0, z: 0 };
 const requestedRoom = new URLSearchParams(location.search).get("room");
-function focusHouseLocation(x, z, floor) { const y = [-3.64, 0, 3.96, 7.76][Math.max(0, Math.min(3, Number(floor) || 1))] * HOUSE_WORLD_SCALE; const worldX = x * HOUSE_WORLD_SCALE; const worldZ = z * HOUSE_WORLD_SCALE; controls.target.set(worldX, y + .8, worldZ); if (topDown) { mapCamera.position.set(worldX, 24, worldZ + 11); mapCamera.lookAt(worldX, 0, worldZ); } else { isoCamera.position.set(worldX + 8, y + 8, worldZ + 8); isoCamera.lookAt(worldX, y + .8, worldZ); } }
+function focusHouseLocation(x, z, floor) { const y = [-3.64, 0, 3.96, 7.76][Math.max(0, Math.min(3, Number(floor) || 1))] * HOUSE_WORLD_SCALE; const worldX = x * HOUSE_WORLD_SCALE; const worldZ = z * HOUSE_WORLD_SCALE; controls.target.set(worldX, topDown ? 0 : y + .8, worldZ); if (topDown) { mapCamera.position.set(worldX, 56, worldZ); mapCamera.lookAt(worldX, 0, worldZ); } else { isoCamera.position.set(worldX + 8, y + 8, worldZ + 8); isoCamera.lookAt(worldX, y + .8, worldZ); } }
 fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => {
   if (contract?.coordinateSystem === "villa-diodati-isometric-v1") { Object.assign(map, contract.bounds || {}); roomRegions = (contract.rooms || []).filter((candidate) => Number.isFinite(candidate.x) && Number.isFinite(candidate.z) && Number.isFinite(candidate.width) && Number.isFinite(candidate.depth)).map((candidate) => ({ floor: Number(candidate.floor), minX: Number(candidate.x) - Number(candidate.width) / 2, maxX: Number(candidate.x) + Number(candidate.width) / 2, minZ: Number(candidate.z) - Number(candidate.depth) / 2, maxZ: Number(candidate.z) + Number(candidate.depth) / 2 })); const transition = contract.floorTransitions?.find((candidate) => candidate.id === "central-stair"); if (transition) { stair.x = Number(transition.x); stair.z = Number(transition.z); } const destination = requestedRoom ? contract.rooms?.find((room) => room.id === requestedRoom) : null; if (destination && localPlayerEnabled) { localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); localPlayer.floor = Number(destination.floor); walkTarget = null; setFloorLevel(localPlayer.floor); focusHouseLocation(localPlayer.x, localPlayer.z, localPlayer.floor); const figure = figures.get(localPlayer.id); if (figure) updateFigure(figure, localPlayer, clock.elapsedTime); } }
 }).catch(() => {});
@@ -125,10 +129,11 @@ const tapRaycaster = new THREE.Raycaster();
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function changeFloor(now = clock.elapsedTime) { if (now - lastFloorChange < 1.2) return false; const nextFloor = floorLevel >= 3 ? 0 : floorLevel + 1; lastFloorChange = now; localPlayer.floor = nextFloor; localPlayer.z = stair.z + 1.0; walkRoute = []; setFloorLevel(nextFloor); focusHouseLocation(stair.x, localPlayer.z, nextFloor); return true; }
 function roomAtPoint(x, z) { return navigationRooms.find((room) => Number(room.floor) === floorLevel && x >= Number(room.x) - Number(room.width) / 2 && x <= Number(room.x) + Number(room.width) / 2 && z >= Number(room.z) - Number(room.depth) / 2 && z <= Number(room.z) + Number(room.depth) / 2) || null; }
-const planShellByRoom = { "drawing-music-room": "drawing room", "library-morning-room": "library study", salon: "grand salon", "dining-room": "dining room", "cabinet-guest-room": "cabinet guest room", "byron-study": "Byron study", "central-stair-hall": "central stair hall", "ante-room": "ante room", "guest-chamber": "guest chamber" };
+const planShellByRoom = { "drawing-music-room": "foyer", "library-morning-room": "library study", salon: "room four", "dining-room": "dining room", "cabinet-guest-room": "cabinet guest room", "byron-study": "Byron study", "central-stair-hall": "central stair hall", "ante-room": "ante room", "guest-chamber": "guest chamber" };
+const planShellNames = ["library study", "foyer", "cabinet guest room", "room four", "central stair hall", "dining room", "ante room", "Byron study", "guest chamber"];
 const exteriorRoomMesh = /^(villa front terrace|terrace board|terrace steps|garden lawn|main garden path|east garden path|west garden path|basin|pond|fountain|vine|orchard|lake shore path|stone seawall|Lake Geneva|trunk|crown)$/i;
 function updateExteriorRoomMeshes(visible) {
-  room.traverse((node) => { if (node.isMesh && exteriorRoomMesh.test(node.name || "")) node.visible = visible; });
+  room.traverse((node) => { if (!node.isMesh) return; const name = node.name || ""; const outdoorClutter = exteriorRoomMesh.test(name) || /^(trunk|crown)$/i.test(name) || node.position.z > 8 || Math.abs(node.position.x) > 8; if (outdoorClutter) node.visible = visible; });
 }
 function updatePlanRoomVisibility(roomId) {
   // The salon contents are currently disabled while the architectural shell
@@ -140,7 +145,7 @@ function updatePlanRoomVisibility(roomId) {
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     if (node.userData.structuralOpening) { node.visible = false; return; }
-    const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
+    const match = planShellNames.find((name) => node.name.startsWith(`${name} `));
     if (match) node.visible = Boolean(activeName && match === activeName);
   });
 }
@@ -150,16 +155,15 @@ function applyTopDownRoomVisibility() {
   salonRoot.visible = false;
   room.traverse((node) => {
     if (!node.isMesh || !node.name) return;
+    const outdoorClutter = exteriorRoomMesh.test(node.name) || /^(trunk|crown)$/i.test(node.name) || node.position.z > 8 || Math.abs(node.position.x) > 8;
+    if (outdoorClutter) { node.visible = false; return; }
     if (node.userData.structuralOpening) { node.visible = false; return; }
-    const match = Object.values(planShellByRoom).find((name) => node.name.startsWith(`${name} `));
-    if (match) node.visible = match === "grand salon"
-      ? topDownRoomVisibility.get("salon") !== false && topDownRoomVisibility.get(match) !== false
-      : topDownRoomVisibility.get(match) !== false;
+    const match = planShellNames.find((name) => node.name.startsWith(`${name} `));
+    if (match) node.visible = topDownRoomVisibility.get(match) !== false;
   });
 }
 function resetTopDownRoomVisibility() {
-  topDownRoomVisibility.set("salon", true);
-  for (const name of new Set(Object.values(planShellByRoom))) topDownRoomVisibility.set(name, true);
+  for (const name of planShellNames) topDownRoomVisibility.set(name, true);
   if (topDownRoomControls) topDownRoomControls.querySelectorAll("input").forEach((input) => { input.checked = true; });
   applyTopDownRoomVisibility();
 }
@@ -174,7 +178,7 @@ function createTopDownRoomControls() {
   topDownRoomControls = document.createElement("div");
   topDownRoomControls.style.cssText = "position:fixed;top:5.6rem;left:1rem;z-index:20;display:none;gap:.35rem;flex-wrap:wrap;max-width:22rem;padding:.5rem;background:rgba(20,15,13,.88);border:1px solid #a88955;border-radius:.5rem;font:12px Georgia;color:#f2eadc";
   compassRose = document.createElement("div"); compassRose.innerHTML = "<div style='font-size:15px;color:#f2d38b'>↑ N</div><div style='font-size:13px;color:#d9bd7b'>W &nbsp;✦&nbsp; E</div><div style='font-size:13px;color:#d9bd7b'>↓ S · veranda</div>"; compassRose.style.cssText = "position:fixed;top:6.2rem;right:1.2rem;z-index:21;width:5.5rem;text-align:center;line-height:1.05;padding:.45rem .3rem;background:rgba(20,15,13,.82);border:1px solid #a88955;border-radius:50%;transform-origin:center;transition:transform .12s linear;pointer-events:none"; document.body.append(compassRose);
-  for (const name of ["salon", ...new Set(Object.values(planShellByRoom))]) {
+  for (const name of planShellNames) {
     topDownRoomVisibility.set(name, true);
     const label = document.createElement("label"); label.style.cssText = "display:flex;align-items:center;gap:.2rem";
     const input = document.createElement("input"); input.type = "checkbox"; input.checked = true; input.addEventListener("change", () => { topDownRoomVisibility.set(name, input.checked); applyTopDownRoomVisibility(); });
@@ -392,13 +396,15 @@ function buildRoom() {
     const recess = box("villa facade window recess", [1.85, 2.65, .08], [x, y, z], 0x182b3c, rotation);
     const pane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.3), new THREE.MeshBasicMaterial({ map: outside, transparent: true }));
     pane.name = "villa facade window"; pane.position.set(x, y, z + (rotation ? 0 : -.055)); pane.rotation.y = rotation; pane.renderOrder = 1; activeBuildGroup.add(pane);
+    const mapPane = box("facade window map pane", rotation ? [.12, .035, 1.55] : [1.55, .035, .12], [x, .015, z + (rotation ? 0 : -.02)], 0x294554, rotation);
+    mapPane.userData.mapFeature = true;
     const frame = [
       box("facade window left", [.08, 2.42, .1], [x - (rotation ? 0 : .82), y, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
       box("facade window right", [.08, 2.42, .1], [x + (rotation ? 0 : .82), y, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
       box("facade window top", [1.72, .08, .1], [x, y + 1.22, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
       box("facade window sill", [1.9, .1, .16], [x, y - 1.22, z + (rotation ? 0 : -.1)], 0xf2eee5, rotation),
     ];
-    room.userData.occludingDecor.push(recess, pane, ...frame);
+    room.userData.occludingDecor.push(recess, pane, mapPane, ...frame);
   };
   // Principal-floor reconstruction surrounding the salon.
   const planRoom = (name, x, z, width, depth, color = 0x80634d, continuous = false, openSides = []) => {
@@ -406,16 +412,15 @@ function buildRoom() {
     const wall = 0.16;
     const wallHeight = 3.048;
     const wallCenter = wallHeight / 2;
-    const gap = continuous ? 0 : Math.min(1.35, width - .4); const sideGap = continuous ? 0 : Math.min(1.35, depth - .4);
-    const horizontal = (centerX, centerZ, side) => { const segment = (width - gap) / 2; for (const offset of [-(gap + segment) / 2, (gap + segment) / 2]) box(`${name} ${side} wall`, [segment, wallHeight, wall], [centerX + offset, wallCenter, centerZ], 0x91adbc); };
-    const vertical = (centerX, centerZ, side) => { const segment = (depth - sideGap) / 2; for (const offset of [-(sideGap + segment) / 2, (sideGap + segment) / 2]) box(`${name} ${side} wall`, [wall, wallHeight, segment], [centerX, wallCenter, centerZ + offset], 0x91adbc); };
+    const horizontal = (centerX, centerZ, side) => box(`${name} ${side} wall`, [width, wallHeight, wall], [centerX, wallCenter, centerZ], 0x91adbc);
+    const vertical = (centerX, centerZ, side) => box(`${name} ${side} wall`, [wall, wallHeight, depth], [centerX, wallCenter, centerZ], 0x91adbc);
     if (!openSides.includes("north")) horizontal(x, z - depth / 2, "north"); if (!openSides.includes("south")) horizontal(x, z + depth / 2, "south"); if (!openSides.includes("west")) vertical(x - width / 2, z, "west"); if (!openSides.includes("east")) vertical(x + width / 2, z, "east");
   };
   // Principal floor: approximately 15.5m enclosed square, with the salon southwest.
-  planRoom("library study", -4.2, 4.2, 4.2, 4.2, 0x80634d);
-  planRoom("foyer", 0, 4.2, 4.2, 4.2, 0x705640);
-  planRoom("cabinet guest room", 4.2, 4.2, 4.2, 4.2, 0x705640);
-  planRoom("central stair hall", 0, 0, 4.2, 4.2, 0x80634d);
+  planRoom("library study", -4.2, -4.2, 4.2, 4.2, 0x80634d);
+  planRoom("foyer", 0, -4.2, 4.2, 4.2, 0x705640, false, ["south"]);
+  planRoom("cabinet guest room", 4.2, -4.2, 4.2, 4.2, 0x705640);
+  planRoom("central stair hall", 0, 0, 4.2, 4.2, 0x80634d, false, ["north", "south"]);
   // Room 5: paired straight south-to-north flights. The west flight rises;
   // the east flight descends, leaving a clear open center between them.
   for (let index = 0; index < 8; index += 1) {
@@ -427,18 +432,18 @@ function buildRoom() {
   }
   const stairToRoomEightDoors = new THREE.Group(); stairToRoomEightDoors.name = "room 5 to room 8 double doors";
   for (const x of [-.45, .45]) {
-    const panel = box("room 5 to room 8 door panel", [.82, 2.4, .08], [x, 1.25, -2.18], 0x4a3027);
+    const panel = box("room 5 to room 8 door panel", [.82, 2.4, .08], [x, 1.25, 2.10], 0x4a3027);
     panel.userData.openableDoor = true; stairToRoomEightDoors.add(panel);
-    stairToRoomEightDoors.add(box("room 5 to room 8 door handle", [.08, .08, .1], [x + (x < 0 ? .22 : -.22), 1.25, -2.12], 0xd6b16d));
+    stairToRoomEightDoors.add(box("room 5 to room 8 door handle", [.08, .08, .1], [x + (x < 0 ? .22 : -.22), 1.25, 2.16], 0xd6b16d));
   }
   room.add(stairToRoomEightDoors);
   planRoom("dining room", 4.2, 0, 4.2, 4.2, 0x705640);
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
-  planRoom("room four", -4.2, 0, 4.2, 4.2, 0x80634d);
-  planRoom("ante room", -4.2, -4.2, 4.2, 4.2, 0x705640, false, ["east"]);
-  planRoom("Byron study", 0, -4.2, 4.2, 4.2, 0x705640, false, ["west"]);
-  planRoom("guest chamber", 4.2, -4.2, 4.2, 4.2, 0x705640);
+  planRoom("room four", -4.2, 0, 4.2, 4.2, 0x80634d, false, ["south"]);
+  planRoom("ante room", -4.2, 4.2, 4.2, 4.2, 0x705640, false, ["north", "east"]);
+  planRoom("Byron study", 0, 4.2, 4.2, 4.2, 0x705640, false, ["north", "west", "east", "south"]);
+  planRoom("guest chamber", 4.2, 4.2, 4.2, 4.2, 0x705640, false, ["west"]);
   // Room builders intentionally describe both sides of a boundary. Keep one
   // coincident mesh only; this prevents z-fighting and visibly doubled walls.
   const uniqueWalls = new Set();
@@ -448,23 +453,8 @@ function buildRoom() {
     const key = [node.position.x, node.position.y, node.position.z, p.width, p.height, p.depth].map((value) => Number(value).toFixed(3)).join(":");
     if (uniqueWalls.has(key)) { node.userData.structuralOpening = true; node.visible = false; } else uniqueWalls.add(key);
   });
-  // Rooms 7 and 8 are opened into one salon. Remove both wall segments at
-  // their shared boundary and replace the 8/9 boundary with double doors.
-  room.traverse((node) => {
-    if (!node.isMesh || !node.name) return;
-    if (/^(ante room east wall|Byron study west wall|Byron study east wall|guest chamber west wall|foyer south wall|central stair hall north wall|foyer west wall|cabinet guest room west wall|central stair hall west wall|dining room west wall|Byron study west wall|guest chamber west wall|room four north wall|dining room north wall|ante room north wall|Byron study north wall|guest chamber north wall)$/.test(node.name)) {
-      node.userData.structuralOpening = true;
-      node.visible = false;
-    }
-    // Room 7/8 is a deliberate full-width opening. Enforce it geometrically
-    // so a renamed or duplicated wall cannot reappear on that boundary.
-    if (Math.abs(node.position.x + 2.1) < .04 && Math.abs(node.position.z + 4.2) < 2.2 && / wall$/.test(node.name)) {
-      node.userData.structuralOpening = true;
-      node.visible = false;
-    }
-  });
   const morningDoors = new THREE.Group(); morningDoors.name = "room 9 morning room double doors";
-  for (const z of [-4.68, -3.72]) {
+  for (const z of [3.72, 4.68]) {
     const panel = box("morning room double door panel", [.08, 2.4, .86], [2.10, 1.25, z], 0x4a3027);
     panel.userData.openableDoor = true; morningDoors.add(panel);
     const handle = box("morning room double door handle", [.11, .08, .08], [2.02, 1.25, z + (z < -4 ? .28 : -.28)], 0xd6b16d);
@@ -472,26 +462,28 @@ function buildRoom() {
   }
   room.add(morningDoors);
   // Room 2 is the foyer: put the principal front door in its north wall.
-  const foyerDoor = box("foyer front door", [1.35, 2.55, .08], [0, 1.28, 6.28], 0x402a24);
-  const foyerDoorTop = box("foyer front door lintel", [1.55, .12, .12], [0, 2.72, 6.26], 0xb3875c);
+  const foyerDoor = box("foyer front door", [1.35, 2.55, .08], [0, 1.28, -6.28], 0x402a24);
+  const foyerDoorTop = box("foyer front door lintel", [1.55, .12, .12], [0, 2.72, -6.26], 0xb3875c);
   room.userData.occludingDecor.push(foyerDoor, foyerDoorTop);
-  const doorFourToSeven = box("door between rooms 4 and 7", [1.35, 2.45, .08], [-4.2, 1.22, -2.10], 0x4a3027);
-  const doorFourToSevenTop = box("door 4 to 7 lintel", [1.55, .12, .12], [-4.2, 2.58, -2.10], 0xb3875c);
-  const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, -2.02], 0xd6b16d);
+  const doorFourToSeven = box("door between rooms 4 and 7", [1.35, 2.45, .08], [-4.2, 1.22, 2.10], 0x4a3027);
+  const doorFourToSevenTop = box("door 4 to 7 lintel", [1.55, .12, .12], [-4.2, 2.58, 2.10], 0xb3875c);
+  const doorFourToSevenHandle = box("door 4 to 7 handle", [.08, .08, .1], [-4.2, 1.22, 2.18], 0xd6b16d);
   doorFourToSeven.userData.openableDoor = true;
   room.userData.occludingDecor.push(doorFourToSeven, doorFourToSevenTop, doorFourToSevenHandle);
   // Room 8 south wall: direct access to the south veranda.
-  const roomEightVerandaDoor = box("room 8 south veranda door", [1.35, 2.45, .08], [0, 1.22, -6.28], 0x4a3027);
-  const roomEightVerandaLintel = box("room 8 south veranda door lintel", [1.55, .12, .12], [0, 2.58, -6.28], 0xb3875c);
-  const roomEightVerandaHandle = box("room 8 south veranda door handle", [.08, .08, .1], [.46, 1.22, -6.20], 0xd6b16d);
+  const roomEightVerandaDoor = box("room 8 south veranda door", [1.35, 2.45, .08], [0, 1.22, 6.28], 0x4a3027);
+  const roomEightVerandaLintel = box("room 8 south veranda door lintel", [1.55, .12, .12], [0, 2.58, 6.28], 0xb3875c);
+  const roomEightVerandaHandle = box("room 8 south veranda door handle", [.08, .08, .1], [.46, 1.22, 6.20], 0xd6b16d);
   roomEightVerandaDoor.userData.openableDoor = true;
   room.userData.occludingDecor.push(roomEightVerandaDoor, roomEightVerandaLintel, roomEightVerandaHandle);
   // South-wall fireplace centered on the 7/8 junction.
-  const shellFireplace = box("south wall fireplace surround", [1.8, 1.55, .28], [-2.1, .78, -6.28], 0x6b5548);
-  const shellMantel = box("south wall fireplace mantel", [2.35, .18, .42], [-2.1, 1.62, -6.22], 0x8a6a4b);
+  const shellFireplace = box("south wall fireplace surround", [1.8, 1.55, .28], [-2.1, .78, 6.28], 0x6b5548);
+  const shellMantel = box("south wall fireplace mantel", [2.35, .18, .42], [-2.1, 1.62, 6.22], 0x8a6a4b);
   const shellFire = new THREE.Mesh(new THREE.PlaneGeometry(.68, .78), new THREE.MeshBasicMaterial({ color: 0xff6c2e, transparent: true, opacity: .95 }));
-  shellFire.name = "south wall fireplace flame"; shellFire.position.set(-2.1, .72, -6.12); room.add(shellFire);
-  room.userData.occludingDecor.push(shellFireplace, shellMantel, shellFire);
+  shellFire.name = "south wall fireplace flame"; shellFire.position.set(-2.1, .72, 6.12); room.add(shellFire);
+  const shellHearth = box("south wall fireplace map hearth", [1.65, .06, .62], [-2.1, .015, 6.04], 0x3d2923);
+  const shellHearthFire = box("south wall fireplace map flame", [.62, .07, .3], [-2.1, .05, 5.94], 0xff6c2e);
+  room.userData.occludingDecor.push(shellFireplace, shellMantel, shellFire, shellHearth, shellHearthFire);
   // Basic shell test: exactly three evenly spaced windows on each exterior
   // elevation of the nine-room grid.
   activeBuildGroup = room;
@@ -714,7 +706,7 @@ function applyHistorySnapshot(index) { const snapshot = roomHistory[index]; if (
 rewindSlider?.addEventListener("input", () => { rewindPlaying = false; if (rewindPlay) rewindPlay.textContent = "Play"; applyHistorySnapshot(Number(rewindSlider.value)); }); rewindLive?.addEventListener("click", () => { rewindPlaying = false; if (rewindPlay) rewindPlay.textContent = "Play"; rewindIndex = -1; if (roomState) syncPeople(mapState(roomState)); if (rewindLabel) rewindLabel.textContent = "Live"; rewindLive.disabled = true; }); rewindPlay?.addEventListener("click", () => { if (roomHistory.length < 2) return; if (rewindIndex < 0 || rewindIndex >= roomHistory.length - 1) rewindIndex = 0; rewindPlaying = !rewindPlaying; rewindPlay.textContent = rewindPlaying ? "Pause" : "Play"; if (rewindPlaying) { applyHistorySnapshot(rewindIndex); clearInterval(rewindTimer); rewindTimer = setInterval(() => { if (!rewindPlaying) return; if (rewindIndex >= roomHistory.length - 1) { rewindPlaying = false; rewindPlay.textContent = "Play"; clearInterval(rewindTimer); return; } rewindIndex += 1; if (rewindSlider) rewindSlider.value = String(rewindIndex); applyHistorySnapshot(rewindIndex); }, 900); } else clearInterval(rewindTimer); });
 async function pollMatrix() { try { if (!matrixToken) { const reg = await fetch("https://matrix.castalia.institute/_matrix/client/v3/register?kind=guest", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }); if (!reg.ok) throw new Error("guest registration"); matrixToken = (await reg.json()).access_token; } if (!matrixRoomId) { const dir = await fetch("https://matrix.castalia.institute/_matrix/client/v3/directory/room/%23villa-diodati%3Amatrix.castalia.institute", { headers: { Authorization: `Bearer ${matrixToken}` } }); if (!dir.ok) throw new Error("room lookup"); matrixRoomId = (await dir.json()).room_id; } const response = await fetch(`https://matrix.castalia.institute/_matrix/client/v3/rooms/${encodeURIComponent(matrixRoomId)}/state`, { headers: { Authorization: `Bearer ${matrixToken}` }, cache: "no-store" }); if (!response.ok) throw new Error("state fetch"); const event = (await response.json()).find((item) => item.type === "org.castalia.salon.room" && !item.state_key); roomState = compatibleRoomState(event?.content) ? event.content : null; refreshHistory(roomState); const people = mapState(roomState); syncPeople(people); applyCinematography(roomState); status.textContent = roomState ? `Matrix salon · ${people.length} participants` : `Salon preview · ${people.length} participants`; } catch (error) { console.warn("Matrix salon poll failed", error); if (roomState) { const people = mapState(roomState); syncPeople(people); status.textContent = `Matrix salon · ${people.length} participants · reconnecting`; } else { matrixToken = null; matrixRoomId = null; cinematicCue = null; syncPeople(defaultState()); status.textContent = demoCrowd ? "Salon preview · Matrix reconnecting" : "Matrix state unavailable"; } } }
 function updatePovCamera() { const angle = { south: 0, southeast: Math.PI / 4, east: Math.PI / 2, northeast: Math.PI * .75, north: Math.PI, northwest: Math.PI * 1.25, west: Math.PI * 1.5, southwest: Math.PI * 1.75 }[localPlayer.direction] ?? 0; const floorOffset = [-3.64, 0, 3.96, 7.76][Math.max(0, Math.min(3, Number(localPlayer.floor || 1)))] * HOUSE_WORLD_SCALE; const eye = new THREE.Vector3(localPlayer.x * HOUSE_WORLD_SCALE, floorOffset + 1.52, localPlayer.z * HOUSE_WORLD_SCALE); const look = new THREE.Vector3(eye.x + Math.sin(angle) * 2, eye.y - .1, eye.z + Math.cos(angle) * 2); povCamera.position.copy(eye); povCamera.lookAt(look); povCamera.updateProjectionMatrix(); }
-function setViewMode(mode) { setFloorLevel(floorLevel); pov = mode === "pov"; topDown = mode === "topdown"; cinematic = mode === "cinematic"; salonRoot.visible = false; if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createTopDownRoomControls(); topDownRoomControls.style.display = topDown ? "flex" : "none"; renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, 56, 11); mapCamera.lookAt(0, 0, 11); } else if (cinematic) { cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); } else { isoCamera.position.set(8, 8, 8); isoCamera.lookAt(0, .8, 0); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = !pov; controls.enablePan = !pov; controls.target.set(0, topDown ? 11 : .8, 0); cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
+function setViewMode(mode) { setFloorLevel(floorLevel); pov = mode === "pov"; topDown = mode === "topdown"; cinematic = mode === "cinematic"; salonRoot.visible = false; document.body.classList.toggle("topdown-mode", topDown); exteriorLayer.visible = false; updateExteriorRoomMeshes(false); if (topDown) dialogueLayer?.replaceChildren(); if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createTopDownRoomControls(); topDownRoomControls.style.display = topDown ? "flex" : "none"; renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, 56, 0); mapCamera.lookAt(0, 0, 0); } else if (cinematic) { cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); } else { isoCamera.position.set(8, 8, 8); isoCamera.lookAt(0, .8, 0); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = !pov; controls.enablePan = !pov; controls.target.set(0, topDown ? 0 : .8, 0); cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
 function leaveTopDownForBillboards() { if (!topDown || Math.abs(mapCamera.position.y - 20) < .08) return; topDown = false; cinematic = false; participantLayer.visible = true; mapMarkers.visible = false; activeCamera = mapCamera; controls.object = mapCamera; controls.enableRotate = true; cameraButton.textContent = "Cinematic view"; mapButton.textContent = "Top-down map"; }
 function handleCameraChange() { if (pov) return; if (!topDown && activeCamera === isoCamera) { const offset = isoCamera.position.clone().sub(controls.target); const polar = Math.atan2(Math.hypot(offset.x, offset.z), Math.max(.001, offset.y)); if (polar < .3) { setViewMode("topdown"); return; } } leaveTopDownForBillboards(); }
 cameraButton.addEventListener("click", () => setViewMode(cinematic ? "isometric" : "cinematic"));
