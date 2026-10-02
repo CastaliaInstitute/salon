@@ -17,7 +17,7 @@ def remove_name(name: str) -> bool:
     tokens = (
         "mannequin", "white bust", "reading table", "table leg", "table candelabra",
         "companion chair", "reading chair", "guest chair", "carved settee",
-        "writing desk", "bookcase", "book spine", "open manuscript", "loose letter",
+        "writing desk", "bookcase", "book spine", "book gilt pages", "open manuscript", "loose letter",
         "draft pages", "inkpot", "quill", "gathering rug", "rug inset", "fireplace",
         "fire log", "fire flame", "mantel candlestick",
     )
