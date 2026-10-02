@@ -97,8 +97,8 @@ function buildRoom() {
   for (let x = -7.5; x <= 7.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
   for (let z = -3.5; z <= 4.5; z += .55) box("floor inlay", [15.5, .015, .018], [0, -.04, z], 0x5f3f36);
   const rearWall = box("rear wall", [16, 4.3, .18], [0, 2.05, -4], 0x91adbc);
-  const leftWall = box("left wall", [.18, 4.3, 8.2], [-8, 2.05, .1], 0x91adbc);
-  const rightWall = box("right wall", [.18, 4.3, 8.2], [8, 2.05, .1], 0x91adbc);
+  const leftWall = box("left wall", [.18, 4.3, 9.18], [-7.91, 2.05, .5], 0x91adbc);
+  const rightWall = box("right wall", [.18, 4.3, 9.18], [7.91, 2.05, .5], 0x91adbc);
   const frontWall = box("camera-side wall", [16, 4.3, .18], [0, 2.05, 5], 0x91adbc);
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
