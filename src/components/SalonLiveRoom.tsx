@@ -487,7 +487,7 @@ export function SalonLiveRoom({
 
       {roomRefRaw && resolveError && <p className="mb-4 text-red-300">The salon cannot be heard just now.</p>}
 
-      {resolvedRoomId && status !== 'error' && (
+      {((resolvedRoomId && status !== 'error') || viewMode === 'room') && (
         <div className="flex h-[calc(100dvh-17rem)] min-h-[16rem] max-h-[660px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
           <div className="shrink-0 border-b border-slate-200 px-4 py-2 text-xs tracking-widest text-slate-500">
             {salonWindow.open
