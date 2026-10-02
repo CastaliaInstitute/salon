@@ -129,7 +129,7 @@ function buildRoom() {
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom window armchair", [3.75, 0, .25], 1.12, -Math.PI / 2);
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom right armchair", [2.55, 0, 1.35], 1.12, -Math.PI / 2);
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.95, 0, 1.65], 1.12, Math.PI / 2);
-  loadFurnitureModel("../furniture/coffee-table-01/coffee-table.glb", "CC0 carved coffee table", [0, 0, 1.35], 1.18, 0);
+  loadFurnitureModel("../furniture/coffee-table-01/coffee-table.glb", "CC0 carved coffee table", [0, 0, 1.35], 3.0, 0);
   const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.35); room.add(tableCandelabra);
   const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.35); room.add(tableCandleLight); candleLights.push(tableCandleLight);
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
