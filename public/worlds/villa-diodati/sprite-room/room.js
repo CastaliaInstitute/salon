@@ -67,9 +67,14 @@ function buildRoom() {
   const floor = box("oak parquet floor", [12, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
   for (let x = -5.5; x <= 5.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
   for (let z = -3.5; z <= 4.5; z += .55) box("floor inlay", [11.5, .015, .018], [0, -.04, z], 0x5f3f36);
-  box("rear wall", [12, 4.3, .18], [0, 2.05, -4], 0x3d3435);
-  box("left wall", [.18, 4.3, 8.2], [-6, 2.05, .1], 0x4a3a38);
-  box("right wall", [.18, 4.3, 8.2], [6, 2.05, .1], 0x4a3a38);
+  const rearWall = box("rear wall", [12, 4.3, .18], [0, 2.05, -4], 0x3d3435);
+  const leftWall = box("left wall", [.18, 4.3, 8.2], [-6, 2.05, .1], 0x4a3a38);
+  const rightWall = box("right wall", [.18, 4.3, 8.2], [6, 2.05, .1], 0x4a3a38);
+  const wallpaper = textureLoader.load("../art/wallpaper-v1.png");
+  wallpaper.colorSpace = THREE.SRGBColorSpace;
+  wallpaper.wrapS = THREE.RepeatWrapping; wallpaper.wrapT = THREE.RepeatWrapping;
+  wallpaper.repeat.set(3, 1);
+  for (const wall of [rearWall, leftWall, rightWall]) { wall.material.map = wallpaper; wall.material.color.set(0xffffff); wall.material.needsUpdate = true; }
   for (const x of [-4.25, 4.25]) {
     box("window recess", [1.8, 2.35, .08], [x, 2.45, -3.88], 0x182b3c);
     box("window mullion", [.1, 2.1, .1], [x, 2.45, -3.8], 0x9d704d);
@@ -79,7 +84,10 @@ function buildRoom() {
   box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
   for (const x of [-3.8, 3.8]) {
     box("art frame", [1.25, 1.55, .08], [x, 2.55, -3.88], 0xa47a50);
-    box("wall painting", [1.02, 1.3, .03], [x, 2.55, -3.94], x < 0 ? 0x34495b : 0x5e3b42);
+    const art = textureLoader.load("../art/wall-triptych-v1.png");
+    art.colorSpace = THREE.SRGBColorSpace; art.wrapS = THREE.ClampToEdgeWrapping; art.repeat.set(1 / 3, 1); art.offset.set(x < 0 ? 0 : 2 / 3, 0);
+    const painting = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 1.3), new THREE.MeshBasicMaterial({ map: art }));
+    painting.name = "generated wall painting"; painting.position.set(x, 2.55, -3.83); painting.renderOrder = 2; room.add(painting);
   }
   box("fireplace", [2.35, 2.2, .5], [0, 1.1, -3.72], 0x71645c);
   box("fire opening", [1.35, .9, .04], [0, .75, -3.99], 0x241916);
