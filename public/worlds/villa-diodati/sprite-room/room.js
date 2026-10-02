@@ -44,7 +44,10 @@ const HOUSE_WORLD_SCALE = 3.0;
 // Principal floor bay grid: three 4.2 m bays in each direction. The salon
 // occupies the southwest 2 x 2 block; the remaining bay is circulation and
 // service space rather than another copy of the salon.
-const SALON_ORIGIN = { x: -4.2, z: -6.3 };
+// The authored salon floor is centered at local z=.5. With the uniform .5
+// fit scale, this origin places its world center exactly at the southwest
+// 2x2 bay center (-4.2, -4.2).
+const SALON_ORIGIN = { x: -4.2, z: -4.45 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
 const SALON_CONTENT_SCALE = { x: .50, z: .50 };
