@@ -1,23 +1,24 @@
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #17120f; }
 body { font-family: Georgia, serif; }
-canvas { display: block; width: 100%; height: calc(100% - 156px); }
+canvas { display: block; width: 100%; height: calc(100% - 210px); }
 .dialogue-bubble { position: fixed; max-width: 210px; padding: 7px 10px; border: 1px solid rgba(183,145,93,.72); border-radius: 12px 12px 12px 3px; background: rgba(28,20,18,.9); color: #f6e8cc; font-size: 12px; line-height: 1.25; pointer-events: none; transform: translate(-50%, -100%); box-shadow: 0 5px 18px rgba(0,0,0,.28); }
 .dialogue-bubble strong { display: block; color: #bfeeff; font-size: 10px; letter-spacing: .04em; margin-bottom: 2px; }
-#script-panel { position: fixed; left: 0; right: 0; bottom: 0; height: 156px; box-sizing: border-box; padding: 12px 22px 16px; background: rgba(23,18,15,.96); border-top: 1px solid rgba(183,145,93,.55); color: #ead9bb; z-index: 12; }
+#script-panel { position: fixed; left: 0; right: 0; bottom: 0; height: 156px; box-sizing: border-box; padding: 12px 22px 16px; background: rgba(23,18,15,.96); border-top: 1px solid rgba(183,145,93,.55); color: #ead9bb; z-index: 12; overflow-y: auto; }
 .script-heading { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #b7915d; margin-bottom: 8px; }
 .script-heading span { color: #8ba5aa; margin-left: 8px; text-transform: none; letter-spacing: 0; }
 #script-lines { display: grid; gap: 5px; max-width: 1100px; overflow: hidden; }
 .script-line { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; font-size: 13px; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; }
 .script-speaker { color: #bfeeff; }
-#rewind-control { position: fixed; right: 22px; bottom: 166px; z-index: 13; width: min(360px, 38vw); padding: 9px 12px; border: 1px solid rgba(183,145,93,.55); border-radius: 12px; background: rgba(28,20,18,.9); color: #ead9bb; font-size: 11px; }
+#rewind-control { position: fixed; left: 0; right: 0; bottom: 156px; z-index: 13; box-sizing: border-box; min-height: 54px; padding: 7px 22px 8px; border-top: 1px solid rgba(183,145,93,.45); background: rgba(28,20,18,.96); color: #ead9bb; font-size: 11px; }
 #rewind-control label { display: flex; justify-content: space-between; margin-bottom: 5px; color: #b7915d; letter-spacing: .05em; }
 #rewind-label { color: #bfeeff; letter-spacing: 0; }
-#rewind-slider { width: 100%; accent-color: #b7915d; }
-#rewind-live { padding: 4px 9px; margin-top: 5px; font-size: 10px; }
-.controls { position: fixed; left: 22px; bottom: 20px; display: flex; gap: 14px; align-items: center; color: #e8d9bd; font-size: 12px; letter-spacing: .04em; text-shadow: 0 1px 3px #000; }
+#rewind-slider { flex: 1; min-width: 0; accent-color: #b7915d; }
+.rewind-row { display: flex; align-items: center; gap: 8px; }
+#rewind-play, #rewind-live { padding: 4px 9px; font-size: 10px; }
+.controls { position: fixed; left: 22px; bottom: 220px; display: flex; gap: 14px; align-items: center; color: #e8d9bd; font-size: 12px; letter-spacing: .04em; text-shadow: 0 1px 3px #000; }
 button { border: 1px solid #b7915d; border-radius: 999px; padding: 9px 15px; color: #f5e5c8; background: rgba(35, 22, 20, .82); font: inherit; cursor: pointer; }
 button:hover { background: #5f3e37; }
-.joystick { position: fixed; right: 22px; bottom: 20px; width: 78px; height: 78px; border: 1px solid rgba(183,145,93,.72); border-radius: 50%; background: rgba(35,22,20,.58); touch-action: none; display: none; }
+.joystick { position: fixed; right: 22px; bottom: 220px; width: 78px; height: 78px; border: 1px solid rgba(183,145,93,.72); border-radius: 50%; background: rgba(35,22,20,.58); touch-action: none; display: none; }
 .joystick::after { content: ''; position: absolute; left: 27px; top: 27px; width: 24px; height: 24px; border-radius: 50%; background: rgba(232,217,189,.86); box-shadow: 0 0 16px rgba(143,201,255,.42); transform: translate(var(--joy-x,0), var(--joy-y,0)); }
 body.local-player .joystick { display: block; }
-@media (max-width: 640px) { canvas { height: calc(100% - 174px); } .controls { left: 12px; right: 12px; bottom: 186px; gap: 8px; font-size: 10px; } button { padding: 8px 11px; } .joystick { right: 16px; bottom: 190px; } #script-panel { height: 174px; padding: 10px 12px 12px; } .script-line { grid-template-columns: 82px 1fr; font-size: 11px; } .dialogue-bubble { max-width: 150px; font-size: 10px; } #rewind-control { left: 12px; right: 12px; bottom: 360px; width: auto; } }
+@media (max-width: 640px) { canvas { height: calc(100% - 228px); } .controls { left: 12px; right: 12px; bottom: 238px; gap: 8px; font-size: 10px; } button { padding: 8px 11px; } .joystick { right: 16px; bottom: 242px; } #script-panel { height: 174px; padding: 10px 12px 12px; } .script-line { grid-template-columns: 82px 1fr; font-size: 11px; } .dialogue-bubble { max-width: 150px; font-size: 10px; } #rewind-control { bottom: 174px; padding-left: 12px; padding-right: 12px; } }
