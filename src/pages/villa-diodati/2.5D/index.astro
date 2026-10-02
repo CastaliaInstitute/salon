@@ -1,13 +1,17 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import SalonLiveApp from '../../../components/SalonLiveApp.tsx';
 ---
 
 <BaseLayout
   title="Villa Diodati · 2.5D"
   description="A Matrix-backed isometric view of the Villa Diodati salon."
 >
-  <SalonLiveApp client:only="react" />
+  <iframe
+    title="Villa Diodati isometric Three.js salon"
+    src="/worlds/villa-diodati/sprite-room/"
+    class="sprite-room-frame"
+    allow="fullscreen"
+  ></iframe>
 </BaseLayout>
 
 <script>
@@ -19,4 +23,6 @@ import SalonLiveApp from '../../../components/SalonLiveApp.tsx';
   body.immersive-salon .site-footer {
     display: none;
   }
+  body.immersive-salon { margin: 0; overflow: hidden; }
+  .sprite-room-frame { display: block; width: 100%; height: 100dvh; border: 0; background: #17120f; }
 </style>

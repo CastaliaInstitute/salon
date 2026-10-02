@@ -1,0 +1,92 @@
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const canvas = document.querySelector("#room");
+const status = document.querySelector("#status");
+const cameraButton = document.querySelector("#camera");
+const textureLoader = new THREE.TextureLoader();
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x17120f);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+const isoCamera = new THREE.OrthographicCamera(-8, 8, 5, -5, .1, 100);
+const cinematicCamera = new THREE.PerspectiveCamera(36, 1, .1, 100);
+let activeCamera = isoCamera;
+let cinematic = false;
+const controls = new OrbitControls(activeCamera, canvas);
+controls.enablePan = true; controls.enableDamping = true; controls.dampingFactor = .08;
+controls.target.set(0, 0.8, 0);
+
+const map = { minX: -6, maxX: 6, minZ: -4, maxZ: 5 };
+fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => {
+  if (contract?.coordinateSystem === "villa-diodati-isometric-v1") Object.assign(map, contract.bounds || {});
+}).catch(() => {});
+const room = new THREE.Group(); scene.add(room);
+const participantLayer = new THREE.Group(); scene.add(participantLayer);
+const clock = new THREE.Clock();
+const figures = new Map();
+const textureCache = new Map();
+const sheetFiles = {
+  byron: "byron.png", mary: "mary-godwin.png", claire: "claire-clairmont.png", percy: "percy-shelley.png", polidori: "john-polidori.png"
+};
+const defaultPeople = [
+  ["a.byron", "Lord Byron", "byron", 0, -1.7, "idle"],
+  ["a.maryshelley", "Mary Shelley", "mary", -3.85, .35, "sit"],
+  ["a.clairmont", "Claire Clairmont", "claire", -2.65, .45, "sit"],
+  ["a.shelley", "Percy Bysshe Shelley", "percy", 3.75, .2, "sit"],
+  ["a.polidori", "John Polidori", "polidori", -2.05, 1.65, "sit"],
+];
+
+function mat(color, roughness = .72) { return new THREE.MeshStandardMaterial({ color, roughness, metalness: .03 }); }
+function box(name, size, position, color, rotation = 0) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color));
+  mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; room.add(mesh); return mesh;
+}
+function buildRoom() {
+  const floor = box("oak parquet floor", [12, .12, 9], [0, -.12, .5], 0x76513e); floor.receiveShadow = true;
+  for (let x = -5.5; x <= 5.5; x += .55) box("floor inlay", [.018, .015, 8.4], [x, -.045, .5], 0x9a6b4d);
+  for (let z = -3.5; z <= 4.5; z += .55) box("floor inlay", [11.5, .015, .018], [0, -.04, z], 0x5f3f36);
+  box("rear wall", [12, 4.3, .18], [0, 2.05, -4], 0x3d3435);
+  box("left wall", [.18, 4.3, 8.2], [-6, 2.05, .1], 0x4a3a38);
+  box("right wall", [.18, 4.3, 8.2], [6, 2.05, .1], 0x4a3a38);
+  box("dado", [11.8, .22, .22], [0, .55, -3.85], 0xa47955);
+  box("fireplace", [2.35, 2.2, .5], [0, 1.1, -3.72], 0x71645c);
+  box("fire opening", [1.35, .9, .04], [0, .75, -3.99], 0x241916);
+  const fire = new THREE.PointLight(0xff9b43, 4, 5); fire.position.set(0, .8, -3.1); room.add(fire);
+  box("rug", [6.3, .035, 2.3], [0, .02, 1.1], 0x583743);
+  box("sofa", [3.2, .9, .9], [-3.35, .48, .25], 0x70454a, 0);
+  box("sofa back", [3.2, 1.3, .22], [-3.35, 1.05, -.18], 0x70454a);
+  box("chair by window", [1.15, .85, 1.15], [3.75, .45, .25], 0x704b42, -Math.PI / 2);
+  box("chair right", [1.15, .85, 1.15], [2.55, .45, 1.35], 0x704b42, -Math.PI / 2);
+  box("reading chair", [1.15, .85, 1.15], [-1.95, .45, 1.65], 0x704b42, Math.PI / 2);
+  box("writing table", [1.8, .45, 1.1], [.15, .38, 1.55], 0x51352c);
+  for (const x of [-.48, -.18, .18, .48]) { const candle = new THREE.PointLight(0xffc77c, 1.2, 1.5); candle.position.set(x, 1.1, 1.55); room.add(candle); box("candle", [.05, .65, .05], [x, .86, 1.55], 0xe8d0a4); }
+}
+function setupLighting() {
+  scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
+  const key = new THREE.DirectionalLight(0xffe0bd, 2.1); key.position.set(-4, 8, 5); key.castShadow = true; scene.add(key);
+}
+function sheetMaterial(file) {
+  if (textureCache.has(file)) return textureCache.get(file);
+  const texture = textureLoader.load(`../sprites/v1/${file}`); texture.colorSpace = THREE.SRGBColorSpace; texture.magFilter = THREE.NearestFilter; texture.minFilter = THREE.LinearMipMapLinearFilter;
+  const material = new THREE.ShaderMaterial({ transparent: true, depthWrite: true, uniforms: { map: { value: texture }, frame: { value: new THREE.Vector2(0, 0) }, tint: { value: new THREE.Color(0xffffff) } }, vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`, fragmentShader: `uniform sampler2D map; uniform vec2 frame; varying vec2 vUv; void main(){vec2 uv=(vUv+vec2(frame.x,3.0-frame.y))/vec2(8.0,4.0); vec4 c=texture2D(map,uv); float chroma=distance(c.rgb,vec3(.28,.24,.19)); float alpha=smoothstep(.055,.13,chroma); if(alpha<.02) discard; gl_FragColor=vec4(c.rgb,alpha);}` });
+  textureCache.set(file, material); return material;
+}
+function makeFigure(id, name, style, x, z, state = "idle", index = 0) {
+  const material = sheetMaterial(sheetFiles[style] || sheetFiles.byron).clone();
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(.95, 1.6), material); mesh.position.set(x, .8, z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: .8, phase: index * .7 }; mesh.castShadow = true; mesh.renderOrder = 5; participantLayer.add(mesh); figures.set(id, mesh); return mesh;
+}
+function stateRow(state) { return state === "walk" ? 1 : state === "gesture" || state === "speak" ? 2 : state === "sit" ? 3 : 0; }
+function updateFigure(mesh, person, now) { mesh.position.x = THREE.MathUtils.clamp(person.x, map.minX, map.maxX); mesh.position.z = THREE.MathUtils.clamp(person.z, map.minZ, map.maxZ); mesh.position.y = person.state === "sit" ? .65 : .8; mesh.scale.setScalar((person.scale || 1) * (person.state === "sit" ? .84 : 1)); mesh.userData.state = person.state || "idle"; const material = mesh.material; material.uniforms.frame.value.set(Math.floor(now * (person.state === "walk" ? 7 : 2) + mesh.userData.phase) % 8, stateRow(person.state)); }
+function syncPeople(people) { const now = clock.elapsedTime; for (const person of people) { let figure = figures.get(person.id); if (!figure) figure = makeFigure(person.id, person.name, person.style, person.x, person.z, person.state, figures.size); updateFigure(figure, person, now); } }
+function defaultState() { return defaultPeople.map(([id, name, style, x, z, state]) => ({ id, name, style, x, z, state })); }
+function mapState(content) { const people = defaultState(); const byId = new Map(people.map((p) => [p.id, p])); for (const [id, p] of Object.entries(content?.positions || {})) { const target = byId.get(id) || byId.get(`a.${id}`); if (target) Object.assign(target, { x: p.x, z: p.z, state: p.animation_state || "idle" }); } for (const [id, p] of Object.entries(content?.participants || {})) byId.set(id, { id, name: p.name || "Guest", style: ["byron","mary","claire","percy","polidori"][people.length % 5], x: p.x, z: p.z, state: p.state || "idle", scale: p.scale }); return [...byId.values()]; }
+let roomState = null;
+async function pollMatrix() { try { const reg = await fetch("https://matrix.castalia.institute/_matrix/client/v3/register?kind=guest", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }); if (!reg.ok) throw new Error("guest registration"); const token = (await reg.json()).access_token; const dir = await fetch("https://matrix.castalia.institute/_matrix/client/v3/directory/room/%23villa-diodati%3Amatrix.castalia.institute", { headers: { Authorization: `Bearer ${token}` } }); const roomId = (await dir.json()).room_id; const response = await fetch(`https://matrix.castalia.institute/_matrix/client/v3/rooms/${encodeURIComponent(roomId)}/state`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }); const event = (await response.json()).find((item) => item.type === "org.castalia.salon.room" && !item.state_key); roomState = event?.content || null; syncPeople(mapState(roomState)); status.textContent = `Matrix salon · ${mapState(roomState).length} participants`; } catch { syncPeople(defaultState()); status.textContent = "Salon preview · Matrix reconnecting"; } }
+cameraButton.addEventListener("click", () => { cinematic = !cinematic; activeCamera = cinematic ? cinematicCamera : isoCamera; controls.object = activeCamera; cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; resize(); });
+function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); isoCamera.left = -8 * w / h; isoCamera.right = 8 * w / h; isoCamera.top = 5; isoCamera.bottom = -5; isoCamera.updateProjectionMatrix(); cinematicCamera.aspect = w / h; cinematicCamera.updateProjectionMatrix(); }
+buildRoom(); setupLighting(); isoCamera.position.set(8, 8, 8); cinematicCamera.position.set(0, 4.6, 9); cinematicCamera.lookAt(0, .7, 0); resize(); addEventListener("resize", resize); syncPeople(defaultState()); pollMatrix(); setInterval(pollMatrix, 2500);
+function animate() { requestAnimationFrame(animate); const now = clock.elapsedTime; participantLayer.children.forEach((figure) => { figure.lookAt(activeCamera.position.x, figure.position.y, activeCamera.position.z); const person = figure.userData; if (person.state === "idle") figure.position.y = person.baseY + Math.sin(now * 1.5 + person.phase) * .015; }); controls.update(); renderer.render(scene, activeCamera); }
+animate();
