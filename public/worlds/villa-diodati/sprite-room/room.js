@@ -42,6 +42,7 @@ const SALON_ORIGIN = { x: -5.1, z: -1.8 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
 const SALON_CONTENT_SCALE = { x: .52, z: .52 };
+const SALON_CONTENT_ROTATION = Math.PI / 2;
 let roomRegions = [];
 let navigationRooms = [];
 let walkRoute = [];
@@ -446,8 +447,9 @@ function buildRoom() {
   // The architectural plan uses the southwest room as the salon anchor.
   salonRoot.position.set(SALON_ORIGIN.x, 0, SALON_ORIGIN.z);
   salonRoot.scale.set(SALON_CONTENT_SCALE.x, 1, SALON_CONTENT_SCALE.z);
+  salonRoot.rotation.y = SALON_CONTENT_ROTATION;
 }
-function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const center = new THREE.Vector3(); salonRoot.getWorldPosition(center); const position = activeCamera.position; const dx = position.x - center.x; const dz = position.z - center.z; const near = new Set(); if (dx > HOUSE_WORLD_SCALE * 1.2) near.add("right"); if (dx < -HOUSE_WORLD_SCALE * 1.2) near.add("left"); if (dz < -HOUSE_WORLD_SCALE * 1.2) near.add("rear"); if (dz > HOUSE_WORLD_SCALE * 1.2) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .02 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; item.material.needsUpdate = true; } } }
+function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .02 : 1; wall.material.depthWrite = !near.has(name); wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; item.material.needsUpdate = true; } } }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
   const key = new THREE.DirectionalLight(0xffe0bd, 2.1); key.position.set(-4, 8, 5); key.castShadow = true; scene.add(key);
