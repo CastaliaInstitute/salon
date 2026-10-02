@@ -187,4 +187,6 @@ a:hover {
   min-height: 0 !important;
   max-height: none !important;
   border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
