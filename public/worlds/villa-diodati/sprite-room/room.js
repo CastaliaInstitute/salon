@@ -1002,7 +1002,19 @@ renderAllButton?.addEventListener("click", () => {
     controls.target.set(0, 7.5, 0);
     controls.enableRotate = true;
     resize();
-  } else setViewMode(cameraButton.value);
+  } else {
+    setViewMode(cameraButton.value);
+    if (cameraButton.value === "room" && floorLevel === 1) {
+      const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE;
+      const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
+      const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
+      isoCamera.position.set(focusX + 6, floorY + 10, focusZ - 10);
+      isoCamera.zoom = 2.15;
+      isoCamera.updateProjectionMatrix();
+      isoCamera.lookAt(focusX, floorY + .8, focusZ);
+      controls.target.set(focusX, floorY + .8, focusZ);
+    }
+  }
 });
 floorButton?.addEventListener("change", () => { const nextFloor = Number(floorButton.value); if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = stair.x; localPlayer.z = stair.z + 1.0; walkTarget = null; } setFloorLevel(nextFloor); focusHouseLocation(stair.x, stair.z + 1.0, nextFloor); });
 roomButton?.addEventListener("change", () => { roomSelectionLocked = true; const destinationId = ROOM_SELECT_TARGETS[Number(roomButton.value)]; const destination = navigationRooms.find((candidate) => candidate.id === destinationId); if (!destination) return; const nextFloor = Number(destination.floor); if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); walkTarget = null; walkRoute = []; } setFloorLevel(nextFloor); currentRoomId = ""; updateRoomScope(); focusHouseLocation(Number(destination.x), Number(destination.z), nextFloor); });
