@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/room.js", import.meta.url), "utf8");
 const html = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/index.html", import.meta.url), "utf8");
@@ -33,4 +33,19 @@ test("viewer has a restrictive content security policy", () => {
 test("deploy cache bust covers the sprite-room module", () => {
   assert.match(cacheBustScript, /worlds', 'villa-diodati', 'sprite-room', 'index\.html/);
   assert.match(cacheBustScript, /room\\\.js\\\?v=\[\^\"'\]\+/);
+});
+
+test("viewer asset contract is present in the repository", async () => {
+  const assets = [
+    "public/worlds/villa-diodati/isometric-map.json",
+    "public/worlds/villa-diodati/terrain/topography.json",
+    "public/worlds/villa-diodati/textures/painted-plaster-wall.jpg",
+    "public/worlds/villa-diodati/art/wall-triptych-v1.png",
+    "public/worlds/villa-diodati/art/fireplace-v1.png",
+    "public/worlds/villa-diodati/furniture/rug-01/rug.glb",
+    "public/worlds/villa-diodati/furniture/sofa-03/sofa_03.gltf",
+    "public/worlds/villa-diodati/furniture/armchair-01/ArmChair_01.gltf",
+    "public/worlds/villa-diodati/furniture/antique-table-01/table.glb",
+  ];
+  await Promise.all(assets.map((asset) => access(new URL(`../${asset}`, import.meta.url))));
 });
