@@ -7,6 +7,7 @@ import { dirname, resolve } from "node:path";
 const source = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/room.js", import.meta.url), "utf8");
 const html = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/index.html", import.meta.url), "utf8");
 const cacheBustScript = await readFile(new URL("../scripts/cache-bust-world.mjs", import.meta.url), "utf8");
+const villaMap = JSON.parse(await readFile(new URL("../public/worlds/villa-diodati/isometric-map.json", import.meta.url), "utf8"));
 
 test("viewer keeps Map upright and rotation-locked", () => {
   assert.match(source, /controls\.enableRotate = normalizedMode === "room"/);
@@ -50,6 +51,16 @@ test("focused salon starts in a readable elevated diagonal composition", () => {
   assert.match(source, /isoCamera\.position\.set\(focusX \+ 1\.6, floorY \+ 6, focusZ - 1\.1\)/);
   assert.match(source, /isoCamera\.lookAt\(focusX, floorY \+ 1, focusZ \+ \.65\)/);
   assert.match(source, /isoCamera\.zoom = 1\.35/);
+});
+
+test("salon origin remains inside its principal-floor map room", () => {
+  const salon = villaMap.rooms.find((room) => room.id === "salon");
+  assert.ok(salon, "salon room exists in the map contract");
+  const origin = source.match(/const SALON_ORIGIN = \{ x: ([\d.-]+), z: ([\d.-]+) \}/);
+  assert.ok(origin, "salon origin is explicit");
+  const [x, z] = [Number(origin[1]), Number(origin[2])];
+  assert.ok(Math.abs(x - salon.x) <= salon.width / 2, "salon origin x is inside mapped room");
+  assert.ok(Math.abs(z - salon.z) <= salon.depth / 2, "salon origin z is inside mapped room");
 });
 
 test("floating dialogue bubbles stay out of the default Room composition", () => {
