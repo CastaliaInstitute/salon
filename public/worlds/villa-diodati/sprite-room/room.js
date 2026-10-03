@@ -870,8 +870,8 @@ if (!topDown && !pov && floorLevel === 1) {
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
   // Reference composition: elevated front/right three-quarter view, with the
   // salon floor in the foreground and the west/south walls receding behind it.
-  isoCamera.position.set(focusX + 8, floorY + 11, focusZ + 12);
-  isoCamera.zoom = 1.5;
+  isoCamera.position.set(focusX + 6, floorY + 10, focusZ + 10);
+  isoCamera.zoom = 2.15;
   isoCamera.updateProjectionMatrix();
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
   controls.target.set(focusX, floorY + .8, focusZ);
