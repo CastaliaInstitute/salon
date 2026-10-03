@@ -887,7 +887,8 @@ function enforceSalonRoomView() {
     if (!node.isMesh || !node.name) return;
     const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name);
     const westSouthWall = /^(left wall|front wall left of veranda door|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
-    node.visible = !architectural || westSouthWall;
+    const westSouthOpening = /(villa facade window|facade window|west veranda door|south veranda door|front door)/i.test(node.name);
+    node.visible = !architectural || westSouthWall || westSouthOpening;
   });
   // The two visible room elevations are enclosure, not an occluding overlay.
   // Keep them opaque so the focused salon cannot read as detached wall cards.
