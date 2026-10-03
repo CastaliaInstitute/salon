@@ -1179,4 +1179,11 @@ if (!topDown && !pov && floorLevel === 1) {
   controls.target.set(focusX, floorY + 1, focusZ + .65);
 }
 if (!pov && !topDown) controls.enableRotate = true;
+if (reducedMotion) {
+  fireLight = null;
+  lightningLight = null;
+  flames.length = 0;
+  candleLights.length = 0;
+  animalLayer.visible = false;
+}
 animate();

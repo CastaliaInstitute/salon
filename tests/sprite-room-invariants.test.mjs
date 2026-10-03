@@ -91,6 +91,8 @@ test("weather respects reduced-motion preferences", () => {
   assert.match(source, /prefers-reduced-motion: reduce/);
   assert.match(source, /const count = reducedMotion \? 0 : 850/);
   assert.match(source, /if \(reducedMotion\) return;/);
+  assert.match(source, /if \(reducedMotion\) \{[\s\S]*flames\.length = 0/);
+  assert.match(source, /animalLayer\.visible = false/);
 });
 
 test("viewer shares one map contract request during startup", () => {
