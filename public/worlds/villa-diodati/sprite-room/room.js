@@ -1116,7 +1116,7 @@ renderAllButton?.addEventListener("click", () => {
       isoCamera.position.set(focusX + 5, floorY + 8, focusZ - 1);
       isoCamera.zoom = 1.6;
       isoCamera.updateProjectionMatrix();
-      isoCamera.lookAt(focusX - 2, floorY + .8, focusZ + 3.2);
+      isoCamera.lookAt(focusX, floorY + 1, focusZ + 1.2);
       controls.target.set(focusX, floorY + .8, focusZ);
     }
   }
@@ -1141,8 +1141,8 @@ if (!topDown && !pov && floorLevel === 1) {
   isoCamera.position.set(focusX + 5, floorY + 8, focusZ - 1);
   isoCamera.zoom = 1.6;
   isoCamera.updateProjectionMatrix();
-  isoCamera.lookAt(focusX - 2, floorY + .8, focusZ + 3.2);
-  controls.target.set(focusX - 2, floorY + .8, focusZ + 3.2);
+  isoCamera.lookAt(focusX, floorY + 1, focusZ + 1.2);
+  controls.target.set(focusX, floorY + 1, focusZ + 1.2);
 }
 if (!pov && !topDown) controls.enableRotate = true;
 animate();
