@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const root = join(new URL('.', import.meta.url).pathname, '..');
 const version = process.env.GITHUB_SHA?.slice(0, 12) || Date.now().toString(36);
