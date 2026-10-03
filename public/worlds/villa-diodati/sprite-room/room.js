@@ -570,6 +570,15 @@ function buildRoom() {
   const verandaWallLeft = box("front wall left of veranda door", [7.0, SALON_WALL_HEIGHT, .18], [-4.5, SALON_WALL_CENTER, 5], WALL_PLASTER_COLOR);
   const verandaWallRight = box("front wall right of veranda door", [7.0, SALON_WALL_HEIGHT, .18], [4.5, SALON_WALL_CENTER, 5], WALL_PLASTER_COLOR);
   const verandaLintel = box("veranda door lintel", [2.0, 1.5, .18], [0, 3.35, 5], WALL_PLASTER_COLOR);
+  // Build the visible south elevation as real wall segments around the door
+  // and window bays. The earlier full slabs made the glazing read as painted
+  // overlays because the wall occupied the same depth as the openings.
+  verandaWallLeft.visible = false;
+  verandaWallRight.visible = false;
+  const southWallSegment = (name, width, x) => box(name, [width, SALON_WALL_HEIGHT, .18], [x, SALON_WALL_CENTER, 5], WALL_PLASTER_COLOR);
+  southWallSegment("front wall left of veranda door", .625, -3.7875);
+  southWallSegment("front wall between veranda openings", 3.75, -.05);
+  southWallSegment("front wall right of veranda window", 4.335, 5.7425);
   room.userData.walls = { rear: rearWall, left: leftWall, right: rightWall, front: frontWall };
   room.userData.occludingDecor = [];
   for (const wall of [rearWall, leftWall, rightWall, frontWall]) { wall.material.map = null; wall.material.color.set(WALL_PLASTER_COLOR); wall.material.needsUpdate = true; }
@@ -873,7 +882,7 @@ function buildRoom() {
   salonRoot.scale.set(SALON_CONTENT_SCALE.x, 1, SALON_CONTENT_SCALE.z);
   salonRoot.rotation.y = SALON_CONTENT_ROTATION;
 }
-function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const focusedSalon = !renderEverything && !topDown && !pov && floorLevel === 1 && (ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon") === "salon"; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.transparent = false; wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { const visibleFocusedWall = focusedSalon && (name === "left" || name === "front"); wall.material.transparent = !visibleFocusedWall; wall.material.opacity = visibleFocusedWall ? 1 : near.has(name) ? .01 : .04; wall.material.depthWrite = visibleFocusedWall; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); const visibleFocusedDetail = focusedSalon && architectural && !/(rear|right|camera-side)/i.test(item.name || ""); item.material.transparent = !visibleFocusedDetail; item.material.opacity = visibleFocusedDetail ? 1 : architectural ? .03 : 1; item.material.depthWrite = visibleFocusedDetail || !architectural; item.material.needsUpdate = true; } } }
+function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const focusedSalon = !renderEverything && !topDown && !pov && floorLevel === 1 && (ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon") === "salon"; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.transparent = false; wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { const visibleFocusedWall = focusedSalon && (name === "left" || name === "front"); wall.material.transparent = !visibleFocusedWall; wall.material.opacity = visibleFocusedWall ? 1 : near.has(name) ? .01 : .04; wall.material.depthWrite = visibleFocusedWall; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); const visibleFocusedDetail = focusedSalon && architectural && !/(rear|camera-side)/i.test(item.name || ""); item.material.transparent = !visibleFocusedDetail; item.material.opacity = visibleFocusedDetail ? 1 : architectural ? .03 : 1; item.material.depthWrite = visibleFocusedDetail || !architectural; item.material.needsUpdate = true; } } }
 function enforceSalonRoomView() {
   const selectedRoomId = ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon";
   if (renderEverything || topDown || pov || floorLevel !== 1 || selectedRoomId !== "salon") return;
@@ -886,7 +895,7 @@ function enforceSalonRoomView() {
   salonRoot.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name);
-    const westSouthWall = /^(left wall|front wall left of veranda door|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
+    const westSouthWall = /^(left wall|front wall left of veranda door|front wall between veranda openings|front wall right of veranda window|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
     const westSouthOpening = /(villa facade window|facade window|west veranda door|south veranda door|front door)/i.test(node.name);
     node.visible = !architectural || westSouthWall || westSouthOpening;
   });
