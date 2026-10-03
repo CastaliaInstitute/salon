@@ -490,6 +490,8 @@ function buildRoom() {
   const stairDoorSegment = (4.2 - 1.82) / 2;
   const stairDoorOffset = (1.82 + stairDoorSegment) / 2;
   for (const x of [-stairDoorOffset, stairDoorOffset]) stairToRoomEightWalls.push(box("room 5 to room 8 wall segment", [stairDoorSegment, CEILING_HEIGHT, .16], [x, CEILING_HEIGHT / 2, 2.1], WALL_PLASTER_COLOR));
+  const stairHeaderHeight = CEILING_HEIGHT - 2.5;
+  stairToRoomEightWalls.push(box("room 5 to room 8 wall above doorway", [1.82, stairHeaderHeight, .16], [0, 2.5 + stairHeaderHeight / 2, 2.1], WALL_PLASTER_COLOR));
   const stairToRoomEightDoors = new THREE.Group(); stairToRoomEightDoors.name = "room 5 to room 8 double doors";
   for (const x of [-.45, .45]) {
     const panel = box("room 5 to room 8 door panel", [.82, 2.4, .08], [x, 1.25, 2.10], 0x4a3027);
@@ -513,11 +515,15 @@ function buildRoom() {
     const segment = (length - opening) / 2;
     const offset = (opening + segment) / 2;
     for (const x of [centerX - offset, centerX + offset]) box(`${name} wall segment`, [segment, doorWallHeight, .16], [x, doorWallHeight / 2, centerZ], WALL_PLASTER_COLOR);
+    const headerHeight = doorWallHeight - 2.5;
+    box(`${name} wall above doorway`, [opening, headerHeight, .16], [centerX, 2.5 + headerHeight / 2, centerZ], WALL_PLASTER_COLOR);
   };
   const addVerticalDoorWall = (name, centerX, centerZ, length, opening) => {
     const segment = (length - opening) / 2;
     const offset = (opening + segment) / 2;
     for (const z of [centerZ - offset, centerZ + offset]) box(`${name} wall segment`, [.16, doorWallHeight, segment], [centerX, doorWallHeight / 2, z], WALL_PLASTER_COLOR);
+    const headerHeight = doorWallHeight - 2.5;
+    box(`${name} wall above doorway`, [.16, headerHeight, opening], [centerX, 2.5 + headerHeight / 2, centerZ], WALL_PLASTER_COLOR);
   };
   addHorizontalDoorWall("room four south", -4.2, 2.1, 4.2, 1.35);
   addVerticalDoorWall("salon east", 2.1, 4.2, 4.2, 1.82);
