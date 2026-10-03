@@ -155,7 +155,7 @@ function updatePlanRoomVisibility(roomId) {
   // The salon has a real architectural room root. Its inferred `grand salon`
   // shell is only a navigation placeholder and must never double-render walls.
   const activeName = planShellByRoom[roomId] || null;
-  room.traverse((node) => {
+  scene.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     if (node.userData.structuralOpening) { node.visible = false; return; }
     const match = planShellNames.find((name) => node.name.startsWith(`${name} `));
@@ -681,7 +681,8 @@ function buildRoom() {
 }
 function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .01 : .04; wall.material.depthWrite = false; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); item.material.transparent = true; item.material.opacity = architectural ? .03 : 1; item.material.depthWrite = !architectural; item.material.needsUpdate = true; } } }
 function enforceSalonRoomView() {
-  if (topDown || pov || floorLevel !== 1) return;
+  const selectedRoomId = ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon";
+  if (topDown || pov || floorLevel !== 1 || selectedRoomId !== "salon") return;
   // The authored salon root has its own local transform and can appear as a
   // detached platform. Room view must use only the connected house shell.
   salonRoot.visible = true;
