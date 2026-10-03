@@ -118,6 +118,10 @@ const DRESSUP_ATLAS = { columns: 8, rows: 5, frameAspect: (1536 / 8) / (1000 / 5
 const textureCache = new Map();
 let fireLight;
 let lightningLight;
+const weatherLayer = new THREE.Group(); weatherLayer.name = "Lake Geneva weather"; scene.add(weatherLayer);
+let rainGeometry;
+let rainWind = { x: .8, z: .25 };
+let thunderAudio;
 let cinematicCue = null;
 let cinematicSpeakerId = null;
 const candleLights = [];
@@ -224,6 +228,45 @@ function lakeTexture() {
   for (let i = 0; i < 160; i++) { const y = Math.random() * 256; ctx.strokeStyle = "rgba(205,235,226," + (.08 + Math.random() * .2) + ")"; ctx.lineWidth = 1 + Math.random() * 2; ctx.beginPath(); ctx.moveTo(Math.random() * 420, y); ctx.lineTo(512, y + (Math.random() - .5) * 8); ctx.stroke(); }
   const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(3, 1); return texture;
 }
+function cloudTexture() {
+  const canvas = document.createElement("canvas"); canvas.width = 256; canvas.height = 128;
+  const ctx = canvas.getContext("2d"); ctx.clearRect(0, 0, 256, 128);
+  for (const cloud of [[62,70,48],[108,54,62],[164,68,52],[205,76,38]]) {
+    const glow = ctx.createRadialGradient(cloud[0], cloud[1], 4, cloud[0], cloud[1], cloud[2]); glow.addColorStop(0, "rgba(226,235,233,.54)"); glow.addColorStop(1, "rgba(83,103,111,0)");
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cloud[0], cloud[1], cloud[2], 0, Math.PI * 2); ctx.fill();
+  }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture;
+}
+function buildWeather() {
+  const cloudMaterial = new THREE.SpriteMaterial({ map: cloudTexture(), transparent: true, opacity: .5, depthWrite: false, color: 0x8b9ba0 });
+  for (let i = 0; i < 7; i++) {
+    const cloud = new THREE.Sprite(cloudMaterial.clone()); cloud.position.set(-18 + i * 6.4, 11 + (i % 3) * 1.4, 4 + (i % 4) * 7); cloud.scale.set(8 + (i % 3) * 2, 4.2, 1); cloud.userData.wind = .12 + (i % 3) * .025; weatherLayer.add(cloud);
+  }
+  const count = 850; const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) { positions[i * 3] = (Math.random() - .5) * 34; positions[i * 3 + 1] = Math.random() * 12 + 1; positions[i * 3 + 2] = 3 + Math.random() * 29; }
+  rainGeometry = new THREE.BufferGeometry(); rainGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  const rain = new THREE.Points(rainGeometry, new THREE.PointsMaterial({ color: 0xb9d8df, size: .055, transparent: true, opacity: .42, depthWrite: false }));
+  rain.name = "wind-driven rain"; weatherLayer.add(rain);
+}
+function updateWeather(now, delta) {
+  weatherLayer.children.forEach((node, index) => {
+    if (node.isSprite) { node.position.x += node.userData.wind * delta; if (node.position.x > 22) node.position.x = -22; node.material.opacity = .38 + Math.sin(now * .12 + index) * .08; }
+  });
+  const positions = rainGeometry?.attributes.position?.array;
+  if (positions) for (let i = 0; i < positions.length; i += 3) { positions[i] += rainWind.x * delta; positions[i + 1] -= 8.5 * delta; positions[i + 2] += rainWind.z * delta; if (positions[i + 1] < -.2) { positions[i + 1] = 13; positions[i] = (Math.random() - .5) * 34; positions[i + 2] = 3 + Math.random() * 29; } }
+  if (rainGeometry) rainGeometry.attributes.position.needsUpdate = true;
+  if (lightningLight) { const pulse = Math.max(0, Math.sin(now * .19 + 2.4) - .995) * 140; lightningLight.intensity = pulse; }
+}
+function startThunderAudio() {
+  if (thunderAudio) return; const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return;
+  const context = new AudioContext(); const noise = context.createBufferSource(); const buffer = context.createBuffer(1, context.sampleRate * 2.2, context.sampleRate); const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.8);
+  noise.buffer = buffer; const filter = context.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 120; const gain = context.createGain(); gain.gain.value = 0;
+  noise.connect(filter).connect(gain).connect(context.destination); noise.start(); thunderAudio = { context, gain, noise };
+}
+buildWeather();
+canvas.addEventListener("pointerdown", startThunderAudio, { once: true });
+setInterval(() => updateWeather(clock.elapsedTime, .016), 16);
 function buildTopography() {
   fetch("../terrain/topography.json", { cache: "force-cache" }).then((response) => response.ok ? response.json() : null).then((topo) => {
     if (!topo?.elevations?.length) return;
