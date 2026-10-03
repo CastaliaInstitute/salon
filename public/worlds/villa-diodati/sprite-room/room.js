@@ -982,8 +982,20 @@ renderAllButton?.addEventListener("click", () => {
   renderEverything = !renderEverything;
   renderAllButton.setAttribute("aria-pressed", String(renderEverything));
   renderAllButton.textContent = renderEverything ? "Focused render" : "Render everything";
-  if (renderEverything) applyRenderEverything();
-  else setViewMode(cameraButton.value);
+  if (renderEverything) {
+    applyRenderEverything();
+    // Reframe the complete exterior instead of leaving the camera aimed at
+    // the southwest salon bay used by focused room view.
+    activeCamera = isoCamera;
+    cameraButton.value = "room";
+    isoCamera.zoom = 1.05;
+    isoCamera.position.set(23, 22, 27);
+    isoCamera.lookAt(0, 7.5, 0);
+    controls.object = isoCamera;
+    controls.target.set(0, 7.5, 0);
+    controls.enableRotate = true;
+    resize();
+  } else setViewMode(cameraButton.value);
 });
 floorButton?.addEventListener("change", () => { const nextFloor = Number(floorButton.value); if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = stair.x; localPlayer.z = stair.z + 1.0; walkTarget = null; } setFloorLevel(nextFloor); focusHouseLocation(stair.x, stair.z + 1.0, nextFloor); });
 roomButton?.addEventListener("change", () => { roomSelectionLocked = true; const destinationId = ROOM_SELECT_TARGETS[Number(roomButton.value)]; const destination = navigationRooms.find((candidate) => candidate.id === destinationId); if (!destination) return; const nextFloor = Number(destination.floor); if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); walkTarget = null; walkRoute = []; } setFloorLevel(nextFloor); currentRoomId = ""; updateRoomScope(); focusHouseLocation(Number(destination.x), Number(destination.z), nextFloor); });
