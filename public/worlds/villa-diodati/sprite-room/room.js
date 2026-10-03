@@ -996,10 +996,10 @@ renderAllButton?.addEventListener("click", () => {
     activeCamera = isoCamera;
     cameraButton.value = "room";
     isoCamera.zoom = 1.05;
-    isoCamera.position.set(23, 22, 27);
-    isoCamera.lookAt(0, 7.5, 0);
+    isoCamera.position.set(0, 20, 32);
+    isoCamera.lookAt(0, 7, 4);
     controls.object = isoCamera;
-    controls.target.set(0, 7.5, 0);
+    controls.target.set(0, 7, 4);
     controls.enableRotate = true;
     resize();
   } else {
