@@ -164,7 +164,8 @@
       "connections": [
         "central-stair-hall",
         "guest-chamber",
-        "terrace"
+        "terrace",
+        "room-four"
       ]
     },
     {
@@ -200,7 +201,7 @@
       "z": 0,
       "width": 4.2,
       "depth": 4.2,
-      "connections": ["salon", "drawing-music-room", "dining-room", "entrance-hall"]
+      "connections": ["salon", "drawing-music-room", "dining-room", "entrance-hall", "room-four"]
     },
     {
       "id": "room-four",
