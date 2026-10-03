@@ -793,14 +793,17 @@ function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) 
 function enforceSalonRoomView() {
   const selectedRoomId = ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon";
   if (renderEverything || topDown || pov || floorLevel !== 1 || selectedRoomId !== "salon") return;
-  // The authored salon root has its own local transform and is not part of the
-  // house datum. Room view uses the connected principal-floor shell only.
-  salonRoot.visible = false;
-  room.children.forEach((child) => { if (child !== principalPlanShell) child.visible = false; });
-  principalPlanShell.visible = true;
-  principalPlanShell.traverse((node) => {
+  // Focused room view uses the authored salon unit. It is already scaled and
+  // placed at the southwest principal-floor bay; the inferred plan shell is
+  // reserved for map mode so its enclosure never leaks into the room camera.
+  room.children.forEach((child) => { child.visible = child === salonRoot; });
+  principalPlanShell.visible = false;
+  salonRoot.visible = true;
+  salonRoot.traverse((node) => {
     if (!node.isMesh || !node.name) return;
-    node.visible = /^(salon floor|salon west wall|salon south veranda wall segment|salon south lake window glass|salon west lake window glass|salon south lake door)$/i.test(node.name);
+    const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name);
+    const westSouthWall = /^(left wall|front wall left of veranda door|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
+    node.visible = !architectural || westSouthWall;
   });
 }
 function applyRenderEverything() {
