@@ -692,7 +692,7 @@ function enforceSalonRoomView() {
     // Room view is a salon vignette, not a cutaway of the whole house.
     // Keep only the salon floor, its west wall, and the south/veranda wall;
     // neighboring shells, boundary walls, and columns stay out of frame.
-    node.visible = /^(salon floor|salon west wall|salon south veranda wall segment)$/i.test(node.name);
+    node.visible = /^(salon floor|salon west wall|salon south veranda wall segment|principal exterior (north|south|west|east) wall)$/i.test(node.name);
   });
 }
 function setupLighting() {
