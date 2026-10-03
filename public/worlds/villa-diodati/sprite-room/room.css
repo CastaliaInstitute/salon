@@ -1,6 +1,6 @@
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #17120f; }
 body { font-family: Georgia, serif; }
-canvas { display: block; width: 100%; height: calc(100% - 210px); }
+canvas { display: block; width: 100%; height: calc(100% - 210px); touch-action: none; }
 body.topdown-mode canvas { height: 100%; }
 body.topdown-mode #dialogue-layer { display: none; }
 .dialogue-bubble { position: fixed; max-width: 210px; padding: 7px 10px; border: 1px solid rgba(183,145,93,.72); border-radius: 12px 12px 12px 3px; background: rgba(28,20,18,.9); color: #f6e8cc; font-size: 12px; line-height: 1.25; pointer-events: none; transform: translate(-50%, -100%); box-shadow: 0 5px 18px rgba(0,0,0,.28); }
