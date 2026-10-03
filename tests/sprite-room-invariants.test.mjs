@@ -21,6 +21,11 @@ test("viewer bounds pan and keeps the target on the active floor", () => {
   assert.match(source, /controls\.target\.y = topDown \? floorY : floorY \+ \.8/);
 });
 
+test("viewer tracks canvas resizes on responsive layouts", () => {
+  assert.match(source, /new ResizeObserver\(resize\)\.observe\(canvas\)/);
+  assert.match(source, /addEventListener\("resize", resize\)/);
+});
+
 test("exterior glazing is modeled as openings with physical glass", () => {
   assert.match(source, /replaceSquareVillaWallsWithOpenings/);
   assert.match(source, /new THREE\.MeshPhysicalMaterial\(\{ color: 0xffffff/);
