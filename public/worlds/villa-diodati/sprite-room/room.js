@@ -1114,5 +1114,5 @@ if (!topDown && !pov && floorLevel === 1) {
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
   controls.target.set(focusX, floorY + .8, focusZ);
 }
-if (!pov) controls.enableRotate = true;
+if (!pov && !topDown) controls.enableRotate = true;
 animate();
