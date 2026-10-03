@@ -276,6 +276,12 @@ function buildPlanFloorShell(layer, baseY, levelName) {
     layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [4.2, baseY + wallHeight / 2, 4.2], wallColor);
     addHorizontalDoorWall("salon map boundary south", 0, 6.3, 8.4, 1.35);
   }
+  // The room graph may leave an edge open for a veranda or an interior
+  // threshold, but every floor still needs a continuous outside envelope.
+  layerBox(layer, `${levelName} exterior north wall`, [12.6, wallHeight, .16], [0, baseY + wallHeight / 2, -6.3], wallColor);
+  layerBox(layer, `${levelName} exterior south wall`, [12.6, wallHeight, .16], [0, baseY + wallHeight / 2, 6.3], wallColor);
+  layerBox(layer, `${levelName} exterior west wall`, [.16, wallHeight, 12.6], [-6.3, baseY + wallHeight / 2, 0], wallColor);
+  layerBox(layer, `${levelName} exterior east wall`, [.16, wallHeight, 12.6], [6.3, baseY + wallHeight / 2, 0], wallColor);
   const doorColor = 0x4a3027;
   layerBox(layer, `${levelName} foyer front door`, [1.35, 2.45, .08], [0, baseY + 1.22, -6.28], doorColor);
   for (const x of [-.45, .45]) layerBox(layer, `${levelName} room 5 to room 8 double door`, [.82, 2.4, .08], [x, baseY + 1.25, 2.1], doorColor);
