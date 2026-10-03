@@ -808,7 +808,8 @@ function enforceSalonRoomView() {
 function applyRenderEverything() {
   if (!renderEverything) return;
   scene.traverse((node) => { node.visible = true; });
-  room.visible = !topDown;
+  room.visible = topDown;
+  salonRoot.visible = false;
   principalPlanShell.visible = topDown && floorLevel === 1;
   lowerFloor.visible = topDown && floorLevel === 0;
   upperFloors.forEach((layer, index) => { layer.visible = topDown && floorLevel === index + 2; });
