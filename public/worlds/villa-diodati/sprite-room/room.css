@@ -18,7 +18,10 @@ body.topdown-mode #script-panel, body.topdown-mode #rewind-control { display: no
 #rewind-slider { flex: 1; min-width: 0; accent-color: #b7915d; }
 .rewind-row { display: flex; align-items: center; gap: 8px; }
 #rewind-play, #rewind-live { padding: 4px 9px; font-size: 10px; }
-.controls { position: fixed; left: 0; right: 0; bottom: 210px; min-height: 40px; box-sizing: border-box; padding: 5px 22px; display: flex; gap: 8px; align-items: center; color: #e8d9bd; font-size: 11px; letter-spacing: .04em; text-shadow: 0 1px 3px #000; background: rgba(23,18,15,.94); border-top: 1px solid rgba(183,145,93,.35); }
+.controls { position: fixed; left: 0; right: 0; bottom: 210px; min-height: 40px; box-sizing: border-box; padding: 5px 22px; display: flex; gap: 8px; align-items: center; overflow-x: auto; overscroll-behavior-x: contain; color: #e8d9bd; font-size: 11px; letter-spacing: .04em; text-shadow: 0 1px 3px #000; background: rgba(23,18,15,.94); border-top: 1px solid rgba(183,145,93,.35); }
+.controls > * { flex: 0 0 auto; }
+.controls::-webkit-scrollbar { height: 3px; }
+.controls::-webkit-scrollbar-thumb { background: rgba(183,145,93,.7); border-radius: 999px; }
 body.topdown-mode .controls { bottom: 0; background: rgba(23,18,15,.9); }
 button { border: 1px solid #b7915d; border-radius: 999px; padding: 5px 10px; color: #f5e5c8; background: rgba(35, 22, 20, .82); font: inherit; cursor: pointer; }
 button:hover { background: #5f3e37; }
