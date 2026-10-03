@@ -257,6 +257,27 @@ function updateWeather(now, delta) {
   if (rainGeometry) rainGeometry.attributes.position.needsUpdate = true;
   if (lightningLight) { const pulse = Math.max(0, Math.sin(now * .19 + 2.4) - .995) * 140; lightningLight.intensity = pulse; }
 }
+function updateEnvironmentalPhysics(now, delta) {
+  const rainActive = weatherLayer.visible;
+  scene.traverse((node) => {
+    if (!node.isMesh) return;
+    if (node.userData.openableDoor) {
+      const windForce = rainActive && node.position.z > 4.5 ? Math.sin(now * .7 + node.position.x) * .012 + .006 : 0;
+      node.userData.doorVelocity = THREE.MathUtils.lerp(node.userData.doorVelocity || 0, windForce, .08);
+      node.userData.doorAngle = THREE.MathUtils.clamp((node.userData.doorAngle || 0) + node.userData.doorVelocity, 0, Math.PI * .48);
+      node.rotation.y = node.userData.doorAngle;
+    }
+    if (node.userData.weatherWettable) {
+      const exposed = rainActive && (node.userData.outdoor || node.position.z > 5.5 || node.position.z < -6.0);
+      node.userData.wetness = THREE.MathUtils.clamp((node.userData.wetness || 0) + (exposed ? delta * .045 : -delta * .018), 0, 1);
+      if (node.userData.originalMaterial && node.material?.roughness !== undefined) {
+        const wetness = node.userData.wetness; node.material.roughness = THREE.MathUtils.lerp(node.userData.originalMaterial.roughness ?? .7, .18, wetness);
+        if (node.material.color && node.userData.originalMaterial.color) node.material.color.copy(node.userData.originalMaterial.color).multiplyScalar(1 - wetness * .12);
+        node.material.needsUpdate = true;
+      }
+    }
+  });
+}
 function startThunderAudio() {
   if (thunderAudio) return; const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return;
   const context = new AudioContext(); const noise = context.createBufferSource(); const buffer = context.createBuffer(1, context.sampleRate * 2.2, context.sampleRate); const data = buffer.getChannelData(0);
@@ -266,7 +287,7 @@ function startThunderAudio() {
 }
 buildWeather();
 canvas.addEventListener("pointerdown", startThunderAudio, { once: true });
-setInterval(() => updateWeather(clock.elapsedTime, .016), 16);
+setInterval(() => { updateWeather(clock.elapsedTime, .016); updateEnvironmentalPhysics(clock.elapsedTime, .016); }, 16);
 function buildTopography() {
   fetch("../terrain/topography.json", { cache: "force-cache" }).then((response) => response.ok ? response.json() : null).then((topo) => {
     if (!topo?.elevations?.length) return;
@@ -314,7 +335,9 @@ function addStairFlight(layer, baseY, name) {
 }
 function layerBox(layer, name, size, position, color, rotation = 0) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color));
-  mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; layer.add(mesh); return mesh;
+  mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true;
+  if (/door/i.test(name)) { mesh.userData.openableDoor = true; mesh.userData.weatherWettable = true; mesh.userData.originalMaterial = mesh.material.clone(); }
+  layer.add(mesh); return mesh;
 }
 function buildPlanFloorShell(layer, baseY, levelName) {
   layer.clear();
@@ -359,7 +382,7 @@ function buildPlanFloorShell(layer, baseY, levelName) {
       pane.position.set(-6.22, baseY + 2.25, z); pane.name = "salon west lake window glass"; pane.renderOrder = 2; layer.add(pane);
     }
     const lakeDoor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 2.45, .05), new THREE.MeshPhysicalMaterial({ color: 0xc6e4e8, transparent: true, opacity: .14, transmission: .94, roughness: .03, metalness: 0, side: THREE.DoubleSide, depthWrite: false }));
-    lakeDoor.position.set(0, baseY + 1.22, 6.24); lakeDoor.name = "salon south lake door"; lakeDoor.userData.openableDoor = true; layer.add(lakeDoor);
+    lakeDoor.position.set(0, baseY + 1.22, 6.24); lakeDoor.name = "salon south lake door"; lakeDoor.userData.openableDoor = true; lakeDoor.userData.weatherWettable = true; lakeDoor.userData.originalMaterial = lakeDoor.material.clone(); layer.add(lakeDoor);
   }
   // The room graph may leave an edge open for a veranda or an interior
   // threshold, but every floor still needs a continuous outside envelope.
