@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import tailwind from '@astrojs/tailwind';
+import tailwindcss from '@tailwindcss/vite';
 
 /** Dev-only: deep links under /live/* load the live shell (mirrors GitHub Pages 404.html behavior). */
 function salonLiveSpaFallback() {
@@ -30,12 +30,12 @@ function salonLiveSpaFallback() {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://salon.castalia.institute',
-  integrations: [react(), tailwind()],
+  integrations: [react()],
   build: {
     assets: 'assets',
   },
   vite: {
-    plugins: [salonLiveSpaFallback()],
+    plugins: [tailwindcss(), salonLiveSpaFallback()],
     resolve: {
       dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
     },
