@@ -291,7 +291,6 @@ buildWeather();
 weatherLayer.scale.setScalar(HOUSE_WORLD_SCALE);
 canvas.addEventListener("pointerdown", startThunderAudio, { once: true });
 setInterval(() => { updateWeather(clock.elapsedTime, .016); updateEnvironmentalPhysics(clock.elapsedTime, .016); }, 16);
-setInterval(() => { if (renderEverything) dialogueLayer?.replaceChildren(); }, 100);
 function buildTopography() {
   fetch("../terrain/topography.json", { cache: "force-cache" }).then((response) => response.ok ? response.json() : null).then((topo) => {
     if (!topo?.elevations?.length) return;
@@ -324,7 +323,6 @@ function box(name, size, position, color, rotation = 0) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), mat(color));
   mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; activeBuildGroup.add(mesh); return mesh;
 }
-function windowViewTexture() { const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 512; const ctx = canvas.getContext("2d"); const sky = ctx.createLinearGradient(0, 0, 0, 512); sky.addColorStop(0, "#0b1830"); sky.addColorStop(.58, "#243d58"); sky.addColorStop(1, "#151b24"); ctx.fillStyle = sky; ctx.fillRect(0, 0, 512, 512); ctx.fillStyle = "rgba(232,241,255,.9)"; ctx.beginPath(); ctx.arc(390, 92, 42, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "rgba(11,24,48,.9)"; ctx.beginPath(); ctx.arc(407, 80, 39, 0, Math.PI * 2); ctx.fill(); for (let i = 0; i < 45; i++) { const x = (i * 83) % 512; const y = 24 + ((i * 47) % 250); ctx.fillStyle = `rgba(220,235,255,${.35 + (i % 4) * .12})`; ctx.fillRect(x, y, 2, 2); } ctx.fillStyle = "#101923"; ctx.beginPath(); ctx.moveTo(0, 390); ctx.lineTo(100, 320); ctx.lineTo(175, 370); ctx.lineTo(280, 290); ctx.lineTo(390, 370); ctx.lineTo(512, 300); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.fill(); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; return texture; }
 function loadFurnitureModel(path, name, position, fit, rotation = 0, parent = room) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); const sourceBounds = new THREE.Box3().setFromObject(model); const sourceSize = sourceBounds.getSize(new THREE.Vector3()); const dimension = fit.height ? sourceSize.y : sourceSize.x; model.scale.setScalar((fit.height || fit.width) / Math.max(.001, dimension)); const groundedBounds = new THREE.Box3().setFromObject(model); model.position.y -= groundedBounds.min.y; parent.add(model); }); }
 function addStairFlight(layer, baseY, name) {
   const stairMat = mat(0x806445);
@@ -566,7 +564,6 @@ function buildRoom() {
   const doorLintel = box("front door lintel", [1.55, .12, .12], [0, 2.78, 4.8], 0xb3875c);
   box("front door handle", [.08, .08, .08], [.48, 1.35, 4.76], 0xd8b36e);
   room.userData.occludingDecor.push(door, doorFrameLeft, doorFrameRight, doorLintel);
-  const outside = windowViewTexture();
   const addFacadeWindow = (x, y, z, rotation = 0) => {
     const recess = box("villa facade window recess", [1.85, 2.65, .08], [x, y, z], 0x182b3c, rotation);
     const pane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.3), new THREE.MeshPhysicalMaterial({ color: 0xc7e4e8, transparent: true, opacity: .12, transmission: .94, roughness: .03, depthWrite: false, side: THREE.DoubleSide }));
