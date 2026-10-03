@@ -55,7 +55,8 @@ test("focused salon has deterministic furnishing geometry", () => {
   assert.match(source, /salon fallback armchair seat/);
   assert.match(source, /addSalonFurnitureFallback\(\);/);
   assert.match(source, /salonFallbackLayer\.visible = !renderEverything && !topDown && floorLevel === 1/);
-  assert.match(source, /salonFallbackLayer\.position\.copy\(salonRoot\.position\)\.multiplyScalar\(HOUSE_WORLD_SCALE\)/);
+  assert.match(source, /salonFallbackLayer\.position\.copy\(salonRoot\.position\)/);
+  assert.match(source, /child === salonRoot \|\| child === salonFallbackLayer/);
   assert.match(source, /mesh\.renderOrder = 5; mesh\.material\.depthTest = false/);
 });
 

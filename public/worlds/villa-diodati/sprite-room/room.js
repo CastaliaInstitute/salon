@@ -120,7 +120,7 @@ salonRoot.name = "Southwest salon room";
 room.add(salonRoot);
 const salonFallbackLayer = new THREE.Group();
 salonFallbackLayer.name = "Focused salon furnishing fallback";
-scene.add(salonFallbackLayer);
+room.add(salonFallbackLayer);
 const principalPlanShell = new THREE.Group();
 principalPlanShell.name = "Principal floor inferred plan";
 scene.add(principalPlanShell);
@@ -900,8 +900,8 @@ function buildRoom() {
   salonRoot.position.set(SALON_ORIGIN.x, 0, SALON_ORIGIN.z);
   salonRoot.scale.set(SALON_CONTENT_SCALE.x, 1, SALON_CONTENT_SCALE.z);
   salonRoot.rotation.y = SALON_CONTENT_ROTATION;
-  salonFallbackLayer.position.copy(salonRoot.position).multiplyScalar(HOUSE_WORLD_SCALE);
-  salonFallbackLayer.scale.copy(salonRoot.scale).multiplyScalar(HOUSE_WORLD_SCALE);
+  salonFallbackLayer.position.copy(salonRoot.position);
+  salonFallbackLayer.scale.copy(salonRoot.scale);
   salonFallbackLayer.rotation.y = salonRoot.rotation.y;
 }
 function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const focusedSalon = !renderEverything && !topDown && !pov && floorLevel === 1 && (ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon") === "salon"; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.transparent = false; wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { const visibleFocusedWall = focusedSalon && (name === "left" || name === "front"); wall.material.transparent = !visibleFocusedWall; wall.material.opacity = visibleFocusedWall ? 1 : near.has(name) ? .01 : .04; wall.material.depthWrite = visibleFocusedWall; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); const visibleFocusedDetail = focusedSalon && architectural && !/(rear|camera-side)/i.test(item.name || ""); item.material.transparent = !visibleFocusedDetail; item.material.opacity = visibleFocusedDetail ? 1 : architectural ? .03 : 1; item.material.depthWrite = visibleFocusedDetail || !architectural; item.material.needsUpdate = true; } } }
@@ -911,7 +911,7 @@ function enforceSalonRoomView() {
   // Focused room view uses the authored salon unit. It is already scaled and
   // placed at the southwest principal-floor bay; the inferred plan shell is
   // reserved for map mode so its enclosure never leaks into the room camera.
-  room.children.forEach((child) => { child.visible = child === salonRoot; });
+  room.children.forEach((child) => { child.visible = child === salonRoot || child === salonFallbackLayer; });
   principalPlanShell.visible = false;
   salonRoot.visible = true;
   salonRoot.traverse((node) => {
