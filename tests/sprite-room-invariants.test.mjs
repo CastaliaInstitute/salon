@@ -89,8 +89,15 @@ test("weather respects reduced-motion preferences", () => {
 });
 
 test("viewer shares one map contract request during startup", () => {
-  assert.equal((source.match(/fetch\("\.\.\/isometric-map\.json"/g) || []).length, 1);
-  assert.match(source, /const mapContractPromise = fetch\("\.\.\/isometric-map\.json"/);
+  assert.equal((source.match(/fetchWithTimeout\("\.\.\/isometric-map\.json"/g) || []).length, 1);
+  assert.match(source, /const mapContractPromise = fetchWithTimeout\("\.\.\/isometric-map\.json"/);
+});
+
+test("network-backed viewer requests have bounded failure behavior", () => {
+  assert.match(source, /const NETWORK_TIMEOUT_MS = 8000/);
+  assert.match(source, /async function fetchWithTimeout\(input, options = \{\}, timeout = NETWORK_TIMEOUT_MS\)/);
+  assert.match(source, /controller\.abort\(\)/);
+  assert.doesNotMatch(source, /await fetch\("https:\/\/matrix\.castalia\.institute/);
 });
 
 test("viewer reports recoverable WebGL context loss", () => {
