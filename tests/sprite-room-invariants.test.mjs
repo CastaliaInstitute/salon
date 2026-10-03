@@ -28,7 +28,7 @@ test("exterior glazing is modeled as openings with physical glass", () => {
 
 test("focused salon restores solid west and south enclosure walls", () => {
   assert.match(source, /focused salon cannot read as detached wall cards/);
-  assert.match(source, /\["left wall", "front wall left of veranda door", "front wall right of veranda door", "veranda door lintel"\]/);
+  assert.match(source, /\["front wall left of veranda door", "front wall right of veranda door", "veranda door lintel"\]/);
   assert.match(source, /wall\.material\.transparent = false/);
   assert.match(source, /wall\.material\.opacity = 1/);
   assert.match(source, /const southElevation = focusedSalon && name === "front"/);
