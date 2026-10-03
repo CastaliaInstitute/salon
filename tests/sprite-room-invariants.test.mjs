@@ -98,6 +98,8 @@ test("viewer has a keyboard-focusable canvas and no-script fallback", () => {
   assert.match(html, /<noscript class="no-script-message">/);
   assert.match(html, /<meta name="description" content="Explore the Villa Diodati salon/);
   assert.match(html, /<meta name="theme-color" content="#17120f"/);
+  assert.match(html, /<meta property="og:title" content="Villa Diodati · Interactive Salon"/);
+  assert.match(html, /<meta property="og:type" content="website"/);
 });
 
 test("weather respects reduced-motion preferences", () => {
