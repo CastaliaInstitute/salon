@@ -316,7 +316,9 @@ function buildTopography() {
     const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3)); geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2)); geometry.setIndex(indices); geometry.computeVertexNormals();
     const ground = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map: terrainTexture(), roughness: 1, metalness: 0, side: THREE.DoubleSide })); ground.name = "actual Lake Geneva regional terrain"; ground.receiveShadow = true; ground.visible = topDown || renderEverything; landscapeLayer.add(ground);
     const water = new THREE.Mesh(new THREE.PlaneGeometry(36, 10), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x78aeb5, transparent: true, opacity: .9, roughness: .18, metalness: .12, side: THREE.DoubleSide }));
-    water.rotation.x = -Math.PI / 2; water.position.set(0, -4.12, 32); water.name = "textured Lake Geneva water"; water.receiveShadow = true; landscapeLayer.add(water);
+    // Keep the lake close enough to read through the south glazing while
+    // remaining below the villa on the hillside datum.
+    water.rotation.x = -Math.PI / 2; water.position.set(0, -.8, 16); water.name = "textured Lake Geneva water"; water.receiveShadow = true; landscapeLayer.add(water);
   }).catch(() => {});
 }
 function addWindowMuntins(add, x, y, z, side = false, name = "window muntin") {
