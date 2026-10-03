@@ -320,7 +320,7 @@ function buildTopography() {
     // remaining below the villa on the hillside datum.
     water.rotation.x = -Math.PI / 2; water.position.set(0, -.8, 16); water.name = "textured Lake Geneva water"; water.receiveShadow = true; landscapeLayer.add(water);
     const lakeHorizon = new THREE.Mesh(new THREE.PlaneGeometry(42, 12), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x6f9faa, roughness: .42, metalness: .04, side: THREE.DoubleSide }));
-    lakeHorizon.position.set(0, 3.2, 18); lakeHorizon.name = "focused lake horizon"; lakeHorizon.visible = !topDown && !renderEverything; landscapeLayer.add(lakeHorizon);
+    lakeHorizon.position.set(0, 3.5, 9.5); lakeHorizon.name = "focused lake horizon"; lakeHorizon.visible = !topDown && !renderEverything; landscapeLayer.add(lakeHorizon);
   }).catch(() => {});
 }
 function addWindowMuntins(add, x, y, z, side = false, name = "window muntin") {
