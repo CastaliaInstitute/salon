@@ -174,7 +174,7 @@ function applyTopDownRoomVisibility() {
     if (outdoorClutter) { node.visible = false; return; }
     if (node.userData.structuralOpening) { node.visible = false; return; }
     const match = planShellNames.find((name) => node.name.startsWith(`${name} `));
-    if (match) node.visible = match === "salon" ? false : topDownRoomVisibility.get(match) !== false;
+    if (match) node.visible = match === "salon" ? /salon map boundary/i.test(node.name || "") : topDownRoomVisibility.get(match) !== false;
     else if (floorLevel === 1) node.visible = true;
   });
 }
@@ -271,6 +271,11 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   addHorizontalDoorWall("central stair hall south", 0, 2.1, 4.2, 1.82);
   addVerticalDoorWall("salon east", 2.1, 4.2, 4.2, 1.82);
   addHorizontalDoorWall("salon south veranda", 0, 6.3, 8.4, 1.35);
+  if (levelName === "principal") {
+    layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-4.2, baseY + wallHeight / 2, 4.2], wallColor);
+    layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [4.2, baseY + wallHeight / 2, 4.2], wallColor);
+    addHorizontalDoorWall("salon map boundary south", 0, 6.3, 8.4, 1.35);
+  }
   const doorColor = 0x4a3027;
   layerBox(layer, `${levelName} foyer front door`, [1.35, 2.45, .08], [0, baseY + 1.22, -6.28], doorColor);
   for (const x of [-.45, .45]) layerBox(layer, `${levelName} room 5 to room 8 double door`, [.82, 2.4, .08], [x, baseY + 1.25, 2.1], doorColor);
