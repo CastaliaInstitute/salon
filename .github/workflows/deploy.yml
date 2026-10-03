@@ -59,3 +59,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
+
+      - name: Smoke-test the published viewer
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          case "$SITE_URL" in
+            */) ;;
+            *) SITE_URL="$SITE_URL/" ;;
+          esac
+          viewer_url="${SITE_URL}worlds/villa-diodati/sprite-room/"
+          curl --fail --silent --show-error --retry 8 --retry-delay 5 --retry-connrefused "$viewer_url" > /tmp/sprite-room.html
+          grep -Eq 'room\.js\?v=[^" ]+' /tmp/sprite-room.html
