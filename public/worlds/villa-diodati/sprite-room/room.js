@@ -37,7 +37,6 @@ let cinematic = false;
 let topDown = new URLSearchParams(location.search).get("map") === "topdown";
 let pov = false;
 const topDownRoomVisibility = new Map();
-let compassRose;
 const controls = new OrbitControls(activeCamera, canvas);
 controls.enablePan = true; controls.enableDamping = true; controls.dampingFactor = .08;
 controls.minZoom = .25; controls.maxZoom = 2.15; controls.minDistance = 3.2; controls.maxDistance = 16;
@@ -184,16 +183,8 @@ function resetTopDownRoomVisibility() {
   for (const name of planShellNames) topDownRoomVisibility.set(name, true);
   applyTopDownRoomVisibility();
 }
-function updateCompassRose() {
-  if (!compassRose || !topDown) return;
-  const dx = mapCamera.position.x - controls.target.x;
-  const dz = mapCamera.position.z - controls.target.z;
-  compassRose.style.transform = `rotate(${Math.atan2(dx, dz) * 180 / Math.PI}deg)`;
-}
-function createCompassRose() {
-  if (compassRose) return;
-  compassRose = document.createElement("div"); compassRose.innerHTML = "<div style='font-size:15px;color:#f2d38b'>↑ N</div><div style='font-size:13px;color:#d9bd7b'>W &nbsp;✦&nbsp; E</div><div style='font-size:13px;color:#d9bd7b'>↓ S · veranda</div>"; compassRose.style.cssText = "position:fixed;top:6.2rem;right:1.2rem;z-index:21;width:5.5rem;text-align:center;line-height:1.05;padding:.45rem .3rem;background:rgba(20,15,13,.82);border:1px solid #a88955;border-radius:50%;transform-origin:center;transition:transform .12s linear;pointer-events:none"; document.body.append(compassRose);
-}
+function createCompassRose() {}
+function updateCompassRose() {}
 function updateRoomScope() { if (topDown || pov || !navigationRooms.length) return; const current = !localPlayerEnabled ? navigationRooms.find((candidate) => candidate.id === (requestedRoom || "salon")) : roomAtPoint(localPlayer.x, localPlayer.z); if (!current) return; const selectedRoom = Object.entries(ROOM_SELECT_TARGETS).find(([, id]) => id === current.id); if (roomButton && selectedRoom) roomButton.value = selectedRoom[0]; const outdoors = new Set(["terrace", "garden", "vineyard", "orchard", "shore", "lake"]); const outside = outdoors.has(current.id); const authoredSalon = floorLevel === 1 && (current.id === "salon" || requestedRoom === "salon"); exteriorLayer.visible = authoredSalon ? false : outside; updateExteriorRoomMeshes(authoredSalon ? false : outside); for (const wall of Object.values(room.userData.walls || {})) wall.visible = authoredSalon ? false : !outside; for (const item of room.userData.occludingDecor || []) { const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(item.name || ""); item.visible = authoredSalon ? !architectural : !outside; } if (current.id !== currentRoomId) { currentRoomId = current.id; updatePlanRoomVisibility(current.id); const targetZ = outside ? 5.0 : Number(current.z); focusHouseLocation(Number(current.x), targetZ, floorLevel); } for (const figure of figures.values()) { const person = figure.userData.person; if (!person) continue; figure.visible = Number(person.floor ?? 1) === floorLevel; } }
 function roomWaypoints(origin, destination) { if (!origin || !destination || origin.id === destination.id || Number(origin.floor) !== Number(destination.floor)) return []; const rooms = new Map(navigationRooms.filter((room) => Number(room.floor) === floorLevel).map((room) => [room.id, room])); const previous = new Map([[origin.id, null]]); const queue = [origin.id]; while (queue.length) { const id = queue.shift(); if (id === destination.id) break; for (const next of rooms.get(id)?.connections || []) if (rooms.has(next) && !previous.has(next)) { previous.set(next, id); queue.push(next); } } if (!previous.has(destination.id)) return []; const ids = []; for (let id = destination.id; id && id !== origin.id; id = previous.get(id)) ids.unshift(id); return ids.map((id) => { const room = rooms.get(id); return safePosition(Number(room.x), Number(room.z), .22); }); }
 canvas.addEventListener("pointerup", (event) => { if (!localPlayerEnabled || event.button !== 0) return; const rect = canvas.getBoundingClientRect(); const pointer = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); tapRaycaster.setFromCamera(pointer, activeCamera); const point = new THREE.Vector3(); if (!tapRaycaster.ray.intersectPlane(floorPlane, point)) return; const safe = safePosition(point.x / HOUSE_WORLD_SCALE, point.z / HOUSE_WORLD_SCALE, .22); if (Math.hypot(point.x / HOUSE_WORLD_SCALE - stair.x, point.z / HOUSE_WORLD_SCALE - stair.z) < 1.7) changeFloor(); walkTarget = { x: safe.x, z: safe.z }; });
