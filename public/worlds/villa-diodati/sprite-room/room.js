@@ -567,7 +567,7 @@ function buildRoom() {
   const outside = windowViewTexture();
   const addFacadeWindow = (x, y, z, rotation = 0) => {
     const recess = box("villa facade window recess", [1.85, 2.65, .08], [x, y, z], 0x182b3c, rotation);
-    const pane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.3), new THREE.MeshBasicMaterial({ map: outside, transparent: true }));
+    const pane = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.3), new THREE.MeshPhysicalMaterial({ color: 0xc7e4e8, transparent: true, opacity: .12, transmission: .94, roughness: .03, depthWrite: false, side: THREE.DoubleSide }));
     pane.name = "villa facade window"; pane.position.set(x, y, z + (rotation ? 0 : -.055)); pane.rotation.y = rotation; pane.renderOrder = 1; activeBuildGroup.add(pane);
     const mapPane = box("facade window map pane", rotation ? [.12, .035, 1.55] : [1.55, .035, .12], [x, .015, z + (rotation ? 0 : -.02)], 0x294554, rotation);
     mapPane.userData.mapFeature = true;
@@ -734,7 +734,7 @@ function buildRoom() {
     }
     const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.91], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
-    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshBasicMaterial({ map: outside, transparent: true })); windowPane.name = "tall window to the storm outside"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
+    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshPhysicalMaterial({ color: 0xc7e4e8, transparent: true, opacity: .12, transmission: .94, roughness: .03, depthWrite: false, side: THREE.DoubleSide })); windowPane.name = "clear tall window glazing"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
     const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, -3.90], 0xf2eee5);
     const windowSill = box("window sill", [2.15, .12, .22], [x, .78, -3.82], 0xf2eee5);
     const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.86], 0x5e7080);
