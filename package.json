@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/CastaliaInstitute/salon"
   },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && node scripts/validate-season.mjs && node scripts/validate-villa-map.mjs && node scripts/sw-version.mjs && node scripts/cache-bust-world.mjs && node scripts/stamp-deploy-version.mjs && node scripts/copy-404.mjs",
