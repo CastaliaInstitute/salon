@@ -56,6 +56,7 @@ test("focused salon has deterministic furnishing geometry", () => {
   assert.match(source, /addSalonFurnitureFallback\(\);/);
   assert.match(source, /salonFallbackLayer\.visible = !renderEverything && !topDown && floorLevel === 1/);
   assert.match(source, /salonFallbackLayer\.position\.copy\(salonRoot\.position\)\.multiplyScalar\(HOUSE_WORLD_SCALE\)/);
+  assert.match(source, /mesh\.renderOrder = 5; mesh\.material\.depthTest = false/);
 });
 
 test("viewer has a restrictive content security policy", () => {
