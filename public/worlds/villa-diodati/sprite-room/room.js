@@ -381,13 +381,13 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   addHorizontalDoorWall("room four south", -4.2, 2.1, 4.2, 1.35);
   addHorizontalDoorWall("central stair hall south", 0, 2.1, 4.2, 1.82);
   addVerticalDoorWall("salon east", 2.1, 4.2, 4.2, 1.82);
-  addHorizontalDoorWall("salon south veranda", 0, 6.3, 8.4, 1.35);
+  addHorizontalDoorWall("salon south veranda", 0, 6.3, 8.4, 7.4);
   if (levelName === "principal") {
     layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-6.3, baseY + wallHeight / 2, 4.2], wallColor);
     layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [2.1, baseY + wallHeight / 2, 4.2], wallColor);
-    addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 1.35);
+    addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 7.4);
     const lakeGlass = new THREE.MeshPhysicalMaterial({ color: 0xb9dce3, transparent: true, opacity: .16, transmission: .92, roughness: .03, metalness: 0, side: THREE.DoubleSide, depthWrite: false });
-    for (const x of [-4.65, -2.55, .65]) {
+    for (const x of [-3.15, 0, 3.15]) {
       const lakeView = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 2.18), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x6799a4, roughness: .5, metalness: .02, side: THREE.DoubleSide }));
       lakeView.position.set(x, baseY + 2.25, 6.14); lakeView.name = "south lake view"; lakeView.renderOrder = 0; layer.add(lakeView);
       const pane = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.45, .035), lakeGlass);
