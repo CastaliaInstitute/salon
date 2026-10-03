@@ -87,7 +87,7 @@ salonRoot.name = "Southwest salon room";
 room.add(salonRoot);
 const principalPlanShell = new THREE.Group();
 principalPlanShell.name = "Principal floor inferred plan";
-room.add(principalPlanShell);
+scene.add(principalPlanShell);
 let activeBuildGroup = room;
 const exteriorLayer = new THREE.Group(); exteriorLayer.visible = false; exteriorLayer.name = "Villa Diodati exterior"; scene.add(exteriorLayer);
 const participantLayer = new THREE.Group(); scene.add(participantLayer);
