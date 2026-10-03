@@ -319,6 +319,8 @@ function buildTopography() {
     // Keep the lake close enough to read through the south glazing while
     // remaining below the villa on the hillside datum.
     water.rotation.x = -Math.PI / 2; water.position.set(0, -.8, 16); water.name = "textured Lake Geneva water"; water.receiveShadow = true; landscapeLayer.add(water);
+    const lakeHorizon = new THREE.Mesh(new THREE.PlaneGeometry(42, 12), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x6f9faa, roughness: .42, metalness: .04, side: THREE.DoubleSide }));
+    lakeHorizon.position.set(0, 3.2, 18); lakeHorizon.name = "focused lake horizon"; lakeHorizon.visible = !topDown && !renderEverything; landscapeLayer.add(lakeHorizon);
   }).catch(() => {});
 }
 function addWindowMuntins(add, x, y, z, side = false, name = "window muntin") {
@@ -847,6 +849,8 @@ function applyRenderEverything() {
   participantLayer.visible = false;
   animalLayer.visible = false;
   landscapeLayer.visible = true;
+  const focusedLakeHorizon = landscapeLayer.children.find((node) => node.name === "focused lake horizon");
+  if (focusedLakeHorizon) focusedLakeHorizon.visible = false;
   mapMarkers.visible = topDown;
 }
 function setupLighting() {
@@ -972,7 +976,7 @@ function setSalonOnlyVisibility(visible) {
   // cutaway. Keep the lake plane available beyond the clear glazing; map and
   // full-render views restore every landscape feature below.
   landscapeLayer.visible = true;
-  landscapeLayer.children.forEach((child) => { child.visible = topDown || /water/i.test(child.name || ""); });
+  landscapeLayer.children.forEach((child) => { child.visible = topDown || /water|focused lake horizon/i.test(child.name || ""); });
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
   // authored salon set as a second platform beside the villa.
