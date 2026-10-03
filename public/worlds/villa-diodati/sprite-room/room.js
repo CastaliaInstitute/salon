@@ -99,6 +99,7 @@ const exteriorLayer = new THREE.Group(); exteriorLayer.visible = false; exterior
 const participantLayer = new THREE.Group(); scene.add(participantLayer);
 const animalLayer = new THREE.Group(); scene.add(animalLayer);
 const mapMarkers = new THREE.Group(); mapMarkers.visible = false; scene.add(mapMarkers);
+const landscapeLayer = new THREE.Group(); landscapeLayer.name = "Lake Geneva terrain"; scene.add(landscapeLayer);
 const lowerFloor = new THREE.Group(); lowerFloor.visible = false; scene.add(lowerFloor);
 const upperFloors = [new THREE.Group(), new THREE.Group()]; upperFloors.forEach((layer) => { layer.visible = false; scene.add(layer); });
 const floorQuery = new URLSearchParams(location.search).get("floor");
@@ -211,6 +212,36 @@ const furnitureObstacles = [
 ];
 
 function mat(color, roughness = .72) { return new THREE.MeshStandardMaterial({ color, roughness, metalness: .03 }); }
+function terrainTexture() {
+  const canvas = document.createElement("canvas"); canvas.width = 256; canvas.height = 256;
+  const ctx = canvas.getContext("2d"); ctx.fillStyle = "#638052"; ctx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 900; i++) { const x = Math.random() * 256; const y = Math.random() * 256; const size = 1 + Math.random() * 4; ctx.fillStyle = "rgba(" + (42 + Math.random() * 40) + "," + (72 + Math.random() * 55) + "," + (34 + Math.random() * 28) + "," + (.18 + Math.random() * .28) + ")"; ctx.fillRect(x, y, size, size); }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(5, 5); return texture;
+}
+function lakeTexture() {
+  const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 256;
+  const ctx = canvas.getContext("2d"); const gradient = ctx.createLinearGradient(0, 0, 0, 256); gradient.addColorStop(0, "#6ea5ae"); gradient.addColorStop(1, "#244f6c"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, 512, 256);
+  for (let i = 0; i < 160; i++) { const y = Math.random() * 256; ctx.strokeStyle = "rgba(205,235,226," + (.08 + Math.random() * .2) + ")"; ctx.lineWidth = 1 + Math.random() * 2; ctx.beginPath(); ctx.moveTo(Math.random() * 420, y); ctx.lineTo(512, y + (Math.random() - .5) * 8); ctx.stroke(); }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(3, 1); return texture;
+}
+function buildTopography() {
+  fetch("../terrain/topography.json", { cache: "force-cache" }).then((response) => response.ok ? response.json() : null).then((topo) => {
+    if (!topo?.elevations?.length) return;
+    const width = 36, depth = 32, cols = topo.cols, rows = topo.rows;
+    const vertices = [], uvs = [], indices = [];
+    const elevationScale = .045, baseElevation = 465;
+    for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+      const elevation = Number(topo.elevations[row * cols + col] || baseElevation);
+      vertices.push(-width / 2 + col * width / (cols - 1), (elevation - baseElevation) * elevationScale - .1, 4 + (rows - 1 - row) * depth / (rows - 1));
+      uvs.push(col / (cols - 1), row / (rows - 1));
+    }
+    for (let row = 0; row < rows - 1; row++) for (let col = 0; col < cols - 1; col++) { const a = row * cols + col; indices.push(a, a + cols, a + 1, a + 1, a + cols, a + cols + 1); }
+    const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3)); geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2)); geometry.setIndex(indices); geometry.computeVertexNormals();
+    const ground = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map: terrainTexture(), roughness: 1, metalness: 0, side: THREE.DoubleSide })); ground.name = "actual Lake Geneva regional terrain"; ground.receiveShadow = true; landscapeLayer.add(ground);
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(36, 10), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x78aeb5, transparent: true, opacity: .9, roughness: .18, metalness: .12, side: THREE.DoubleSide }));
+    water.rotation.x = -Math.PI / 2; water.position.set(0, -4.12, 32); water.name = "textured Lake Geneva water"; water.receiveShadow = true; landscapeLayer.add(water);
+  }).catch(() => {});
+}
 function addWindowMuntins(add, x, y, z, side = false, name = "window muntin") {
   const trim = mat(0xf1eee5);
   if (!side) {
@@ -716,6 +747,7 @@ function applyRenderEverything() {
   exteriorLayer.visible = true;
   participantLayer.visible = true;
   animalLayer.visible = true;
+  landscapeLayer.visible = true;
   mapMarkers.visible = topDown;
 }
 function setupLighting() {
@@ -882,7 +914,7 @@ function refreshConversations(now) { const active = [...figures.values()].map((f
 function updateCinematicShot(now) { if (!cinematic) return; const cue = cinematicCue; const elapsed = cue ? now - cue.started : 0; if (cue && elapsed > cue.duration + cue.hold) { cinematicCue = null; setViewMode("isometric"); return; } const targetId = cue?.target || cinematicSpeakerId; const targetFigure = targetId ? figures.get(targetId) : null; const target = targetFigure ? targetFigure.position : new THREE.Vector3(0, .8, 0); const shot = cue?.shot || "wide"; const distance = shot === "close" ? 3.2 : shot === "medium" ? 5.2 : 8.8; const side = shot === "pan" ? Math.sin((cue ? elapsed : now) * .35) * 2.2 : 0; const desired = new THREE.Vector3(target.x + side, target.y + (shot === "close" ? .35 : 1.8), target.z + distance); cinematicCamera.position.lerp(desired, .045); cinematicCamera.lookAt(target.x, target.y + (shot === "close" ? .25 : .55), target.z); cinematicCamera.fov = shot === "close" ? 28 : shot === "medium" ? 34 : 40; cinematicCamera.updateProjectionMatrix(); }
 function updateLocalPlayer(now) { if (!localPlayerEnabled) return; const keyHorizontal = (pressedKeys.has("d") || pressedKeys.has("arrowright") ? 1 : 0) - (pressedKeys.has("a") || pressedKeys.has("arrowleft") ? 1 : 0); const keyVertical = (pressedKeys.has("s") || pressedKeys.has("arrowdown") ? 1 : 0) - (pressedKeys.has("w") || pressedKeys.has("arrowup") ? 1 : 0); const targetDx = walkTarget ? walkTarget.x - localPlayer.x : 0; const targetDz = walkTarget ? walkTarget.z - localPlayer.z : 0; const targetDistance = Math.hypot(targetDx, targetDz); if (walkTarget && targetDistance < .07) walkTarget = null; const horizontal = keyHorizontal || (walkTarget ? targetDx / Math.max(targetDistance, .001) : 0); const vertical = keyVertical || (walkTarget ? targetDz / Math.max(targetDistance, .001) : 0); const moving = horizontal !== 0 || vertical !== 0; if (moving) { const length = Math.hypot(horizontal, vertical) || 1; const nextX = localPlayer.x + (horizontal / length) * .045; const nextZ = localPlayer.z + (vertical / length) * .045; const safe = safePosition(nextX, nextZ, .22); localPlayer.x = safe.x; localPlayer.z = safe.z; localPlayer.direction = directionFromDelta(horizontal, vertical, localPlayer.direction); localPlayer.state = "walk"; if (Math.hypot(localPlayer.x - stair.x, localPlayer.z - stair.z) < .72) changeFloor(now); } else localPlayer.state = Math.floor(now / 5) % 4 === 0 ? "gesture" : "idle"; const localFigure = figures.get(localPlayer.id); if (localFigure?.userData.person) Object.assign(localFigure.userData.person, localPlayer); const nearby = [...figures.values()].map((figure) => figure.userData.person).filter((person) => person && person.id !== localPlayer.id && Math.hypot(person.x - localPlayer.x, person.z - localPlayer.z) <= localHearingRange); const source = roomState ? `Matrix salon · ${figures.size} participants` : demoCrowd ? `Salon preview · ${peopleCountForStatus()} participants` : "Matrix state unavailable"; status.textContent = `${source}${nearby.length ? ` · hearing ${nearby.length}` : ""}`; }
 function peopleCountForStatus() { return figures.size; }
-buildRoom(); buildPlanFloorShell(principalPlanShell, FLOOR_BASE_Y[1], "principal"); buildLowerFloor(); buildUpperFloors(); room.scale.setScalar(HOUSE_WORLD_SCALE); principalPlanShell.scale.setScalar(HOUSE_WORLD_SCALE); lowerFloor.scale.setScalar(HOUSE_WORLD_SCALE); upperFloors.forEach((layer) => layer.scale.setScalar(HOUSE_WORLD_SCALE)); setFloorLevel(floorLevel); setupLighting(); isoCamera.position.set(10.2, 10.2, 10.2); mapCamera.position.set(0, 30.7, 14.1); mapCamera.lookAt(0, 0, 14.1); cinematicCamera.position.set(0, 5.9, 11.5); cinematicCamera.lookAt(0, .9, 0); setViewMode(topDown ? "topdown" : "isometric"); if (Number.isInteger(requestedFloor) && !requestedRoom) focusHouseLocation(SALON_FOCUS.x, SALON_FOCUS.z, floorLevel); addEventListener("resize", resize); defaultAnimals().forEach((animal, index) => makeAnimal(animal[0], animal[1], animal[2], animal[3], animal[4], index)); syncPeople(defaultState()); pollMatrix(); setInterval(pollMatrix, 2500); setInterval(pollDialogue, 4000); setInterval(() => { if (rewindIndex >= 0) applyHistorySnapshot(rewindIndex); }, 2500);
+buildRoom(); buildTopography(); buildPlanFloorShell(principalPlanShell, FLOOR_BASE_Y[1], "principal"); buildLowerFloor(); buildUpperFloors(); room.scale.setScalar(HOUSE_WORLD_SCALE); landscapeLayer.scale.setScalar(HOUSE_WORLD_SCALE); principalPlanShell.scale.setScalar(HOUSE_WORLD_SCALE); lowerFloor.scale.setScalar(HOUSE_WORLD_SCALE); upperFloors.forEach((layer) => layer.scale.setScalar(HOUSE_WORLD_SCALE)); setFloorLevel(floorLevel); setupLighting(); isoCamera.position.set(10.2, 10.2, 10.2); mapCamera.position.set(0, 30.7, 14.1); mapCamera.lookAt(0, 0, 14.1); cinematicCamera.position.set(0, 5.9, 11.5); cinematicCamera.lookAt(0, .9, 0); setViewMode(topDown ? "topdown" : "isometric"); if (Number.isInteger(requestedFloor) && !requestedRoom) focusHouseLocation(SALON_FOCUS.x, SALON_FOCUS.z, floorLevel); addEventListener("resize", resize); defaultAnimals().forEach((animal, index) => makeAnimal(animal[0], animal[1], animal[2], animal[3], animal[4], index)); syncPeople(defaultState()); pollMatrix(); setInterval(pollMatrix, 2500); setInterval(pollDialogue, 4000); setInterval(() => { if (rewindIndex >= 0) applyHistorySnapshot(rewindIndex); }, 2500);
 function animate() { requestAnimationFrame(animate); const now = clock.elapsedTime; if (fireLight) fireLight.intensity = 3.5 + Math.sin(now * 7.1) * .45 + Math.sin(now * 11.7) * .25; flames.forEach((flame, index) => { const pulse = 1 + Math.sin(now * (5 + index) + index) * .08; flame.scale.set(pulse, 1 + Math.sin(now * 8 + index) * .12, pulse); }); candleLights.forEach((light, index) => { light.intensity = 1.05 + Math.sin(now * 6 + index * 1.9) * .18; }); if (lightningLight) { const flash = Math.max(0, Math.sin(now * .19 + 2.4) - .995) * 140; lightningLight.intensity = flash; } updateLocalPlayer(now); updateAnimals(now); if (pov) updatePovCamera(); mapMarkers.visible = topDown; if (topDown && !renderEverything) applyTopDownRoomVisibility(); if (renderEverything) applyRenderEverything(); updateCompassRose(); participantLayer.children.forEach((figure) => { const person = figure.userData.person; if (person && person.id !== localPlayer.id && demoCrowd && !roomState && person.state !== "sit") { const motion = figure.userData.motion; const phase = figure.userData.phase; const previousX = person.x; const previousZ = person.z; person.x = motion.x + Math.sin(now * (.16 + (figure.userData.index % 3) * .025) + phase) * .7; person.z = motion.z + Math.cos(now * (.13 + (figure.userData.index % 4) * .02) + phase) * .42; person.direction = directionFromDelta(person.x - previousX, person.z - previousZ, person.direction); person.state = Math.floor(now / 8 + phase) % 5 === 0 ? "speak" : Math.floor(now / 5 + phase) % 4 === 0 ? "gesture" : Math.floor(now / 3 + phase) % 3 === 0 ? "walk" : "idle"; updateFigure(figure, person, now); } figure.lookAt(activeCamera.position.x, figure.position.y, activeCamera.position.z); }); if (demoCrowd && !roomState) refreshConversations(now); updateCinematicShot(now); controls.update(); updateWallOcclusion(); enforceSalonRoomView(); renderBubbles(); renderer.render(scene, activeCamera); }
 // Start the Room view from the northeast, looking diagonally SSW across the salon.
 if (!topDown && !pov && floorLevel === 1) {
