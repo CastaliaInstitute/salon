@@ -57,7 +57,7 @@ const FLOOR_BASE_Y = [-CEILING_HEIGHT, 0, CEILING_HEIGHT, CEILING_HEIGHT * 2];
 // on ground, principal, second, and attic levels.
 // Rooms 7 and 8 are one salon: a two-bay room across the southwest and
 // south-center cells of the principal-floor grid.
-const SALON_ORIGIN = { x: 0, z: 3.97 };
+const SALON_ORIGIN = { x: -2.1, z: 3.97 };
 const SALON_FOCUS = { x: -2.1, z: 4.2 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
@@ -250,7 +250,7 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   const rooms = [
     ["library study", -4.2, -4.2, 4.2, 4.2, []], ["foyer", 0, -4.2, 4.2, 4.2, ["south"]], ["cabinet guest room", 4.2, -4.2, 4.2, 4.2, []],
     ["room four", -4.2, 0, 4.2, 4.2, ["south"]], ["central stair hall", 0, 0, 4.2, 4.2, ["north", "south"]], ["dining room", 4.2, 0, 4.2, 4.2, []],
-    ["salon", 0, 4.2, 8.4, 4.2, ["north", "south", "east", "west"]],
+    ["salon", -2.1, 4.2, 8.4, 4.2, ["north", "south", "east"]],
   ];
   for (const [name, x, z, width, depth, openSides] of rooms) {
     layerBox(layer, `${name} floor`, [width, .1, depth], [x, baseY - .08, z], floorColor);
@@ -272,9 +272,9 @@ function buildPlanFloorShell(layer, baseY, levelName) {
   addVerticalDoorWall("salon east", 2.1, 4.2, 4.2, 1.82);
   addHorizontalDoorWall("salon south veranda", 0, 6.3, 8.4, 1.35);
   if (levelName === "principal") {
-    layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-4.2, baseY + wallHeight / 2, 4.2], wallColor);
-    layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [4.2, baseY + wallHeight / 2, 4.2], wallColor);
-    addHorizontalDoorWall("salon map boundary south", 0, 6.3, 8.4, 1.35);
+    layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-6.3, baseY + wallHeight / 2, 4.2], wallColor);
+    layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [2.1, baseY + wallHeight / 2, 4.2], wallColor);
+    addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 1.35);
   }
   // The room graph may leave an edge open for a veranda or an interior
   // threshold, but every floor still needs a continuous outside envelope.
