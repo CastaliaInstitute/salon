@@ -7,9 +7,10 @@ const html = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/
 const cacheBustScript = await readFile(new URL("../scripts/cache-bust-world.mjs", import.meta.url), "utf8");
 
 test("viewer keeps Map upright and rotation-locked", () => {
-  assert.match(source, /controls\.enableRotate = !pov && !topDown/);
-  assert.match(source, /cameraButton\.value !== "pov" && cameraButton\.value !== "map"/);
-  assert.match(source, /if \(!pov && !topDown\) controls\.enableRotate = true/);
+  assert.match(source, /controls\.enableRotate = normalizedMode === "room"/);
+  assert.match(source, /controls\.minPolarAngle = \.25/);
+  assert.match(source, /controls\.maxPolarAngle = Math\.PI \/ 2 - \.08/);
+  assert.doesNotMatch(source, /controls\.addEventListener\("start", \(\) => \{ controls\.enableRotate/);
 });
 
 test("viewer bounds pan and keeps the target on the active floor", () => {
