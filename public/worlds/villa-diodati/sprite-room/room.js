@@ -326,7 +326,7 @@ function startThunderAudio() {
 buildWeather();
 weatherLayer.scale.setScalar(HOUSE_WORLD_SCALE);
 canvas.addEventListener("pointerdown", startThunderAudio, { once: true });
-setInterval(() => { updateWeather(clock.elapsedTime, .016); updateEnvironmentalPhysics(clock.elapsedTime, .016); }, 16);
+setInterval(() => { if (document.hidden) return; updateWeather(clock.elapsedTime, .016); updateEnvironmentalPhysics(clock.elapsedTime, .016); }, 16);
 function buildTopography() {
   fetch("../terrain/topography.json", { cache: "force-cache" }).then((response) => response.ok ? response.json() : null).then((topo) => {
     if (!topo?.elevations?.length) return;

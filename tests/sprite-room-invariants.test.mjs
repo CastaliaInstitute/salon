@@ -53,6 +53,10 @@ test("viewer reports recoverable WebGL context loss", () => {
   assert.match(source, /Graphics restored — reload the viewer to resume rendering/);
 });
 
+test("viewer pauses background weather while hidden", () => {
+  assert.match(source, /if \(document\.hidden\) return; updateWeather/);
+});
+
 test("deploy cache bust covers the sprite-room module", () => {
   assert.match(cacheBustScript, /worlds', 'villa-diodati', 'sprite-room', 'index\.html/);
   assert.match(cacheBustScript, /room\\\.js\\\?v=\[\^\"'\]\+/);
