@@ -802,7 +802,9 @@ function updatePovCamera() { const directionAngle = { south: 0, southeast: Math.
 function setSalonOnlyVisibility(visible) {
   room.children.forEach((child) => { child.visible = !visible || child === salonRoot; });
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
-  salonRoot.visible = visible || topDown;
+  // The inferred floorplan is authoritative; do not render the detached
+  // authored salon set as a second platform beside the villa.
+  salonRoot.visible = false;
   animalLayer.visible = !visible && topDown;
   if (visible && floorLevel === 1) {
     // Keep the furniture and figures, but use the connected plan shell for the
