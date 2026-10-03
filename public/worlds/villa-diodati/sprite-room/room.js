@@ -815,6 +815,13 @@ function applyRenderEverything() {
   if (!renderEverything) return;
   exteriorLayer.scale.setScalar(HOUSE_WORLD_SCALE);
   scene.traverse((node) => { node.visible = true; });
+  exteriorLayer.traverse((node) => {
+    if (!node.isMesh || node.name !== "square villa rear") return;
+    node.material.transparent = false;
+    node.material.opacity = 1;
+    node.material.depthWrite = true;
+    node.material.needsUpdate = true;
+  });
   room.visible = topDown;
   salonRoot.visible = false;
   principalPlanShell.visible = topDown && floorLevel === 1;
