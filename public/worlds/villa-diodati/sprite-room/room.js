@@ -34,6 +34,13 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
+canvas.addEventListener("webglcontextlost", (event) => {
+  event.preventDefault();
+  if (status) status.textContent = "3D viewer paused — graphics context lost. Reload to resume.";
+});
+canvas.addEventListener("webglcontextrestored", () => {
+  if (status) status.textContent = "Graphics restored — reload the viewer to resume rendering.";
+});
 const isoCamera = new THREE.OrthographicCamera(-8, 8, 5, -5, .1, 100);
 const cinematicCamera = new THREE.PerspectiveCamera(36, 1, .1, 100);
 const mapCamera = new THREE.OrthographicCamera(-18, 18, 28, -28, .1, 100);

@@ -47,6 +47,12 @@ test("viewer shares one map contract request during startup", () => {
   assert.match(source, /const mapContractPromise = fetch\("\.\.\/isometric-map\.json"/);
 });
 
+test("viewer reports recoverable WebGL context loss", () => {
+  assert.match(source, /webglcontextlost/);
+  assert.match(source, /webglcontextrestored/);
+  assert.match(source, /Graphics restored — reload the viewer to resume rendering/);
+});
+
 test("deploy cache bust covers the sprite-room module", () => {
   assert.match(cacheBustScript, /worlds', 'villa-diodati', 'sprite-room', 'index\.html/);
   assert.match(cacheBustScript, /room\\\.js\\\?v=\[\^\"'\]\+/);
