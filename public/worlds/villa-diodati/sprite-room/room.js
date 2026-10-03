@@ -807,6 +807,7 @@ function enforceSalonRoomView() {
 }
 function applyRenderEverything() {
   if (!renderEverything) return;
+  exteriorLayer.scale.setScalar(HOUSE_WORLD_SCALE);
   scene.traverse((node) => { node.visible = true; });
   room.visible = topDown;
   salonRoot.visible = false;
