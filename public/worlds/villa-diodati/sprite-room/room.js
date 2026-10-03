@@ -783,6 +783,11 @@ function buildRoom() {
   loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.15], { height: .72 }, 0, salonRoot);
   const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.42); salonRoot.add(tableCandelabra);
   const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.42); salonRoot.add(tableCandleLight); candleLights.push(tableCandleLight);
+  // The focused salon is a scaled architectural unit. Keep a real textured
+  // lake surface beyond its south veranda so the clear glazing reads as a
+  // window onto Lake Geneva instead of a painted blue panel or empty void.
+  const salonLake = new THREE.Mesh(new THREE.PlaneGeometry(20, 14), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x78aeb5, transparent: true, opacity: .92, roughness: .18, metalness: .12, side: THREE.DoubleSide }));
+  salonLake.rotation.x = -Math.PI / 2; salonLake.position.set(0, -.14, 11); salonLake.name = "textured lake beyond south veranda"; salonLake.receiveShadow = true; salonRoot.add(salonLake);
   lightningLight = new THREE.PointLight(0xb9ddff, 0, 18); lightningLight.position.set(0, 4, 1); scene.add(lightningLight);
   // The architectural plan uses the southwest room as the salon anchor.
   salonRoot.position.set(SALON_ORIGIN.x, 0, SALON_ORIGIN.z);
