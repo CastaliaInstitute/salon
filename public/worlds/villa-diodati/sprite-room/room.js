@@ -105,7 +105,7 @@ const animalSheetFiles = { monkey: "monkey-directional-v1.png", peacock: "peacoc
 // Dressable avatar contract: every source sheet uses the same safe frame and
 // bottom-center floor anchor. Clothing/skin changes must never change this
 // placement, which prevents the recurring cropped-head and floating-feet bugs.
-const DRESSUP_ATLAS = { columns: 8, rows: 5, frameAspect: (1536 / 8) / (1000 / 5), safeInset: { left: .04, right: .04, top: .04, bottom: .08 }, anchorY: .92 };
+const DRESSUP_ATLAS = { columns: 8, rows: 5, frameAspect: (1536 / 8) / (1000 / 5), safeInset: { left: .04, right: .04, top: .015, bottom: .06 }, anchorY: .94 };
 const textureCache = new Map();
 let fireLight;
 let lightningLight;
@@ -681,7 +681,7 @@ function setupLighting() {
 function sheetMaterial(file) {
   if (textureCache.has(file)) return textureCache.get(file);
   const texture = textureLoader.load(`../sprites/dressup-v1/${file}`); texture.colorSpace = THREE.SRGBColorSpace; texture.magFilter = THREE.NearestFilter; texture.minFilter = THREE.NearestFilter; texture.generateMipmaps = false;
-  const material = new THREE.ShaderMaterial({ transparent: true, depthTest: true, depthWrite: false, uniforms: { map: { value: texture }, frame: { value: new THREE.Vector2(0, 0) }, coat: { value: new THREE.Color(0xffffff) }, waistcoat: { value: new THREE.Color(0xffffff) }, accent: { value: new THREE.Color(0xffffff) }, skin: { value: new THREE.Color(0xd5a07c) }, ghost: { value: new THREE.Color(0x8fc9ff) }, ghostStrength: { value: 0 } }, vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`, fragmentShader: `uniform sampler2D map; uniform vec2 frame; uniform vec3 coat; uniform vec3 waistcoat; uniform vec3 accent; uniform vec3 skin; uniform vec3 ghost; uniform float ghostStrength; varying vec2 vUv; void main(){vec2 cellUv=vec2(.04+vUv.x*.92,.04+vUv.y*.92); vec2 uv=(cellUv+frame)/vec2(8.0,5.0); vec4 c=texture2D(map,uv); float alpha=c.a; if(alpha<.02) discard; float y=fract(cellUv.y); float lower=smoothstep(.18,.42,y)*(1.0-smoothstep(.86,.98,y)); float middle=smoothstep(.38,.58,y)*(1.0-smoothstep(.72,.88,y)); float warmPixels=smoothstep(.08,.28,c.r-c.b); float faceMask=smoothstep(.58,.78,y)*warmPixels; vec3 recolored=mix(c.rgb,coat,.55*lower); recolored=mix(recolored,waistcoat,.42*middle); recolored=mix(recolored,accent,.22*lower); recolored=mix(recolored,skin,.13*faceMask); recolored=mix(recolored,ghost,ghostStrength); gl_FragColor=vec4(recolored,alpha*(1.0-ghostStrength*.42));}` });
+  const material = new THREE.ShaderMaterial({ transparent: true, depthTest: true, depthWrite: false, uniforms: { map: { value: texture }, frame: { value: new THREE.Vector2(0, 0) }, coat: { value: new THREE.Color(0xffffff) }, waistcoat: { value: new THREE.Color(0xffffff) }, accent: { value: new THREE.Color(0xffffff) }, skin: { value: new THREE.Color(0xd5a07c) }, ghost: { value: new THREE.Color(0x8fc9ff) }, ghostStrength: { value: 0 } }, vertexShader: `varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`, fragmentShader: `uniform sampler2D map; uniform vec2 frame; uniform vec3 coat; uniform vec3 waistcoat; uniform vec3 accent; uniform vec3 skin; uniform vec3 ghost; uniform float ghostStrength; varying vec2 vUv; void main(){vec2 cellUv=vec2(.04+vUv.x*.92,.015+vUv.y*.925); vec2 uv=(cellUv+frame)/vec2(8.0,5.0); vec4 c=texture2D(map,uv); float alpha=c.a; if(alpha<.02) discard; float y=fract(cellUv.y); float lower=smoothstep(.18,.42,y)*(1.0-smoothstep(.86,.98,y)); float middle=smoothstep(.38,.58,y)*(1.0-smoothstep(.72,.88,y)); float warmPixels=smoothstep(.08,.28,c.r-c.b); float faceMask=smoothstep(.58,.78,y)*warmPixels; vec3 recolored=mix(c.rgb,coat,.55*lower); recolored=mix(recolored,waistcoat,.42*middle); recolored=mix(recolored,accent,.22*lower); recolored=mix(recolored,skin,.13*faceMask); recolored=mix(recolored,ghost,ghostStrength); gl_FragColor=vec4(recolored,alpha*(1.0-ghostStrength*.42));}` });
   textureCache.set(file, material); return material;
 }
 function faceMaterial(file) {
@@ -749,7 +749,7 @@ function makeFigure(id, name, style, x, z, state = "idle", index = 0, wardrobe =
   // The atlas frame is deliberately taller than the visible body. The extra
   // headroom prevents the top row from clipping hair/hat pixels, while the
   // bottom anchor keeps every pair of feet on the floor.
-  const spriteHeight = 2.36;
+  const spriteHeight = 2.5;
   const spriteWidth = spriteHeight * DRESSUP_ATLAS.frameAspect;
   material.depthTest = false; material.depthWrite = false;
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(spriteWidth, spriteHeight), material); mesh.position.set(x, spriteHeight * (1 - DRESSUP_ATLAS.anchorY), z); mesh.scale.setScalar(state === "sit" ? .84 : 1); mesh.userData = { id, name, style, state, index, baseY: mesh.position.y, phase: index * .7, motion: { x, z }, floorAnchor: DRESSUP_ATLAS.anchorY }; mesh.castShadow = true; mesh.renderOrder = 30; setHeldProp(mesh, wardrobe.held); mesh.userData.heldKind = wardrobe.held || null;
