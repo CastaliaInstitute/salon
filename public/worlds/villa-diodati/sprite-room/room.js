@@ -273,6 +273,13 @@ function buildPlanFloorShell(layer, baseY, levelName) {
     layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-6.3, baseY + wallHeight / 2, 4.2], wallColor);
     layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [2.1, baseY + wallHeight / 2, 4.2], wallColor);
     addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 1.35);
+    const lakeGlass = new THREE.MeshPhysicalMaterial({ color: 0x9fc9d6, transparent: true, opacity: .24, transmission: .82, roughness: .08, metalness: 0 });
+    for (const x of [-4.65, -2.55, .65]) {
+      const pane = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.45, .035), lakeGlass);
+      pane.position.set(x, baseY + 2.25, 6.22); pane.name = "salon south lake window glass"; pane.renderOrder = 2; layer.add(pane);
+    }
+    const lakeDoor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 2.45, .05), new THREE.MeshStandardMaterial({ color: 0x6b4938, transparent: true, opacity: .38, roughness: .3 }));
+    lakeDoor.position.set(0, baseY + 1.22, 6.24); lakeDoor.name = "salon south lake door"; lakeDoor.userData.openableDoor = true; layer.add(lakeDoor);
   }
   // The room graph may leave an edge open for a veranda or an interior
   // threshold, but every floor still needs a continuous outside envelope.
@@ -688,6 +695,10 @@ function enforceSalonRoomView() {
   salonRoot.visible = false;
   room.children.forEach((child) => { if (child !== principalPlanShell) child.visible = false; });
   principalPlanShell.visible = true;
+  principalPlanShell.traverse((node) => {
+    if (!node.isMesh || !node.name) return;
+    node.visible = /^(salon floor|salon south veranda wall segment|principal exterior west wall|salon south lake window glass|salon south lake door)$/i.test(node.name);
+  });
 }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
