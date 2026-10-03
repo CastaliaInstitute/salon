@@ -47,6 +47,17 @@ test("viewer asset contract is present in the repository", async () => {
     "public/worlds/villa-diodati/furniture/sofa-03/sofa_03.gltf",
     "public/worlds/villa-diodati/furniture/armchair-01/ArmChair_01.gltf",
     "public/worlds/villa-diodati/furniture/antique-table-01/table.glb",
+    "public/worlds/villa-diodati/sprites/dressup-v1/byron.png",
+    "public/worlds/villa-diodati/sprites/dressup-v1/mary-godwin.png",
+    "public/worlds/villa-diodati/sprites/dressup-v1/claire-clairmont.png",
+    "public/worlds/villa-diodati/sprites/dressup-v1/percy-shelley.png",
+    "public/worlds/villa-diodati/sprites/dressup-v1/john-polidori.png",
+    "public/worlds/villa-diodati/sprites/animals/sheets/monkey-directional-v1.png",
+    "public/worlds/villa-diodati/sprites/animals/sheets/peacock-directional-v1.png",
+    "public/worlds/villa-diodati/sprites/animals/sheets/dog-directional-v1.png",
+    "public/worlds/villa-diodati/sprites/animals/sheets/cat-directional-v1.png",
+    "public/worlds/villa-diodati/sprites/animals/sheets/crow-directional-v1.png",
+    "public/worlds/villa-diodati/sprites/animals/sheets/falcon-directional-v1.png",
   ];
   await Promise.all(assets.map((asset) => access(new URL(`../${asset}`, import.meta.url))));
 });
