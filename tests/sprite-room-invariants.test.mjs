@@ -40,8 +40,8 @@ test("focused salon restores solid west and south enclosure walls", () => {
 });
 
 test("focused salon starts in a readable elevated diagonal composition", () => {
-  assert.match(source, /isoCamera\.position\.set\(focusX \+ 10, floorY \+ 12, focusZ - 14\)/);
-  assert.match(source, /isoCamera\.zoom = 1\.45/);
+  assert.match(source, /isoCamera\.position\.set\(focusX \+ 6, floorY \+ 12, focusZ - 18\)/);
+  assert.match(source, /isoCamera\.zoom = 1\.35/);
 });
 
 test("viewer has a restrictive content security policy", () => {
