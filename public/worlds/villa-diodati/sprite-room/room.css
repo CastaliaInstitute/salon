@@ -22,6 +22,8 @@ body.topdown-mode #script-panel, body.topdown-mode #rewind-control { display: no
 body.topdown-mode .controls { bottom: 0; background: rgba(23,18,15,.9); }
 button { border: 1px solid #b7915d; border-radius: 999px; padding: 5px 10px; color: #f5e5c8; background: rgba(35, 22, 20, .82); font: inherit; cursor: pointer; }
 button:hover { background: #5f3e37; }
+select { border: 1px solid #b7915d; border-radius: 999px; padding: 5px 11px; color: #f5e5c8; background: rgba(35, 22, 20, .92); font: inherit; cursor: pointer; }
+select:focus { outline: 1px solid #e3bd73; outline-offset: 1px; }
 .joystick { position: fixed; right: 22px; bottom: 220px; width: 78px; height: 78px; border: 1px solid rgba(183,145,93,.72); border-radius: 50%; background: rgba(35,22,20,.58); touch-action: none; display: none; }
 .joystick::after { content: ''; position: absolute; left: 27px; top: 27px; width: 24px; height: 24px; border-radius: 50%; background: rgba(232,217,189,.86); box-shadow: 0 0 16px rgba(143,201,255,.42); transform: translate(var(--joy-x,0), var(--joy-y,0)); }
 body.local-player .joystick { display: block; }
