@@ -273,7 +273,7 @@ function buildPlanFloorShell(layer, baseY, levelName) {
     layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-6.3, baseY + wallHeight / 2, 4.2], wallColor);
     layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [2.1, baseY + wallHeight / 2, 4.2], wallColor);
     addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 1.35);
-    const lakeGlass = new THREE.MeshPhysicalMaterial({ color: 0x9fc9d6, transparent: true, opacity: .24, transmission: .82, roughness: .08, metalness: 0 });
+    const lakeGlass = new THREE.MeshPhysicalMaterial({ color: 0xaed9e5, transparent: true, opacity: .42, transmission: .72, roughness: .06, metalness: 0, side: THREE.DoubleSide });
     for (const x of [-4.65, -2.55, .65]) {
       const pane = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.45, .035), lakeGlass);
       pane.position.set(x, baseY + 2.25, 6.22); pane.name = "salon south lake window glass"; pane.renderOrder = 2; layer.add(pane);
@@ -865,6 +865,8 @@ if (!topDown && !pov && floorLevel === 1) {
   const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
   isoCamera.position.set(focusX + 8, floorY + 8, focusZ - 8);
+  isoCamera.zoom = 2.05;
+  isoCamera.updateProjectionMatrix();
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
   controls.target.set(focusX, floorY + .8, focusZ);
 }
