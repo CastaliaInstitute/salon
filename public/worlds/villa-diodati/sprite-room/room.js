@@ -6,7 +6,7 @@ const canvas = document.querySelector("#room");
 const status = document.querySelector("#status");
 const cameraButton = document.querySelector("#camera");
 const mapButton = document.querySelector("#map-view");
-const povButton = document.querySelector("#pov-view");
+const povButton = { set textContent(_) {} };
 const floorButton = document.querySelector("#floor-view");
 const roomButton = document.querySelector("#room-view");
 const dialogueLayer = document.querySelector("#dialogue-layer");
@@ -39,7 +39,7 @@ let pov = false;
 const topDownRoomVisibility = new Map();
 const controls = new OrbitControls(activeCamera, canvas);
 controls.enablePan = true; controls.enableDamping = true; controls.dampingFactor = .08;
-controls.minZoom = .25; controls.maxZoom = 2.15; controls.minDistance = 3.2; controls.maxDistance = 16;
+controls.minZoom = .25; controls.maxZoom = 2.15; controls.minDistance = 3.2; controls.maxDistance = 16; controls.minPolarAngle = .25; controls.maxPolarAngle = Math.PI / 2 - .08;
 controls.target.set(0, 0.8, 0);
 
 const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
@@ -812,9 +812,8 @@ function setSalonOnlyVisibility(visible) {
 function setViewMode(mode) { pov = mode === "pov"; topDown = mode === "topdown"; cinematic = mode === "cinematic"; setFloorLevel(floorLevel); principalPlanShell.visible = floorLevel === 1 && topDown; setSalonOnlyVisibility(!topDown); document.body.classList.toggle("topdown-mode", topDown); exteriorLayer.visible = false; updateExteriorRoomMeshes(false); if (topDown) dialogueLayer?.replaceChildren(); if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createCompassRose(); renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE; const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE; const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, floorY + 56, 0); mapCamera.lookAt(0, floorY, 0); } else if (cinematic) { cinematicCamera.position.set(focusX, floorY + 4.6, focusZ + 9); cinematicCamera.lookAt(focusX, floorY + .7, focusZ); } else { isoCamera.position.set(focusX + 8, floorY + 8, focusZ + 8); isoCamera.lookAt(focusX, floorY + .8, focusZ); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = !pov; controls.enablePan = !pov; controls.target.set(topDown ? 0 : focusX, topDown ? floorY : floorY + .8, topDown ? 0 : focusZ); cameraButton.textContent = cinematic ? "Isometric view" : "Cinematic view"; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
 function leaveTopDownForBillboards() { if (!topDown || Math.abs(mapCamera.position.y - 20) < .08) return; topDown = false; cinematic = false; participantLayer.visible = true; mapMarkers.visible = false; activeCamera = mapCamera; controls.object = mapCamera; controls.enableRotate = true; cameraButton.textContent = "Cinematic view"; mapButton.textContent = "Top-down map"; }
 function handleCameraChange() { if (pov) return; if (!topDown && activeCamera === isoCamera) { const offset = isoCamera.position.clone().sub(controls.target); const polar = Math.atan2(Math.hypot(offset.x, offset.z), Math.max(.001, offset.y)); if (polar < .3) { setViewMode("topdown"); return; } } leaveTopDownForBillboards(); }
-cameraButton.addEventListener("click", () => setViewMode(cinematic ? "isometric" : "cinematic"));
+cameraButton.addEventListener("change", () => setViewMode(cameraButton.value));
 mapButton.addEventListener("click", () => setViewMode(topDown ? "isometric" : "topdown"));
-povButton.addEventListener("click", () => setViewMode(pov ? "isometric" : "pov"));
 floorButton?.addEventListener("change", () => { const nextFloor = Number(floorButton.value); if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = stair.x; localPlayer.z = stair.z + 1.0; walkTarget = null; } setFloorLevel(nextFloor); focusHouseLocation(stair.x, stair.z + 1.0, nextFloor); });
 roomButton?.addEventListener("change", () => { const destinationId = ROOM_SELECT_TARGETS[Number(roomButton.value)]; const destination = navigationRooms.find((candidate) => candidate.id === destinationId); if (!destination) return; const nextFloor = Number(destination.floor); if (localPlayerEnabled) { localPlayer.floor = nextFloor; localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); walkTarget = null; walkRoute = []; } setFloorLevel(nextFloor); currentRoomId = ""; updateRoomScope(); focusHouseLocation(Number(destination.x), Number(destination.z), nextFloor); });
 controls.addEventListener("change", handleCameraChange);
