@@ -278,6 +278,10 @@ function buildPlanFloorShell(layer, baseY, levelName) {
       const pane = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.45, .035), lakeGlass);
       pane.position.set(x, baseY + 2.25, 6.22); pane.name = "salon south lake window glass"; pane.renderOrder = 2; layer.add(pane);
     }
+    for (const z of [3.05, 4.2, 5.35]) {
+      const pane = new THREE.Mesh(new THREE.BoxGeometry(.035, 2.45, .92), lakeGlass);
+      pane.position.set(-6.22, baseY + 2.25, z); pane.name = "salon west lake window glass"; pane.renderOrder = 2; layer.add(pane);
+    }
     const lakeDoor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 2.45, .05), new THREE.MeshStandardMaterial({ color: 0x6b4938, transparent: true, opacity: .38, roughness: .3 }));
     lakeDoor.position.set(0, baseY + 1.22, 6.24); lakeDoor.name = "salon south lake door"; lakeDoor.userData.openableDoor = true; layer.add(lakeDoor);
   }
@@ -697,7 +701,7 @@ function enforceSalonRoomView() {
   principalPlanShell.visible = true;
   principalPlanShell.traverse((node) => {
     if (!node.isMesh || !node.name) return;
-    node.visible = /^(salon floor|salon south veranda wall segment|principal exterior west wall|salon south lake window glass|salon south lake door)$/i.test(node.name);
+    node.visible = /^(salon floor|salon west wall|salon south veranda wall segment|salon south lake window glass|salon west lake window glass|salon south lake door)$/i.test(node.name);
   });
 }
 function setupLighting() {
@@ -865,7 +869,7 @@ if (!topDown && !pov && floorLevel === 1) {
   const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
   isoCamera.position.set(focusX + 8, floorY + 8, focusZ - 8);
-  isoCamera.zoom = 2.05;
+  isoCamera.zoom = 1.25;
   isoCamera.updateProjectionMatrix();
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
   controls.target.set(focusX, floorY + .8, focusZ);
