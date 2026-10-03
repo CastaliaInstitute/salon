@@ -683,22 +683,11 @@ function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) 
 function enforceSalonRoomView() {
   const selectedRoomId = ROOM_SELECT_TARGETS[Number(roomButton?.value)] || "salon";
   if (topDown || pov || floorLevel !== 1 || selectedRoomId !== "salon") return;
-  // The authored salon root has its own local transform and can appear as a
-  // detached platform. Room view must use only the connected house shell.
-  salonRoot.visible = true;
-  room.children.forEach((child) => { if (child !== salonRoot && child !== principalPlanShell) child.visible = false; });
+  // The authored salon root has its own local transform and is not part of the
+  // house datum. Room view uses the connected principal-floor shell only.
+  salonRoot.visible = false;
+  room.children.forEach((child) => { if (child !== principalPlanShell) child.visible = false; });
   principalPlanShell.visible = true;
-  principalPlanShell.traverse((node) => {
-    if (!node.isMesh || !node.name) return;
-    // Room view is a salon vignette, not a cutaway of the whole house.
-    // Keep only the salon floor, its west wall, and the south/veranda wall;
-    // neighboring shells, boundary walls, and columns stay out of frame.
-    node.visible = /^(salon floor|salon west wall|salon south veranda wall segment|principal exterior (north|south|west|east) wall)$/i.test(node.name);
-  });
-  salonRoot.traverse((node) => {
-    if (!node.isMesh || !node.name) return;
-    if (/^(oak parquet floor|floor inlay)$/i.test(node.name) || /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name)) node.visible = false;
-  });
 }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
@@ -822,9 +811,8 @@ function setSalonOnlyVisibility(visible) {
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
   // authored salon set as a second platform beside the villa.
-  // Keep the salon contents aligned with the southwest plan bay; its local
-  // shell is suppressed below, but furniture and window panes remain visible.
-  salonRoot.visible = visible;
+  // The connected principal plan is the sole architectural source of truth.
+  salonRoot.visible = false;
   animalLayer.visible = !visible && topDown;
   if (visible && floorLevel === 1) {
     // Use the connected plan shell for the enclosure; the old salonRoot set
