@@ -273,7 +273,7 @@ function buildPlanFloorShell(layer, baseY, levelName) {
     layerBox(layer, "salon map boundary west wall", [.12, wallHeight, 4.2], [-6.3, baseY + wallHeight / 2, 4.2], wallColor);
     layerBox(layer, "salon map boundary east wall", [.12, wallHeight, 4.2], [2.1, baseY + wallHeight / 2, 4.2], wallColor);
     addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 1.35);
-    const lakeGlass = new THREE.MeshBasicMaterial({ map: windowViewTexture(), color: 0xffffff, transparent: true, opacity: .72, side: THREE.DoubleSide, depthWrite: false });
+    const lakeGlass = new THREE.MeshPhysicalMaterial({ color: 0xb9dce3, transparent: true, opacity: .16, transmission: .92, roughness: .03, metalness: 0, side: THREE.DoubleSide, depthWrite: false });
     for (const x of [-4.65, -2.55, .65]) {
       const pane = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.45, .035), lakeGlass);
       pane.position.set(x, baseY + 2.25, 6.22); pane.name = "salon south lake window glass"; pane.renderOrder = 2; layer.add(pane);
@@ -282,7 +282,7 @@ function buildPlanFloorShell(layer, baseY, levelName) {
       const pane = new THREE.Mesh(new THREE.BoxGeometry(.035, 2.45, .92), lakeGlass);
       pane.position.set(-6.22, baseY + 2.25, z); pane.name = "salon west lake window glass"; pane.renderOrder = 2; layer.add(pane);
     }
-    const lakeDoor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 2.45, .05), new THREE.MeshBasicMaterial({ map: windowViewTexture(), color: 0xffffff, transparent: true, opacity: .78, side: THREE.DoubleSide, depthWrite: false }));
+    const lakeDoor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 2.45, .05), new THREE.MeshPhysicalMaterial({ color: 0xc6e4e8, transparent: true, opacity: .14, transmission: .94, roughness: .03, metalness: 0, side: THREE.DoubleSide, depthWrite: false }));
     lakeDoor.position.set(0, baseY + 1.22, 6.24); lakeDoor.name = "salon south lake door"; lakeDoor.userData.openableDoor = true; layer.add(lakeDoor);
   }
   // The room graph may leave an edge open for a veranda or an interior
