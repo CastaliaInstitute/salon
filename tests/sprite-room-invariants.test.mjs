@@ -31,7 +31,8 @@ test("focused salon restores solid west and south enclosure walls", () => {
   assert.match(source, /\["left wall", "front wall left of veranda door", "front wall right of veranda door", "veranda door lintel"\]/);
   assert.match(source, /wall\.material\.transparent = false/);
   assert.match(source, /wall\.material\.opacity = 1/);
-  assert.match(source, /const visibleFocusedWall = focusedSalon && \(name === "left" \|\| name === "front"\)/);
+  assert.match(source, /const southElevation = focusedSalon && name === "front"/);
+  assert.match(source, /const westCutaway = focusedSalon && name === "left"/);
   assert.match(source, /const westSouthOpening = \/\(villa facade window\|facade window\|west veranda door\|south veranda door\|front door\)\/i/);
   assert.match(source, /southWallSegment\("front wall between veranda openings"/);
   assert.match(source, /verandaWallLeft\.visible = false/);
