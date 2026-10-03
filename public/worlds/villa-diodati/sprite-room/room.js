@@ -55,15 +55,13 @@ const FLOOR_BASE_Y = [-CEILING_HEIGHT, 0, CEILING_HEIGHT, CEILING_HEIGHT * 2];
 // Villa plan datum: three 4.2 m bays in each direction.  The architectural
 // shell is kept independent of the salon set so the same grid can be rendered
 // on ground, principal, second, and attic levels.
-// Rooms 7 and 8 are one salon: a two-bay room across the southwest and
-// south-center cells of the principal-floor grid.
-const SALON_ORIGIN = { x: -2.1, z: 3.97 };
-const SALON_FOCUS = { x: -2.1, z: 4.2 };
+// The salon occupies the southwest principal-floor bay.
+const SALON_ORIGIN = { x: -4.2, z: 4.2 };
+const SALON_FOCUS = { x: -4.2, z: 4.2 };
 // Uniform scaling is essential for imported GLB furniture; non-uniform room
 // fitting visibly stretches sofas, chairs, tables, and wall decor.
-const SALON_CONTENT_SCALE = { x: .52, z: .46 };
-// The salon geometry is already authored with its fireplace on local south;
-// rotating the whole group moves it out of the southwest 2x2 bay block.
+const SALON_CONTENT_SCALE = { x: .26, z: .46 };
+// The salon geometry is authored with its fireplace on local south.
 const SALON_CONTENT_ROTATION = 0;
 let roomRegions = [];
 let navigationRooms = [];
@@ -503,10 +501,9 @@ function buildRoom() {
   // Room 4 is intentionally a neutral shell cell for now; salon content is
   // excluded from this baseline grid until the room layout is settled.
   planRoom("room four", -4.2, 0, 4.2, 4.2, 0x80634d, false, ["south"]);
-  // Rooms 7 and 8 are opened into one 1x2 salon.  The shared 7/8 wall is
-  // intentionally absent; the north, east, and south boundaries are added
-  // below with their actual doors and wall segments.
-  planRoom("salon", -2.1, 4.2, 8.4, 4.2, 0x705640, false, ["north", "south", "east"]);
+  // The salon is the southwest corner room; its east and north openings
+  // connect it to the adjoining principal-floor rooms.
+  planRoom("salon", -4.2, 4.2, 4.2, 4.2, 0x705640, false, ["north", "east", "south"]);
   planRoom("guest chamber", 4.2, 4.2, 4.2, 4.2, 0x705640, false, ["west"]);
   // 4–7 and 8–9 are closed boundaries with a real doorway, not open-plan
   // passages.  Add one shared wall around each doorway so the adjoining rooms
