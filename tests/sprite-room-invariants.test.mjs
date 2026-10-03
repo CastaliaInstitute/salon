@@ -45,6 +45,10 @@ test("focused salon starts in a readable elevated diagonal composition", () => {
   assert.match(source, /isoCamera\.zoom = 1\.6/);
 });
 
+test("floating dialogue bubbles stay out of the default Room composition", () => {
+  assert.match(source, /if \(topDown \|\| renderEverything \|\| !pov\) \{ dialogueLayer\?\.replaceChildren\(\); return; \}/);
+});
+
 test("viewer has a restrictive content security policy", () => {
   assert.match(html, /Content-Security-Policy/);
   assert.match(html, /connect-src 'self' blob: https:\/\/matrix\.castalia\.institute/);
