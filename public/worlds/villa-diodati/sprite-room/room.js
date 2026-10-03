@@ -793,6 +793,7 @@ function setSalonOnlyVisibility(visible) {
       if (/(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name)) node.visible = false;
     });
   } else if (!visible) {
+    room.children.forEach((child) => { child.visible = true; });
     salonRoot.traverse((node) => {
       if (!node.isMesh || !node.name) return;
       if (/(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name)) node.visible = true;
