@@ -680,7 +680,7 @@ function buildRoom() {
   salonRoot.rotation.y = SALON_CONTENT_ROTATION;
 }
 function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .01 : .04; wall.material.depthWrite = false; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); item.material.transparent = true; item.material.opacity = architectural ? .03 : 1; item.material.depthWrite = !architectural; item.material.needsUpdate = true; } } }
-function enforceSalonRoomView() { if (topDown || pov || floorLevel !== 1 || !salonRoot.visible) return; room.children.forEach((child) => { if (child !== salonRoot) child.visible = false; }); salonRoot.traverse((node) => { if (!node.isMesh || !node.name) return; const keepWall = /^(rear|left) wall$/i.test(node.name); if (/(wall|molding|mullion|sill|lintel|trim|recess|column|veranda|facade window|window pane|window mullion|window recess|tall window)/i.test(node.name)) { node.visible = keepWall; if (keepWall && node.material) { node.material.transparent = true; node.material.opacity = .48; node.material.depthWrite = false; node.material.needsUpdate = true; } } }); }
+function enforceSalonRoomView() { if (topDown || pov || floorLevel !== 1 || !salonRoot.visible) return; room.children.forEach((child) => { if (child !== salonRoot) child.visible = false; }); principalPlanShell.visible = true; salonRoot.traverse((node) => { if (!node.isMesh || !node.name) return; if (/^(oak parquet floor|floor inlay)$/i.test(node.name) || /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda|facade window|window pane|window mullion|window recess|tall window)/i.test(node.name)) { node.visible = false; } }); }
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
   const key = new THREE.DirectionalLight(0xffe0bd, 2.1); key.position.set(-4, 8, 5); key.castShadow = true; scene.add(key);
@@ -800,12 +800,12 @@ async function pollMatrix() { try { if (!matrixToken) { const reg = await fetch(
 function updatePovCamera() { const directionAngle = { south: 0, southeast: Math.PI / 4, east: Math.PI / 2, northeast: Math.PI * .75, north: Math.PI, northwest: Math.PI * 1.25, west: Math.PI * 1.5, southwest: Math.PI * 1.75 }[localPlayer.direction] ?? 0; if (povLookYaw == null) povLookYaw = directionAngle; const floorOffset = FLOOR_BASE_Y[Math.max(0, Math.min(3, Number(localPlayer.floor || 1)))] * HOUSE_WORLD_SCALE; const eye = new THREE.Vector3(localPlayer.x * HOUSE_WORLD_SCALE, floorOffset + 1.52, localPlayer.z * HOUSE_WORLD_SCALE); const lookDistance = 2; const horizontal = Math.cos(povLookPitch) * lookDistance; const look = new THREE.Vector3(eye.x + Math.sin(povLookYaw) * horizontal, eye.y + Math.sin(povLookPitch) * lookDistance, eye.z + Math.cos(povLookYaw) * horizontal); povCamera.position.copy(eye); povCamera.lookAt(look); povCamera.updateProjectionMatrix(); }
 function setSalonOnlyVisibility(visible) {
   room.children.forEach((child) => { child.visible = !visible || child === salonRoot; });
+  principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   salonRoot.visible = visible || topDown;
   animalLayer.visible = !visible && topDown;
   if (visible && floorLevel === 1) {
-    // The Grand Salon is authored inside salonRoot. Hide only the neutral
-    // navigation-shell walls in this view so they cannot occlude its furniture,
-    // figures, fireplace, or art; the shells return for map/other-room views.
+    // Keep the furniture and figures, but use the connected plan shell for the
+    // enclosure. The old salonRoot walls made the salon appear detached.
     updatePlanRoomVisibility("salon");
     for (const wall of Object.values(room.userData.walls || {})) {
       wall.visible = false;
