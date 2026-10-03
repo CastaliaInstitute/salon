@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/room.js", import.meta.url), "utf8");
+const html = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/index.html", import.meta.url), "utf8");
 
 test("viewer keeps Map upright and rotation-locked", () => {
   assert.match(source, /controls\.enableRotate = !pov && !topDown/);
@@ -20,4 +21,10 @@ test("exterior glazing is modeled as openings with physical glass", () => {
   assert.match(source, /replaceSquareVillaWallsWithOpenings/);
   assert.match(source, /new THREE\.MeshPhysicalMaterial\(\{ color: 0xffffff/);
   assert.match(source, /square villa facade opening/);
+});
+
+test("viewer has a restrictive content security policy", () => {
+  assert.match(html, /Content-Security-Policy/);
+  assert.match(html, /frame-ancestors 'none'/);
+  assert.match(html, /connect-src 'self' https:\/\/matrix\.castalia\.institute/);
 });
