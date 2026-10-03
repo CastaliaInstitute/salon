@@ -59,6 +59,13 @@ controls.target.set(0, 0.8, 0);
 controls.addEventListener("start", () => { controls.enableRotate = !pov && !topDown; });
 
 const map = { minX: -18, maxX: 18, minZ: -10, maxZ: 32 };
+controls.addEventListener("change", () => {
+  const floorY = FLOOR_BASE_Y?.[floorLevel] * HOUSE_WORLD_SCALE;
+  const limit = topDown ? 54 : 42;
+  controls.target.x = THREE.MathUtils.clamp(controls.target.x, -limit, limit);
+  controls.target.z = THREE.MathUtils.clamp(controls.target.z, -30, 78);
+  if (Number.isFinite(floorY)) controls.target.y = topDown ? floorY : floorY + .8;
+});
 const HOUSE_WORLD_SCALE = 3.0;
 // The four rendered levels share one architectural datum.  Keep this in one
 // place so camera focus, pointer picking, avatars, and duplicate floor shells
