@@ -4,6 +4,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const canvas = document.querySelector("#room");
 const status = document.querySelector("#status");
+if (status) {
+  const nativeTextContent = Object.getOwnPropertyDescriptor(Node.prototype, "textContent");
+  let announcedStatus = nativeTextContent?.get?.call(status) || "";
+  Object.defineProperty(status, "textContent", {
+    configurable: true,
+    get: () => nativeTextContent?.get?.call(status) || announcedStatus,
+    set: (value) => { const next = String(value); if (next === announcedStatus) return; announcedStatus = next; nativeTextContent?.set?.call(status, next); },
+  });
+}
 const cameraButton = document.querySelector("#camera");
 const mapButton = document.querySelector("#map-view");
 const renderAllButton = document.querySelector("#render-all");
