@@ -140,6 +140,7 @@ let lightningLight;
 const weatherLayer = new THREE.Group(); weatherLayer.name = "Lake Geneva weather"; scene.add(weatherLayer);
 let rainGeometry;
 let rainWind = { x: .8, z: .25 };
+const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 let thunderAudio;
 let cinematicCue = null;
 let cinematicSpeakerId = null;
@@ -270,13 +271,14 @@ function buildWeather() {
   for (let i = 0; i < 7; i++) {
     const cloud = new THREE.Sprite(cloudMaterial.clone()); cloud.position.set(-18 + i * 6.4, 11 + (i % 3) * 1.4, 4 + (i % 4) * 7); cloud.scale.set(8 + (i % 3) * 2, 4.2, 1); cloud.userData.wind = .12 + (i % 3) * .025; weatherLayer.add(cloud);
   }
-  const count = 850; const positions = new Float32Array(count * 3);
+  const count = reducedMotion ? 0 : 850; const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) { positions[i * 3] = (Math.random() - .5) * 34; positions[i * 3 + 1] = Math.random() * 12 + 1; positions[i * 3 + 2] = 3 + Math.random() * 29; }
   rainGeometry = new THREE.BufferGeometry(); rainGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   const rain = new THREE.Points(rainGeometry, new THREE.PointsMaterial({ color: 0xb9d8df, size: .055, transparent: true, opacity: .42, depthWrite: false }));
   rain.name = "wind-driven rain"; weatherLayer.add(rain);
 }
 function updateWeather(now, delta) {
+  if (reducedMotion) return;
   weatherLayer.children.forEach((node, index) => {
     if (node.isSprite) { node.position.x += node.userData.wind * delta; if (node.position.x > 22) node.position.x = -22; node.material.opacity = .38 + Math.sin(now * .12 + index) * .08; }
   });

@@ -36,6 +36,12 @@ test("viewer has a keyboard-focusable canvas and no-script fallback", () => {
   assert.match(html, /<noscript class="no-script-message">/);
 });
 
+test("weather respects reduced-motion preferences", () => {
+  assert.match(source, /prefers-reduced-motion: reduce/);
+  assert.match(source, /const count = reducedMotion \? 0 : 850/);
+  assert.match(source, /if \(reducedMotion\) return;/);
+});
+
 test("deploy cache bust covers the sprite-room module", () => {
   assert.match(cacheBustScript, /worlds', 'villa-diodati', 'sprite-room', 'index\.html/);
   assert.match(cacheBustScript, /room\\\.js\\\?v=\[\^\"'\]\+/);
