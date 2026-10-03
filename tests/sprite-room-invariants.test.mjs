@@ -53,6 +53,8 @@ test("focused salon has deterministic furnishing geometry", () => {
   assert.match(source, /function addSalonFurnitureFallback\(\)/);
   assert.match(source, /salon fallback sofa base/);
   assert.match(source, /salon fallback armchair seat/);
+  assert.match(source, /salon fallback sofa cushion/);
+  assert.match(source, /salon fallback armchair cushion/);
   assert.match(source, /addSalonFurnitureFallback\(\);/);
   assert.match(source, /salonFallbackLayer\.visible = !renderEverything && !topDown && floorLevel === 1/);
   assert.match(source, /salonFallbackLayer\.position\.copy\(salonRoot\.position\)/);

@@ -371,10 +371,15 @@ function addSalonFurnitureFallback() {
   add(new THREE.BoxGeometry(4.6, .04, 3.2), rug, [0, .025, 1.15], "salon fallback rug");
   add(new THREE.BoxGeometry(2.8, .5, .82), wood, [-3, .48, .72], "salon fallback sofa base");
   add(new THREE.BoxGeometry(2.55, 1.0, .24), upholstery, [-3, 1.02, .98], "salon fallback sofa back");
+  add(new THREE.BoxGeometry(2.25, .16, .68), upholstery, [-3, .78, .55], "salon fallback sofa cushion");
+  for (const x of [-3.62, -2.7]) add(new THREE.BoxGeometry(.7, .5, .12), upholstery, [x, 1.16, .82], "salon fallback sofa back cushion");
+  for (const x of [-3.95, -2.05]) for (const z of [.4, 1.0]) add(new THREE.BoxGeometry(.08, .42, .08), wood, [x, .21, z], "salon fallback sofa leg");
   for (const x of [-4.28, -1.72]) add(new THREE.BoxGeometry(.22, .72, .9), upholstery, [x, .78, .72], "salon fallback sofa arm");
   for (const [x, z] of [[2.45, .35], [2.45, 1.85], [-1.75, 2.35]]) {
     add(new THREE.BoxGeometry(.92, .42, .78), wood, [x, .42, z], "salon fallback armchair seat");
     add(new THREE.BoxGeometry(.78, .9, .18), upholstery, [x, .88, z + .28], "salon fallback armchair back");
+    add(new THREE.BoxGeometry(.7, .13, .58), upholstery, [x, .69, z], "salon fallback armchair cushion");
+    for (const dx of [-.3, .3]) for (const dz of [-.25, .25]) add(new THREE.BoxGeometry(.06, .32, .06), wood, [x + dx, .16, z + dz], "salon fallback armchair leg");
   }
   add(new THREE.BoxGeometry(1.3, .12, .78), wood, [0, .72, 1.15], "salon fallback tea table top");
   for (const x of [-.5, .5]) for (const z of [.88, 1.42]) add(new THREE.BoxGeometry(.08, .68, .08), wood, [x, .36, z], "salon fallback tea table leg");
