@@ -1103,8 +1103,8 @@ renderAllButton?.addEventListener("click", () => {
       const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE;
       const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
       const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
-      isoCamera.position.set(focusX + 6, floorY + 10, focusZ - 10);
-      isoCamera.zoom = 2.15;
+      isoCamera.position.set(focusX + 10, floorY + 12, focusZ - 14);
+      isoCamera.zoom = 1.45;
       isoCamera.updateProjectionMatrix();
       isoCamera.lookAt(focusX, floorY + .8, focusZ);
       controls.target.set(focusX, floorY + .8, focusZ);
@@ -1128,8 +1128,8 @@ if (!topDown && !pov && floorLevel === 1) {
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
   // Reference composition: elevated north-east position looking SSW, with
   // the west/south walls and the lake-facing glazing readable in one frame.
-  isoCamera.position.set(focusX + 6, floorY + 10, focusZ - 10);
-  isoCamera.zoom = 2.15;
+  isoCamera.position.set(focusX + 10, floorY + 12, focusZ - 14);
+  isoCamera.zoom = 1.45;
   isoCamera.updateProjectionMatrix();
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
   controls.target.set(focusX, floorY + .8, focusZ);

@@ -33,6 +33,11 @@ test("focused salon restores solid west and south enclosure walls", () => {
   assert.match(source, /wall\.material\.opacity = 1/);
 });
 
+test("focused salon starts in a readable elevated diagonal composition", () => {
+  assert.match(source, /isoCamera\.position\.set\(focusX \+ 10, floorY \+ 12, focusZ - 14\)/);
+  assert.match(source, /isoCamera\.zoom = 1\.45/);
+});
+
 test("viewer has a restrictive content security policy", () => {
   assert.match(html, /Content-Security-Policy/);
   assert.match(html, /connect-src 'self' blob: https:\/\/matrix\.castalia\.institute/);
