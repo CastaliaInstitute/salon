@@ -174,7 +174,7 @@ function applyTopDownRoomVisibility() {
     if (outdoorClutter) { node.visible = false; return; }
     if (node.userData.structuralOpening) { node.visible = false; return; }
     const match = planShellNames.find((name) => node.name.startsWith(`${name} `));
-    if (match) node.visible = topDownRoomVisibility.get(match) !== false;
+    if (match) node.visible = match === "salon" ? false : topDownRoomVisibility.get(match) !== false;
     else if (floorLevel === 1) node.visible = true;
   });
 }
