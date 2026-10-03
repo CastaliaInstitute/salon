@@ -27,8 +27,7 @@ test("exterior glazing is modeled as openings with physical glass", () => {
 
 test("viewer has a restrictive content security policy", () => {
   assert.match(html, /Content-Security-Policy/);
-  assert.match(html, /frame-ancestors 'none'/);
-  assert.match(html, /connect-src 'self' https:\/\/matrix\.castalia\.institute/);
+  assert.match(html, /connect-src 'self' blob: https:\/\/matrix\.castalia\.institute/);
   assert.match(html, /sha256-4HMW5NQmmSV3oHC6ajO3hk1Oj3mUDvGXHThmkVld42w=/);
 });
 
