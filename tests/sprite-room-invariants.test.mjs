@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 const source = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/room.js", import.meta.url), "utf8");
 const html = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/index.html", import.meta.url), "utf8");
@@ -131,4 +132,19 @@ test("viewer asset contract is present in the repository", async () => {
     "public/worlds/villa-diodati/sprites/animals/sheets/falcon-directional-v1.png",
   ];
   await Promise.all(assets.map((asset) => access(new URL(`../${asset}`, import.meta.url))));
+});
+
+test("GLTF furniture assets resolve every external URI", async () => {
+  const files = [
+    "../public/worlds/villa-diodati/furniture/sofa-03/sofa_03.gltf",
+    "../public/worlds/villa-diodati/furniture/armchair-01/ArmChair_01.gltf",
+  ];
+  for (const file of files) {
+    const url = new URL(file, import.meta.url);
+    const document = JSON.parse(await readFile(url, "utf8"));
+    const uris = [...(document.buffers || []), ...(document.images || [])]
+      .map((entry) => entry.uri)
+      .filter((uri) => uri && !uri.startsWith("data:"));
+    await Promise.all(uris.map((uri) => access(resolve(dirname(url.pathname), uri))));
+  }
 });
