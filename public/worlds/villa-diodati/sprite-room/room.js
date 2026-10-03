@@ -889,6 +889,16 @@ function enforceSalonRoomView() {
     const westSouthWall = /^(left wall|front wall left of veranda door|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
     node.visible = !architectural || westSouthWall;
   });
+  // The two visible room elevations are enclosure, not an occluding overlay.
+  // Keep them opaque so the focused salon cannot read as detached wall cards.
+  for (const name of ["left wall", "front wall left of veranda door", "front wall right of veranda door", "veranda door lintel"]) {
+    const wall = salonRoot.getObjectByName(name);
+    if (!wall?.material) continue;
+    wall.material.transparent = false;
+    wall.material.opacity = 1;
+    wall.material.depthWrite = true;
+    wall.material.needsUpdate = true;
+  }
 }
 function applyRenderEverything() {
   if (!renderEverything) return;

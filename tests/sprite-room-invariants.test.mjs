@@ -26,6 +26,13 @@ test("exterior glazing is modeled as openings with physical glass", () => {
   assert.match(source, /square villa facade opening/);
 });
 
+test("focused salon restores solid west and south enclosure walls", () => {
+  assert.match(source, /focused salon cannot read as detached wall cards/);
+  assert.match(source, /\["left wall", "front wall left of veranda door", "front wall right of veranda door", "veranda door lintel"\]/);
+  assert.match(source, /wall\.material\.transparent = false/);
+  assert.match(source, /wall\.material\.opacity = 1/);
+});
+
 test("viewer has a restrictive content security policy", () => {
   assert.match(html, /Content-Security-Policy/);
   assert.match(html, /connect-src 'self' blob: https:\/\/matrix\.castalia\.institute/);
