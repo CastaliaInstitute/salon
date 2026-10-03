@@ -152,9 +152,6 @@ function updateExteriorRoomMeshes(visible) {
   room.traverse((node) => { if (!node.isMesh) return; const name = node.name || ""; const outdoorClutter = exteriorRoomMesh.test(name) || /^(trunk|crown)$/i.test(name) || node.position.z > 8 || Math.abs(node.position.x) > 8; if (outdoorClutter) node.visible = visible; });
 }
 function updatePlanRoomVisibility(roomId) {
-  // The salon contents are currently disabled while the architectural shell
-  // is being verified. Do not scope the whole house down to the hidden salon.
-  if (!salonRoot.visible) return;
   // The salon has a real architectural room root. Its inferred `grand salon`
   // shell is only a navigation placeholder and must never double-render walls.
   const activeName = planShellByRoom[roomId] || null;
@@ -683,7 +680,22 @@ function buildRoom() {
   salonRoot.rotation.y = SALON_CONTENT_ROTATION;
 }
 function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .01 : .04; wall.material.depthWrite = false; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); item.material.transparent = true; item.material.opacity = architectural ? .03 : 1; item.material.depthWrite = !architectural; item.material.needsUpdate = true; } } }
-function enforceSalonRoomView() { if (topDown || pov || floorLevel !== 1 || !salonRoot.visible) return; room.children.forEach((child) => { if (child !== salonRoot) child.visible = false; }); principalPlanShell.visible = true; salonRoot.traverse((node) => { if (!node.isMesh || !node.name) return; if (/^(oak parquet floor|floor inlay)$/i.test(node.name) || /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda|facade window|window pane|window mullion|window recess|tall window)/i.test(node.name)) { node.visible = false; } }); }
+function enforceSalonRoomView() {
+  if (topDown || pov || floorLevel !== 1 || !salonRoot.visible) return;
+  room.children.forEach((child) => { if (child !== salonRoot && child !== principalPlanShell) child.visible = false; });
+  principalPlanShell.visible = true;
+  principalPlanShell.traverse((node) => {
+    if (!node.isMesh || !node.name) return;
+    // Room view is a salon vignette, not a cutaway of the whole house.
+    // Keep only the salon floor, its west wall, and the south/veranda wall;
+    // neighboring shells, boundary walls, and columns stay out of frame.
+    node.visible = /^(salon floor|salon west wall|salon south veranda wall segment)$/i.test(node.name);
+  });
+  salonRoot.traverse((node) => {
+    if (!node.isMesh || !node.name) return;
+    if (/^(oak parquet floor|floor inlay)$/i.test(node.name) || /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda|facade window|window pane|window mullion|window recess|tall window)/i.test(node.name)) node.visible = false;
+  });
+}
 function setupLighting() {
   scene.add(new THREE.HemisphereLight(0xe6d4c1, 0x241818, 1.8));
   const key = new THREE.DirectionalLight(0xffe0bd, 2.1); key.position.set(-4, 8, 5); key.castShadow = true; scene.add(key);
@@ -806,7 +818,7 @@ function setSalonOnlyVisibility(visible) {
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
   // authored salon set as a second platform beside the villa.
-  salonRoot.visible = false;
+  salonRoot.visible = visible;
   animalLayer.visible = !visible && topDown;
   if (visible && floorLevel === 1) {
     // Keep the furniture and figures, but use the connected plan shell for the
@@ -827,7 +839,7 @@ function setSalonOnlyVisibility(visible) {
     });
   }
 }
-function setViewMode(mode) { const normalizedMode = mode === "topdown" ? "map" : mode === "isometric" ? "room" : mode; pov = normalizedMode === "pov"; topDown = normalizedMode === "map"; cinematic = normalizedMode === "cinematic"; setFloorLevel(floorLevel); principalPlanShell.visible = floorLevel === 1 && topDown; setSalonOnlyVisibility(!topDown); document.body.classList.toggle("topdown-mode", topDown); exteriorLayer.visible = false; updateExteriorRoomMeshes(false); if (topDown) dialogueLayer?.replaceChildren(); if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createCompassRose(); renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE; const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE; const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, floorY + 56, 0); mapCamera.lookAt(0, floorY, 0); } else if (cinematic) { cinematicCamera.position.set(focusX, floorY + 4.6, focusZ + 9); cinematicCamera.lookAt(focusX, floorY + .7, focusZ); } else { isoCamera.position.set(focusX + 8, floorY + 8, focusZ + 8); isoCamera.lookAt(focusX, floorY + .8, focusZ); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = false; controls.enablePan = !pov; controls.target.set(topDown ? 0 : focusX, topDown ? floorY : floorY + .8, topDown ? 0 : focusZ); cameraButton.value = normalizedMode; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
+function setViewMode(mode) { const normalizedMode = mode === "topdown" ? "map" : mode === "isometric" ? "room" : mode; pov = normalizedMode === "pov"; topDown = normalizedMode === "map"; cinematic = normalizedMode === "cinematic"; setFloorLevel(floorLevel); principalPlanShell.visible = floorLevel === 1 && topDown; setSalonOnlyVisibility(!topDown); document.body.classList.toggle("topdown-mode", topDown); exteriorLayer.visible = false; updateExteriorRoomMeshes(false); if (topDown) dialogueLayer?.replaceChildren(); if (room.userData.walls?.front) room.userData.walls.front.visible = topDown; createCompassRose(); renderer.shadowMap.enabled = !topDown; participantLayer.visible = !topDown; mapMarkers.visible = topDown; activeCamera = pov ? povCamera : topDown ? mapCamera : cinematic ? cinematicCamera : isoCamera; const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE; const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE; const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE; if (pov) { updatePovCamera(); } else if (topDown) { resetTopDownRoomVisibility(); mapCamera.zoom = .72; mapCamera.position.set(0, floorY + 56, 0); mapCamera.lookAt(0, floorY, 0); } else if (cinematic) { cinematicCamera.position.set(focusX, floorY + 4.6, focusZ + 9); cinematicCamera.lookAt(focusX, floorY + .7, focusZ); } else { isoCamera.position.set(focusX - 8, floorY + 8, focusZ + 8); isoCamera.lookAt(focusX, floorY + .8, focusZ); } const localFigure = figures.get(localPlayer.id); if (localFigure) localFigure.visible = !pov; controls.object = activeCamera; controls.enableRotate = false; controls.enablePan = !pov; controls.target.set(topDown ? 0 : focusX, topDown ? floorY : floorY + .8, topDown ? 0 : focusZ); cameraButton.value = normalizedMode; mapButton.textContent = topDown ? "Room view" : "Top-down map"; povButton.textContent = pov ? "Exit POV" : "POV"; resize(); }
 function leaveTopDownForBillboards() { if (!topDown || Math.abs(mapCamera.position.y - 20) < .08) return; topDown = false; cinematic = false; participantLayer.visible = true; mapMarkers.visible = false; activeCamera = mapCamera; controls.object = mapCamera; controls.enableRotate = false; cameraButton.value = "room"; mapButton.textContent = "Top-down map"; }
 function handleCameraChange() { if (pov) return; if (!topDown && activeCamera === isoCamera) { const offset = isoCamera.position.clone().sub(controls.target); const polar = Math.atan2(Math.hypot(offset.x, offset.z), Math.max(.001, offset.y)); if (polar < .3) { setViewMode("topdown"); return; } } leaveTopDownForBillboards(); }
 cameraButton.addEventListener("change", () => { if (cameraButton.value === "pov") { povLookYaw = null; povLookPitch = -.06; } setViewMode(cameraButton.value); });
