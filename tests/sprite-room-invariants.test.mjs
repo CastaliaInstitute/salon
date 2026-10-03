@@ -35,6 +35,8 @@ test("focused salon restores solid west and south enclosure walls", () => {
   assert.match(source, /const westSouthOpening = \/\(villa facade window\|facade window\|west veranda door\|south veranda door\|front door\)\/i/);
   assert.match(source, /southWallSegment\("front wall between veranda openings"/);
   assert.match(source, /verandaWallLeft\.visible = false/);
+  assert.match(source, /addFacadeWindow\(-7\.75, 2\.25/);
+  assert.match(source, /\[x, 1\.32, 4\.78\]/);
 });
 
 test("focused salon starts in a readable elevated diagonal composition", () => {

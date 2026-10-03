@@ -801,10 +801,10 @@ function buildRoom() {
   // the west veranda elevation below.
   // West wall: three bays; the southern and middle bays are windows, while the
   // northern bay is the door to the west veranda.
-  addFacadeWindow(-7.86, 2.25, -2.65, Math.PI / 2);
-  addFacadeWindow(-7.86, 2.25, -.65, Math.PI / 2);
-  const westDoor = box("west veranda door", [.08, 2.55, 1.55], [-7.86, 1.32, 1.35], 0x402a24, Math.PI / 2);
-  const westDoorFrameTop = box("west veranda door lintel", [.12, .12, 1.75], [-7.86, 2.72, 1.35], 0xb3875c, Math.PI / 2);
+  addFacadeWindow(-7.75, 2.25, -2.65, Math.PI / 2);
+  addFacadeWindow(-7.75, 2.25, -.65, Math.PI / 2);
+  const westDoor = box("west veranda door", [.08, 2.55, 1.55], [-7.75, 1.32, 1.35], 0x402a24, Math.PI / 2);
+  const westDoorFrameTop = box("west veranda door lintel", [.12, .12, 1.75], [-7.75, 2.72, 1.35], 0xb3875c, Math.PI / 2);
   room.userData.occludingDecor.push(westDoor, westDoorFrameTop);
   // East elevation retains its regular window rhythm.
   for (const z of [-2.15, .55, 3.15]) addFacadeWindow(7.86, 2.25, z, Math.PI / 2);
@@ -812,18 +812,18 @@ function buildRoom() {
   // and one window flanking it inside the one-bay salon width.
   for (const x of [-2.7, 2.7]) {
     if (x < 0) {
-      const southDoor = box("south veranda door", [1.55, 2.55, .08], [x, 1.32, 4.9], 0x402a24);
-      const southDoorFrameLeft = box("south veranda door frame left", [.12, 2.8, .12], [x - .88, 1.42, 4.94], 0xb3875c);
-      const southDoorFrameRight = box("south veranda door frame right", [.12, 2.8, .12], [x + .88, 1.42, 4.94], 0xb3875c);
+      const southDoor = box("south veranda door", [1.55, 2.55, .08], [x, 1.32, 4.78], 0x402a24);
+      const southDoorFrameLeft = box("south veranda door frame left", [.12, 2.8, .12], [x - .88, 1.42, 4.78], 0xb3875c);
+      const southDoorFrameRight = box("south veranda door frame right", [.12, 2.8, .12], [x + .88, 1.42, 4.78], 0xb3875c);
       room.userData.occludingDecor.push(southDoor, southDoorFrameLeft, southDoorFrameRight);
       continue;
     }
-    const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, 4.88], 0x182b3c);
+    const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, 4.78], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
-    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshPhysicalMaterial({ color: 0xe7f5f5, transparent: true, opacity: .24, transmission: .9, roughness: .025, depthWrite: false, side: THREE.DoubleSide })); windowPane.name = "clear tall window glazing"; windowPane.position.set(x, 2.35, 4.86); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
-    const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, 4.84], 0xf2eee5);
-    const windowSill = box("window sill", [2.15, .12, .22], [x, .78, 4.94], 0xf2eee5);
-    const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, 4.88], 0x5e7080);
+    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshPhysicalMaterial({ color: 0xe7f5f5, transparent: true, opacity: .24, transmission: .9, roughness: .025, depthWrite: false, side: THREE.DoubleSide })); windowPane.name = "clear tall window glazing"; windowPane.position.set(x, 2.35, 4.76); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
+    const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, 4.76], 0xf2eee5);
+    const windowSill = box("window sill", [2.15, .12, .22], [x, .78, 4.76], 0xf2eee5);
+    const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, 4.78], 0x5e7080);
     room.userData.occludingDecor.push(windowMullion, windowSill, curtain);
   }
   const writingDeskX = -5.35;
