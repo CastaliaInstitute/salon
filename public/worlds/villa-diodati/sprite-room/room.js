@@ -287,6 +287,7 @@ function startThunderAudio() {
   noise.connect(filter).connect(gain).connect(context.destination); noise.start(); thunderAudio = { context, gain, noise };
 }
 buildWeather();
+weatherLayer.scale.setScalar(HOUSE_WORLD_SCALE);
 canvas.addEventListener("pointerdown", startThunderAudio, { once: true });
 setInterval(() => { updateWeather(clock.elapsedTime, .016); updateEnvironmentalPhysics(clock.elapsedTime, .016); }, 16);
 function buildTopography() {
