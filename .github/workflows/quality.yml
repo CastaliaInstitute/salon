@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - name: Install Node dependencies
         run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
       - name: Run Node regression tests
         run: npm test
       - name: Run historical, Gym, and realtime regression tests
