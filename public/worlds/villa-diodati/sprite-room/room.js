@@ -966,6 +966,11 @@ async function pollMatrix() { try { if (!matrixToken) { const reg = await fetch(
 function updatePovCamera() { const directionAngle = { south: 0, southeast: Math.PI / 4, east: Math.PI / 2, northeast: Math.PI * .75, north: Math.PI, northwest: Math.PI * 1.25, west: Math.PI * 1.5, southwest: Math.PI * 1.75 }[localPlayer.direction] ?? 0; if (povLookYaw == null) povLookYaw = directionAngle; const floorOffset = FLOOR_BASE_Y[Math.max(0, Math.min(3, Number(localPlayer.floor || 1)))] * HOUSE_WORLD_SCALE; const eye = new THREE.Vector3(localPlayer.x * HOUSE_WORLD_SCALE, floorOffset + 1.52, localPlayer.z * HOUSE_WORLD_SCALE); const lookDistance = 2; const horizontal = Math.cos(povLookPitch) * lookDistance; const look = new THREE.Vector3(eye.x + Math.sin(povLookYaw) * horizontal, eye.y + Math.sin(povLookPitch) * lookDistance, eye.z + Math.cos(povLookYaw) * horizontal); povCamera.position.copy(eye); povCamera.lookAt(look); povCamera.updateProjectionMatrix(); }
 function setSalonOnlyVisibility(visible) {
   room.children.forEach((child) => { child.visible = !visible || child === salonRoot; });
+  // Focused interior views should not expose the terrain mesh as a stray
+  // cutaway. Keep the lake plane available beyond the clear glazing; map and
+  // full-render views restore every landscape feature below.
+  landscapeLayer.visible = true;
+  landscapeLayer.children.forEach((child) => { child.visible = topDown || /water/i.test(child.name || ""); });
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
   // authored salon set as a second platform beside the villa.
