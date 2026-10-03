@@ -203,6 +203,15 @@
       "connections": ["salon", "drawing-music-room", "dining-room", "entrance-hall"]
     },
     {
+      "id": "room-four",
+      "floor": 1,
+      "x": -4.2,
+      "z": 0,
+      "width": 4.2,
+      "depth": 4.2,
+      "connections": ["central-stair-hall", "salon"]
+    },
+    {
       "id": "guest-chamber",
       "floor": 1,
       "x": 4.2,
