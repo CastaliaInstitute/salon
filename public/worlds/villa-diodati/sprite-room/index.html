@@ -16,7 +16,8 @@
     </script>
   </head>
   <body>
-    <canvas id="room" aria-label="Interactive isometric Villa Diodati salon"></canvas>
+    <canvas id="room" role="img" tabindex="0" aria-label="Interactive isometric Villa Diodati salon"></canvas>
+    <noscript class="no-script-message">The Villa Diodati viewer needs JavaScript enabled to render the interactive house.</noscript>
     <div id="dialogue-layer" aria-live="polite"></div>
     <section id="script-panel" aria-label="Salon dialogue script"><div class="script-heading">Salon script <span id="script-state">Listening to Matrix…</span></div><div id="script-lines"></div></section>
     <div id="rewind-control" aria-label="Room state history"><label for="rewind-slider">Room history <span id="rewind-label">Live</span></label><div class="rewind-row"><button id="rewind-play" type="button" aria-label="Play room history" disabled>Play</button><input id="rewind-slider" type="range" min="0" max="0" value="0" step="1" disabled><button id="rewind-live" type="button" disabled>Live</button></div></div>

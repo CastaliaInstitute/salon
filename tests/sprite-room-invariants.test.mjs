@@ -31,6 +31,11 @@ test("viewer has a restrictive content security policy", () => {
   assert.match(html, /connect-src 'self' https:\/\/matrix\.castalia\.institute/);
 });
 
+test("viewer has a keyboard-focusable canvas and no-script fallback", () => {
+  assert.match(html, /<canvas id="room" role="img" tabindex="0"/);
+  assert.match(html, /<noscript class="no-script-message">/);
+});
+
 test("deploy cache bust covers the sprite-room module", () => {
   assert.match(cacheBustScript, /worlds', 'villa-diodati', 'sprite-room', 'index\.html/);
   assert.match(cacheBustScript, /room\\\.js\\\?v=\[\^\"'\]\+/);
