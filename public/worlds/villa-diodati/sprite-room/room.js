@@ -868,8 +868,10 @@ if (!topDown && !pov && floorLevel === 1) {
   const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE;
   const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
-  isoCamera.position.set(focusX + 8, floorY + 8, focusZ - 8);
-  isoCamera.zoom = 1.25;
+  // Interior-facing southwest composition: the west and south room faces are
+  // readable, with the lake beyond the south glazing.
+  isoCamera.position.set(focusX - 8, floorY + 8, focusZ + 8);
+  isoCamera.zoom = 1.7;
   isoCamera.updateProjectionMatrix();
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
   controls.target.set(focusX, floorY + .8, focusZ);
