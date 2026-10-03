@@ -1113,10 +1113,10 @@ renderAllButton?.addEventListener("click", () => {
       const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE;
       const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
       const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
-      isoCamera.position.set(focusX + 6, floorY + 12, focusZ - 18);
-      isoCamera.zoom = 1.35;
+      isoCamera.position.set(focusX + 5, floorY + 8, focusZ - 1);
+      isoCamera.zoom = 1.6;
       isoCamera.updateProjectionMatrix();
-      isoCamera.lookAt(focusX, floorY + .8, focusZ);
+      isoCamera.lookAt(focusX - 2, floorY + .8, focusZ + 3.2);
       controls.target.set(focusX, floorY + .8, focusZ);
     }
   }
@@ -1138,11 +1138,11 @@ if (!topDown && !pov && floorLevel === 1) {
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
   // Reference composition: elevated north-east position looking SSW, with
   // the west/south walls and the lake-facing glazing readable in one frame.
-  isoCamera.position.set(focusX + 6, floorY + 12, focusZ - 18);
-  isoCamera.zoom = 1.35;
+  isoCamera.position.set(focusX + 5, floorY + 8, focusZ - 1);
+  isoCamera.zoom = 1.6;
   isoCamera.updateProjectionMatrix();
-  isoCamera.lookAt(focusX, floorY + .8, focusZ);
-  controls.target.set(focusX, floorY + .8, focusZ);
+  isoCamera.lookAt(focusX - 2, floorY + .8, focusZ + 3.2);
+  controls.target.set(focusX - 2, floorY + .8, focusZ + 3.2);
 }
 if (!pov && !topDown) controls.enableRotate = true;
 animate();
