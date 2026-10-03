@@ -166,7 +166,10 @@ function applyTopDownRoomVisibility() {
   const planLayer = floorLevel === 0 ? lowerFloor : floorLevel === 1 ? room : upperFloors[floorLevel - 2];
   planLayer.traverse((node) => {
     if (!node.isMesh || !node.name) return;
-    if (node === salonRoot || salonRoot.getObjectById(node.id)) return;
+    if (node === salonRoot || salonRoot.getObjectById(node.id)) {
+      if (topDown && /^(oak parquet floor|floor inlay)$/i.test(node.name || "")) node.visible = false;
+      return;
+    }
     const outdoorClutter = exteriorRoomMesh.test(node.name) || /^(trunk|crown)$/i.test(node.name) || node.position.z > 8 || Math.abs(node.position.x) > 8;
     if (outdoorClutter) { node.visible = false; return; }
     if (node.userData.structuralOpening) { node.visible = false; return; }
