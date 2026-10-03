@@ -42,6 +42,11 @@ test("weather respects reduced-motion preferences", () => {
   assert.match(source, /if \(reducedMotion\) return;/);
 });
 
+test("viewer shares one map contract request during startup", () => {
+  assert.equal((source.match(/fetch\("\.\.\/isometric-map\.json"/g) || []).length, 1);
+  assert.match(source, /const mapContractPromise = fetch\("\.\.\/isometric-map\.json"/);
+});
+
 test("deploy cache bust covers the sprite-room module", () => {
   assert.match(cacheBustScript, /worlds', 'villa-diodati', 'sprite-room', 'index\.html/);
   assert.match(cacheBustScript, /room\\\.js\\\?v=\[\^\"'\]\+/);

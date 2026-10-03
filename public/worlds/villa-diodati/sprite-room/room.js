@@ -94,10 +94,11 @@ const stair = { x: 0, z: 0 };
 const requestedRoom = new URLSearchParams(location.search).get("room");
 let renderEverything = false;
 function focusHouseLocation(x, z, floor) { const floorIndex = Math.max(0, Math.min(3, Number(floor) || 1)); const floorY = FLOOR_BASE_Y[floorIndex] * HOUSE_WORLD_SCALE; const worldX = x * HOUSE_WORLD_SCALE; const worldZ = z * HOUSE_WORLD_SCALE; controls.target.set(worldX, topDown ? floorY : floorY + .8, worldZ); if (topDown) { mapCamera.position.set(worldX, floorY + 56, worldZ); mapCamera.lookAt(worldX, floorY, worldZ); } else { isoCamera.position.set(worldX + 8, floorY + 8, worldZ + 8); isoCamera.lookAt(worldX, floorY + .8, worldZ); } }
-fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => {
+const mapContractPromise = fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null);
+mapContractPromise.then((contract) => {
   if (contract?.coordinateSystem === "villa-diodati-isometric-v1") { Object.assign(map, contract.bounds || {}); roomRegions = (contract.rooms || []).filter((candidate) => Number.isFinite(candidate.x) && Number.isFinite(candidate.z) && Number.isFinite(candidate.width) && Number.isFinite(candidate.depth)).map((candidate) => ({ floor: Number(candidate.floor), minX: Number(candidate.x) - Number(candidate.width) / 2, maxX: Number(candidate.x) + Number(candidate.width) / 2, minZ: Number(candidate.z) - Number(candidate.depth) / 2, maxZ: Number(candidate.z) + Number(candidate.depth) / 2 })); const transition = contract.floorTransitions?.find((candidate) => candidate.id === "central-stair"); if (transition) { stair.x = Number(transition.x); stair.z = Number(transition.z); } const destination = requestedRoom ? contract.rooms?.find((room) => room.id === requestedRoom) : null; if (destination && localPlayerEnabled) { localPlayer.x = Number(destination.x); localPlayer.z = Number(destination.z); localPlayer.floor = Number(destination.floor); walkTarget = null; setFloorLevel(localPlayer.floor); focusHouseLocation(localPlayer.x, localPlayer.z, localPlayer.floor); const figure = figures.get(localPlayer.id); if (figure) updateFigure(figure, localPlayer, clock.elapsedTime); } }
 }).catch(() => {});
-fetch("../isometric-map.json", { cache: "no-cache" }).then((response) => response.ok ? response.json() : null).then((contract) => { navigationRooms = contract?.rooms || []; }).catch(() => {});
+mapContractPromise.then((contract) => { navigationRooms = contract?.rooms || []; }).catch(() => {});
 setInterval(updateRoomScope, 200);
 const room = new THREE.Group(); scene.add(room);
 // Compass UI was intentionally removed; retain a harmless compatibility hook
