@@ -868,9 +868,9 @@ if (!topDown && !pov && floorLevel === 1) {
   const floorY = FLOOR_BASE_Y[floorLevel] * HOUSE_WORLD_SCALE;
   const focusX = SALON_FOCUS.x * HOUSE_WORLD_SCALE;
   const focusZ = SALON_FOCUS.z * HOUSE_WORLD_SCALE;
-  // SSW composition: start northeast of the bay and look diagonally toward
-  // the lake-facing south/west wall set.
-  isoCamera.position.set(focusX + 8, floorY + 8, focusZ - 8);
+  // SSW-side interior composition: place the camera southwest of the bay so
+  // the requested west/south faces, doors, and lake glazing are readable.
+  isoCamera.position.set(focusX - 8, floorY + 8, focusZ + 8);
   isoCamera.zoom = 1.7;
   isoCamera.updateProjectionMatrix();
   isoCamera.lookAt(focusX, floorY + .8, focusZ);
