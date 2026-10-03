@@ -362,6 +362,21 @@ function box(name, size, position, color, rotation = 0) {
   mesh.name = name; mesh.position.set(...position); mesh.rotation.y = rotation; mesh.castShadow = true; mesh.receiveShadow = true; activeBuildGroup.add(mesh); return mesh;
 }
 function loadFurnitureModel(path, name, position, fit, rotation = 0, parent = room) { gltfLoader.load(path, (gltf) => { const model = gltf.scene; model.name = name; model.position.set(...position); model.rotation.y = rotation; model.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; if (name === "CC0 salon rug" && node.material?.color) node.material.color.set(0x70454b); } }); const sourceBounds = new THREE.Box3().setFromObject(model); const sourceSize = sourceBounds.getSize(new THREE.Vector3()); const dimension = fit.height ? sourceSize.y : sourceSize.x; model.scale.setScalar((fit.height || fit.width) / Math.max(.001, dimension)); const groundedBounds = new THREE.Box3().setFromObject(model); model.position.y -= groundedBounds.min.y; parent.add(model); }, undefined, (error) => { console.warn(`Villa furniture asset failed: ${name}`, error); }); }
+function addSalonFurnitureFallback() {
+  const wood = mat(0x4c2d22); const upholstery = mat(0x71533f); const rug = mat(0x70454b); const brass = mat(0xa77a48);
+  const add = (geometry, material, position, name) => { const mesh = new THREE.Mesh(geometry, material); mesh.position.set(...position); mesh.name = name; mesh.castShadow = true; mesh.receiveShadow = true; salonRoot.add(mesh); return mesh; };
+  add(new THREE.BoxGeometry(4.6, .04, 3.2), rug, [0, .025, 1.15], "salon fallback rug");
+  add(new THREE.BoxGeometry(2.8, .5, .82), wood, [-3, .48, .72], "salon fallback sofa base");
+  add(new THREE.BoxGeometry(2.55, 1.0, .24), upholstery, [-3, 1.02, .98], "salon fallback sofa back");
+  for (const x of [-4.28, -1.72]) add(new THREE.BoxGeometry(.22, .72, .9), upholstery, [x, .78, .72], "salon fallback sofa arm");
+  for (const [x, z] of [[2.45, .35], [2.45, 1.85], [-1.75, 2.35]]) {
+    add(new THREE.BoxGeometry(.92, .42, .78), wood, [x, .42, z], "salon fallback armchair seat");
+    add(new THREE.BoxGeometry(.78, .9, .18), upholstery, [x, .88, z + .28], "salon fallback armchair back");
+  }
+  add(new THREE.BoxGeometry(1.3, .12, .78), wood, [0, .72, 1.15], "salon fallback tea table top");
+  for (const x of [-.5, .5]) for (const z of [.88, 1.42]) add(new THREE.BoxGeometry(.08, .68, .08), wood, [x, .36, z], "salon fallback tea table leg");
+  add(new THREE.CylinderGeometry(.06, .06, .2, 10), brass, [0, .86, 1.15], "salon fallback candelabra");
+}
 function addStairFlight(layer, baseY, name) {
   const stairMat = mat(0x806445);
   for (let step = 0; step < 6; step++) {
@@ -869,6 +884,7 @@ function buildRoom() {
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom second right armchair", [2.55, 0, 1.85], { height: 1.05 }, -Math.PI / 2, salonRoot);
   loadFurnitureModel("../furniture/armchair-01/ArmChair_01.gltf", "ThirdRoom reading armchair", [-1.75, 0, 2.35], { height: 1.05 }, Math.PI / 2, salonRoot);
   loadFurnitureModel("../furniture/antique-table-01/table.glb", "antique Chinese tea table", [0, 0, 1.15], { height: .72 }, 0, salonRoot);
+  addSalonFurnitureFallback();
   const tableCandelabra = heldProp("candelabra"); tableCandelabra.name = "candelabra on coffee table"; tableCandelabra.position.set(0, .72, 1.42); salonRoot.add(tableCandelabra);
   const tableCandleLight = new THREE.PointLight(0xffc77c, 1.15, 2.2); tableCandleLight.position.set(0, 1.18, 1.42); salonRoot.add(tableCandleLight); candleLights.push(tableCandleLight);
   // The focused salon is a scaled architectural unit. Keep a real textured
