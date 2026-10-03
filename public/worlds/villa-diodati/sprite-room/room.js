@@ -681,8 +681,11 @@ function buildRoom() {
 }
 function updateWallOcclusion() { const walls = room.userData.walls; if (!walls) return; const decor = room.userData.occludingDecor || []; const localCamera = salonRoot.worldToLocal(activeCamera.position.clone()); const near = new Set(); if (localCamera.x > 6.0) near.add("right"); if (localCamera.x < -6.0) near.add("left"); if (localCamera.z < -3.0) near.add("rear"); if (localCamera.z > 3.0) near.add("front"); if (topDown) { for (const wall of Object.values(walls)) { wall.material.opacity = 1; wall.material.depthWrite = true; } for (const item of decor) { if (!item.material) continue; item.material.transparent = true; item.material.opacity = 1; item.material.depthWrite = true; } } else { for (const [name, wall] of Object.entries(walls)) { wall.material.transparent = true; wall.material.opacity = near.has(name) ? .01 : .04; wall.material.depthWrite = false; wall.material.needsUpdate = true; } for (const item of decor) { if (!item.material) continue; const architectural = /(wall|molding|mullion|sill|lintel|trim|recess)/i.test(item.name || ""); item.material.transparent = true; item.material.opacity = architectural ? .03 : 1; item.material.depthWrite = !architectural; item.material.needsUpdate = true; } } }
 function enforceSalonRoomView() {
-  if (topDown || pov || floorLevel !== 1 || !salonRoot.visible) return;
-  room.children.forEach((child) => { if (child !== salonRoot && child !== principalPlanShell) child.visible = false; });
+  if (topDown || pov || floorLevel !== 1) return;
+  // The authored salon root has its own local transform and can appear as a
+  // detached platform. Room view must use only the connected house shell.
+  salonRoot.visible = false;
+  room.children.forEach((child) => { if (child !== principalPlanShell) child.visible = false; });
   principalPlanShell.visible = true;
   principalPlanShell.traverse((node) => {
     if (!node.isMesh || !node.name) return;
@@ -690,10 +693,6 @@ function enforceSalonRoomView() {
     // Keep only the salon floor, its west wall, and the south/veranda wall;
     // neighboring shells, boundary walls, and columns stay out of frame.
     node.visible = /^(salon floor|salon west wall|salon south veranda wall segment)$/i.test(node.name);
-  });
-  salonRoot.traverse((node) => {
-    if (!node.isMesh || !node.name) return;
-    if (/^(oak parquet floor|floor inlay)$/i.test(node.name) || /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda|facade window|window pane|window mullion|window recess|tall window)/i.test(node.name)) node.visible = false;
   });
 }
 function setupLighting() {
@@ -818,11 +817,13 @@ function setSalonOnlyVisibility(visible) {
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
   // authored salon set as a second platform beside the villa.
-  salonRoot.visible = visible;
+  // Do not render the authored salon set in Room view; it is not in the same
+  // coordinate frame as the connected villa floorplan shell.
+  salonRoot.visible = false;
   animalLayer.visible = !visible && topDown;
   if (visible && floorLevel === 1) {
-    // Keep the furniture and figures, but use the connected plan shell for the
-    // enclosure. The old salonRoot walls made the salon appear detached.
+    // Use the connected plan shell for the enclosure; the old salonRoot set
+    // is intentionally suppressed because it renders in a detached frame.
     updatePlanRoomVisibility("salon");
     for (const wall of Object.values(room.userData.walls || {})) {
       wall.visible = false;
