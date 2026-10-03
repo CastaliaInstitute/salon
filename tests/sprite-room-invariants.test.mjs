@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../public/worlds/villa-diodati/sprite-room/room.js", import.meta.url), "utf8");
@@ -29,6 +30,13 @@ test("viewer has a restrictive content security policy", () => {
   assert.match(html, /Content-Security-Policy/);
   assert.match(html, /connect-src 'self' blob: https:\/\/matrix\.castalia\.institute/);
   assert.match(html, /sha256-4HMW5NQmmSV3oHC6ajO3hk1Oj3mUDvGXHThmkVld42w=/);
+});
+
+test("viewer CSP hash matches the inline import map", () => {
+  const importMap = html.match(/<script type="importmap">([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(importMap, "inline import map is present");
+  const hash = `sha256-${createHash("sha256").update(importMap).digest("base64")}`;
+  assert.match(html, new RegExp(hash.replace(/[+/=]/g, "\\$&")));
 });
 
 test("viewer has a keyboard-focusable canvas and no-script fallback", () => {
