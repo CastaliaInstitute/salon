@@ -724,18 +724,18 @@ function buildRoom() {
   // and one window flanking it inside the one-bay salon width.
   for (const x of [-2.7, 2.7]) {
     if (x < 0) {
-      const southDoor = box("south veranda door", [1.55, 2.55, .08], [x, 1.32, -3.86], 0x402a24);
-      const southDoorFrameLeft = box("south veranda door frame left", [.12, 2.8, .12], [x - .88, 1.42, -3.82], 0xb3875c);
-      const southDoorFrameRight = box("south veranda door frame right", [.12, 2.8, .12], [x + .88, 1.42, -3.82], 0xb3875c);
+      const southDoor = box("south veranda door", [1.55, 2.55, .08], [x, 1.32, 4.9], 0x402a24);
+      const southDoorFrameLeft = box("south veranda door frame left", [.12, 2.8, .12], [x - .88, 1.42, 4.94], 0xb3875c);
+      const southDoorFrameRight = box("south veranda door frame right", [.12, 2.8, .12], [x + .88, 1.42, 4.94], 0xb3875c);
       room.userData.occludingDecor.push(southDoor, southDoorFrameLeft, southDoorFrameRight);
       continue;
     }
-    const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, -3.91], 0x182b3c);
+    const windowRecess = box("tall window recess", [2.05, 3.15, .08], [x, 2.35, 4.88], 0x182b3c);
     room.userData.occludingDecor.push(windowRecess);
-    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshPhysicalMaterial({ color: 0xc7e4e8, transparent: true, opacity: .12, transmission: .94, roughness: .03, depthWrite: false, side: THREE.DoubleSide })); windowPane.name = "clear tall window glazing"; windowPane.position.set(x, 2.35, -3.8); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
-    const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, -3.90], 0xf2eee5);
-    const windowSill = box("window sill", [2.15, .12, .22], [x, .78, -3.82], 0xf2eee5);
-    const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, -3.86], 0x5e7080);
+    const windowPane = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 2.8), new THREE.MeshPhysicalMaterial({ color: 0xe7f5f5, transparent: true, opacity: .24, transmission: .9, roughness: .025, depthWrite: false, side: THREE.DoubleSide })); windowPane.name = "clear tall window glazing"; windowPane.position.set(x, 2.35, 4.86); windowPane.renderOrder = 1; salonRoot.add(windowPane); room.userData.occludingDecor.push(windowPane);
+    const windowMullion = box("window mullion", [.1, 2.85, .1], [x, 2.35, 4.84], 0xf2eee5);
+    const windowSill = box("window sill", [2.15, .12, .22], [x, .78, 4.94], 0xf2eee5);
+    const curtain = box("curtain", [.3, 3.7, .3], [x + (x < 0 ? -1.0 : 1.0), 2.35, 4.88], 0x5e7080);
     room.userData.occludingDecor.push(windowMullion, windowSill, curtain);
   }
   const writingDeskX = -5.35;
