@@ -388,6 +388,8 @@ function buildPlanFloorShell(layer, baseY, levelName) {
     addHorizontalDoorWall("salon map boundary south", -2.1, 6.3, 8.4, 1.35);
     const lakeGlass = new THREE.MeshPhysicalMaterial({ color: 0xb9dce3, transparent: true, opacity: .16, transmission: .92, roughness: .03, metalness: 0, side: THREE.DoubleSide, depthWrite: false });
     for (const x of [-4.65, -2.55, .65]) {
+      const lakeView = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 2.18), new THREE.MeshStandardMaterial({ map: lakeTexture(), color: 0x6799a4, roughness: .5, metalness: .02, side: THREE.DoubleSide }));
+      lakeView.position.set(x, baseY + 2.25, 6.14); lakeView.name = "south lake view"; lakeView.renderOrder = 0; layer.add(lakeView);
       const pane = new THREE.Mesh(new THREE.BoxGeometry(1.55, 2.45, .035), lakeGlass);
       pane.position.set(x, baseY + 2.25, 6.22); pane.name = "salon south lake window glass"; pane.renderOrder = 2; layer.add(pane);
     }
@@ -973,6 +975,7 @@ function setSalonOnlyVisibility(visible) {
   // full-render views restore every landscape feature below.
   landscapeLayer.visible = true;
   landscapeLayer.children.forEach((child) => { child.visible = topDown || /water/i.test(child.name || ""); });
+  room.traverse((node) => { if (node.name === "south lake view") node.visible = !topDown; });
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
   // authored salon set as a second platform beside the villa.
