@@ -808,10 +808,10 @@ function enforceSalonRoomView() {
 function applyRenderEverything() {
   if (!renderEverything) return;
   scene.traverse((node) => { node.visible = true; });
-  room.visible = true;
-  principalPlanShell.visible = true;
-  lowerFloor.visible = true;
-  upperFloors.forEach((layer) => { layer.visible = true; });
+  room.visible = !topDown;
+  principalPlanShell.visible = topDown && floorLevel === 1;
+  lowerFloor.visible = topDown && floorLevel === 0;
+  upperFloors.forEach((layer, index) => { layer.visible = topDown && floorLevel === index + 2; });
   exteriorLayer.visible = true;
   participantLayer.visible = true;
   animalLayer.visible = true;
