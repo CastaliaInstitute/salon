@@ -821,8 +821,11 @@ function applyRenderEverything() {
   lowerFloor.visible = topDown && floorLevel === 0;
   upperFloors.forEach((layer, index) => { layer.visible = topDown && floorLevel === index + 2; });
   exteriorLayer.visible = true;
-  participantLayer.visible = true;
-  animalLayer.visible = true;
+  // The exterior shell and the authored salon use different local datums.
+  // Do not expose occupants at the shell boundary where they read as floating
+  // outside the villa; Room/POV/Cinematic retain the fully staged occupants.
+  participantLayer.visible = false;
+  animalLayer.visible = false;
   landscapeLayer.visible = true;
   mapMarkers.visible = topDown;
 }
