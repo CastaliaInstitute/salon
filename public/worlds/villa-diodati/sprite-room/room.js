@@ -1120,8 +1120,11 @@ function setSalonOnlyVisibility(visible) {
   // Focused interior views should not expose the terrain mesh as a stray
   // cutaway. Keep the lake plane available beyond the clear glazing; map and
   // full-render views restore every landscape feature below.
-  landscapeLayer.visible = true;
-  landscapeLayer.children.forEach((child) => { child.visible = topDown || /water/i.test(child.name || ""); });
+  // Focused room views use the authored lake-view glazing, not the global
+  // terrain/water planes. Keeping those planes out of the room scope prevents
+  // camera orbit from exposing a giant detached landscape sheet.
+  landscapeLayer.visible = !visible || topDown;
+  landscapeLayer.children.forEach((child) => { child.visible = !visible && (topDown || /water/i.test(child.name || "")); });
   room.traverse((node) => { if (node.name === "south lake view") node.visible = !topDown; });
   principalPlanShell.visible = visible ? floorLevel === 1 : principalPlanShell.visible;
   // The inferred floorplan is authoritative; do not render the detached
