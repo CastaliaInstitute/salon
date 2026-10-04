@@ -926,12 +926,17 @@ function enforceSalonRoomView() {
   room.children.forEach((child) => { child.visible = child === salonRoot || child === salonFallbackLayer; });
   principalPlanShell.visible = false;
   salonRoot.visible = true;
+  // The focused salon is viewed from the northeast toward SSW. The east
+  // enclosure is behind the camera and must never occlude that view.
+  const eastWalls = new Set([room.userData.walls?.right, salonRoot.getObjectByName("right wall")]);
+  eastWalls.forEach((wall) => { if (wall) wall.visible = false; });
   salonRoot.traverse((node) => {
     if (!node.isMesh || !node.name) return;
     const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name);
+    const eastWall = /^right wall$/i.test(node.name);
     const westSouthWall = /^(left wall|front wall left of veranda door|front wall between veranda openings|front wall right of veranda window|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
     const westSouthOpening = /(villa facade window|facade window|west veranda door|south veranda door|front door)/i.test(node.name);
-    node.visible = !architectural || westSouthWall || westSouthOpening;
+    node.visible = !eastWall && (!architectural || westSouthWall || westSouthOpening);
   });
   // The two visible room elevations are enclosure, not an occluding overlay.
   // Keep them opaque so the focused salon cannot read as detached wall cards.
