@@ -934,7 +934,7 @@ function enforceSalonRoomView() {
     if (!node.isMesh || !node.name) return;
     const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name);
     const eastWall = /^right wall$/i.test(node.name);
-    const westSouthWall = /^(left wall|front wall left of veranda door|front wall between veranda openings|front wall right of veranda window|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
+    const westSouthWall = /^(front wall left of veranda door|front wall between veranda openings|front wall right of veranda window|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
     const westSouthOpening = /(villa facade window|facade window|west veranda door|south veranda door|front door)/i.test(node.name);
     node.visible = !eastWall && (!architectural || westSouthWall || westSouthOpening);
   });
