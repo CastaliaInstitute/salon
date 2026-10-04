@@ -38,7 +38,14 @@ async function fetchWithTimeout(input, options = {}, timeout = NETWORK_TIMEOUT_M
 }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x17120f);
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+} catch (error) {
+  if (status) status.textContent = "3D viewer unavailable — enable WebGL or use a supported browser.";
+  canvas.setAttribute("aria-label", "Villa Diodati viewer unavailable because WebGL could not be initialized");
+  throw error;
+}
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;

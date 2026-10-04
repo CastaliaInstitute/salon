@@ -146,6 +146,7 @@ test("viewer reports recoverable WebGL context loss", () => {
   assert.match(source, /webglcontextlost/);
   assert.match(source, /webglcontextrestored/);
   assert.match(source, /Graphics restored — reload the viewer to resume rendering/);
+  assert.match(source, /3D viewer unavailable — enable WebGL or use a supported browser/);
 });
 
 test("viewer pauses background weather while hidden", () => {
