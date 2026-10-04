@@ -64,6 +64,12 @@ test("startup view is deterministic before Matrix cinematography", () => {
   assert.match(source, /if \(roomButton\) roomButton\.value = initialRoomOption \|\| "7"/);
 });
 
+test("room deep links focus the destination without requiring a local player", () => {
+  assert.match(source, /const destination = requestedRoom \? contract\.rooms\?\.find/);
+  assert.match(source, /if \(destination\) \{ const destinationFloor = Number\(destination\.floor\)/);
+  assert.match(source, /focusHouseLocation\(Number\(destination\.x\), Number\(destination\.z\), destinationFloor\)/);
+});
+
 test("salon origin remains inside its principal-floor map room", () => {
   const salon = villaMap.rooms.find((room) => room.id === "salon");
   assert.ok(salon, "salon room exists in the map contract");
