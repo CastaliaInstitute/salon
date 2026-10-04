@@ -49,7 +49,7 @@ test("focused salon restores solid west and south enclosure walls", () => {
 
 test("focused salon starts in a readable elevated diagonal composition", () => {
   assert.match(source, /isoCamera\.position\.set\(focusX \+ 4\.5, floorY \+ 7, focusZ - 4\.5\)/);
-  assert.match(source, /isoCamera\.lookAt\(focusX, floorY \+ 1, focusZ \+ \.65\)/);
+  assert.match(source, /isoCamera\.lookAt\(focusX - 1\.5, floorY \+ 1, focusZ \+ 1\.5\)/);
   assert.match(source, /isoCamera\.zoom = 1\.08/);
 });
 

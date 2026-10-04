@@ -1175,8 +1175,8 @@ if (!topDown && !pov && floorLevel === 1) {
   isoCamera.position.set(focusX + 4.5, floorY + 7, focusZ - 4.5);
   isoCamera.zoom = 1.08;
   isoCamera.updateProjectionMatrix();
-  isoCamera.lookAt(focusX, floorY + 1, focusZ + .65);
-  controls.target.set(focusX, floorY + 1, focusZ + .65);
+  isoCamera.lookAt(focusX - 1.5, floorY + 1, focusZ + 1.5);
+  controls.target.set(focusX - 1.5, floorY + 1, focusZ + 1.5);
 }
 if (!pov && !topDown) controls.enableRotate = true;
 if (reducedMotion) {
