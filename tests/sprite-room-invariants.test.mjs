@@ -60,7 +60,8 @@ test("focused salon starts in a readable elevated diagonal composition", () => {
 test("startup view is deterministic before Matrix cinematography", () => {
   assert.match(source, /let userHasSelectedView = false/);
   assert.match(source, /if \(topDown \|\| !userHasSelectedView\) return/);
-  assert.match(source, /floorLevel = 1; if \(floorButton\) floorButton\.value = "1"; if \(roomButton\) roomButton\.value = "7"; if \(cameraButton\) cameraButton\.value = "room"/);
+  assert.match(source, /floorLevel = Number\.isInteger\(requestedFloor\) \? requestedFloor : 1/);
+  assert.match(source, /if \(roomButton\) roomButton\.value = initialRoomOption \|\| "7"/);
 });
 
 test("salon origin remains inside its principal-floor map room", () => {
