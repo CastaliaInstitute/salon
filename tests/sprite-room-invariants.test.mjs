@@ -48,9 +48,9 @@ test("focused salon restores solid west and south enclosure walls", () => {
 });
 
 test("focused salon starts in a readable elevated diagonal composition", () => {
-  assert.match(source, /isoCamera\.position\.set\(focusX \+ 8, floorY \+ 10, focusZ - 8\)/);
+  assert.match(source, /isoCamera\.position\.set\(focusX \+ 4\.5, floorY \+ 7, focusZ - 4\.5\)/);
   assert.match(source, /isoCamera\.lookAt\(focusX, floorY \+ 1, focusZ \+ \.65\)/);
-  assert.match(source, /isoCamera\.zoom = \.82/);
+  assert.match(source, /isoCamera\.zoom = 1\.08/);
 });
 
 test("salon origin remains inside its principal-floor map room", () => {
