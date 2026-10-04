@@ -926,17 +926,20 @@ function enforceSalonRoomView() {
   room.children.forEach((child) => { child.visible = child === salonRoot || child === salonFallbackLayer; });
   principalPlanShell.visible = false;
   salonRoot.visible = true;
-  // The focused salon is viewed from the northeast toward SSW. The east
-  // enclosure is behind the camera and must never occlude that view.
-  const eastWalls = new Set([room.userData.walls?.right, salonRoot.getObjectByName("right wall")]);
-  eastWalls.forEach((wall) => { if (wall) wall.visible = false; });
+  // Keep only enclosure geometry on the far side of the selected room. This
+  // is camera-relative rather than name-relative, so the same rule works for
+  // every room and remains correct as the user orbits around it.
+  const localCamera = salonRoot.worldToLocal(activeCamera.position.clone());
+  const roomCenter = new THREE.Vector3(0, 1, 0);
+  const viewVector = localCamera.clone().sub(roomCenter).setY(0).normalize();
   salonRoot.traverse((node) => {
     if (!node.isMesh || !node.name) return;
-    const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda)/i.test(node.name);
-    const eastWall = /^right wall$/i.test(node.name);
-    const westSouthWall = /^(front wall left of veranda door|front wall between veranda openings|front wall right of veranda window|front wall right of veranda door|veranda door lintel)$/i.test(node.name);
-    const westSouthOpening = /(villa facade window|facade window|west veranda door|south veranda door|front door)/i.test(node.name);
-    node.visible = !eastWall && (!architectural || westSouthWall || westSouthOpening);
+    const architectural = /(wall|molding|mullion|sill|lintel|trim|recess|column|veranda|window|glazing|shutter|door)/i.test(node.name);
+    if (!architectural) { node.visible = true; return; }
+    const center = salonRoot.worldToLocal(new THREE.Box3().setFromObject(node).getCenter(new THREE.Vector3()));
+    const wallVector = center.sub(roomCenter).setY(0);
+    const behindRoom = wallVector.lengthSq() < .001 || wallVector.dot(viewVector) < -.05;
+    node.visible = behindRoom;
   });
   // The two visible room elevations are enclosure, not an occluding overlay.
   // Keep them opaque so the focused salon cannot read as detached wall cards.
