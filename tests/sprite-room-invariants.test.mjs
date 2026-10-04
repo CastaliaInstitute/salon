@@ -42,6 +42,8 @@ test("focused rooms retain only camera-relative far enclosure walls", () => {
   assert.match(source, /const westCutaway = focusedSalon && name === "left"/);
   assert.match(source, /const viewVector = localCamera\.clone\(\)\.sub\(roomCenter\)\.setY\(0\)\.normalize\(\)/);
   assert.match(source, /const behindRoom = wallVector\.lengthSq\(\) < \.001 \|\| wallVector\.dot\(viewVector\) < -\.05/);
+  assert.match(source, /function protectCharactersFromOcclusion\(\)/);
+  assert.match(source, /intersectObjects\(enclosure, true\)/);
   assert.match(source, /southWallSegment\("front wall between veranda openings"/);
   assert.match(source, /verandaWallLeft\.visible = false/);
   assert.match(source, /addFacadeWindow\(-7\.75, 2\.25/);
