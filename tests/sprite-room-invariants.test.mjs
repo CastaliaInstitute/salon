@@ -57,6 +57,12 @@ test("focused salon starts in a readable elevated diagonal composition", () => {
   assert.match(source, /isoCamera\.zoom = 1\.08/);
 });
 
+test("startup view is deterministic before Matrix cinematography", () => {
+  assert.match(source, /let userHasSelectedView = false/);
+  assert.match(source, /if \(topDown \|\| !userHasSelectedView\) return/);
+  assert.match(source, /floorLevel = 1; if \(floorButton\) floorButton\.value = "1"; if \(roomButton\) roomButton\.value = "7"; if \(cameraButton\) cameraButton\.value = "room"/);
+});
+
 test("salon origin remains inside its principal-floor map room", () => {
   const salon = villaMap.rooms.find((room) => room.id === "salon");
   assert.ok(salon, "salon room exists in the map contract");
